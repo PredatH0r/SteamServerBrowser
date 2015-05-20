@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QueryMaster", "QueryMaster\QueryMaster.csproj", "{4CA9C894-518F-42D7-BBE2-CFDFE7A03F8A}"
+EndProject
+Global
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 2
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs13
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = QueryMaster\\QueryMaster.csproj
+		SccProjectName1 = QueryMaster
+		SccLocalPath1 = QueryMaster
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4CA9C894-518F-42D7-BBE2-CFDFE7A03F8A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4CA9C894-518F-42D7-BBE2-CFDFE7A03F8A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4CA9C894-518F-42D7-BBE2-CFDFE7A03F8A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4CA9C894-518F-42D7-BBE2-CFDFE7A03F8A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

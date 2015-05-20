@@ -1,0 +1,21 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="ServerBrowser.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="Skin" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Office 2010 Black</Value>
+    </Setting>
+    <Setting Name="Branding" Type="System.String" Scope="User">
+      <Value Profile="(Default)">phgp</Value>
+    </Setting>
+    <Setting Name="LogoHeight" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">75</Value>
+    </Setting>
+    <Setting Name="FontSizeDelta" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">0.75</Value>
+    </Setting>
+    <Setting Name="FontName" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Segoe UI</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

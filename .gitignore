@@ -1,0 +1,10 @@
+_ReSharperPlatformVs121.SteamServerBrowser/*
+QueryMaster/QueryMaster.dll
+QueryMaster/QueryMaster/bin/*
+QueryMaster/QueryMaster/obj/*
+ServerBrowser/bin/*
+ServerBrowser/obj/*
+*/Thumbs.db
+*.suo
+*.user
+*.DotSettings

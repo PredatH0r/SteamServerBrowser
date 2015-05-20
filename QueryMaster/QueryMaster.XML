@@ -1,0 +1,1453 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>QueryMaster</name>
+    </assembly>
+    <members>
+        <member name="T:QueryMaster.ServerInfo">
+            <summary>
+            Contains information about the server
+            </summary>
+        </member>
+        <member name="P:QueryMaster.ServerInfo.IsObsolete">
+            <summary>
+            Returns true if server replies with Obsolete response format.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.ServerInfo.Address">
+            <summary>
+            Socket address of server.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.ServerInfo.Protocol">
+            <summary>
+            Protocol version used by the server. 
+            </summary>
+        </member>
+        <member name="P:QueryMaster.ServerInfo.Name">
+            <summary>
+            Name of the server. 
+            </summary>
+        </member>
+        <member name="P:QueryMaster.ServerInfo.Map">
+            <summary>
+            Map the server has currently loaded. 
+            </summary>
+        </member>
+        <member name="P:QueryMaster.ServerInfo.Directory">
+            <summary>
+             	Name of the folder containing the game files. 
+            </summary>
+        </member>
+        <member name="P:QueryMaster.ServerInfo.Description">
+            <summary>
+            Full name of the game. 
+            </summary>
+        </member>
+        <member name="P:QueryMaster.ServerInfo.Id">
+            <summary>
+            Steam Application ID of game. 
+            </summary>
+        </member>
+        <member name="P:QueryMaster.ServerInfo.Players">
+            <summary>
+            Number of players on the server. 
+            </summary>
+        </member>
+        <member name="P:QueryMaster.ServerInfo.MaxPlayers">
+            <summary>
+            Maximum number of players the server reports it can hold. 
+            </summary>
+        </member>
+        <member name="P:QueryMaster.ServerInfo.Bots">
+            <summary>
+            Number of bots on the server. 
+            </summary>
+        </member>
+        <member name="P:QueryMaster.ServerInfo.ServerType">
+            <summary>
+            Indicates the type of server.(Dedicated/Non-dedicated/Proxy)
+            </summary>
+        </member>
+        <member name="P:QueryMaster.ServerInfo.Environment">
+            <summary>
+            Indicates the operating system of the server.(Linux/Windows/Mac)
+            </summary>
+        </member>
+        <member name="P:QueryMaster.ServerInfo.IsPrivate">
+            <summary>
+            Indicates whether the server requires a password
+            </summary>
+        </member>
+        <member name="P:QueryMaster.ServerInfo.IsSecure">
+            <summary>
+            Specifies whether the server uses VAC.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.ServerInfo.GameVersion">
+            <summary>
+            Version of the game installed on the server. 
+            </summary>
+        </member>
+        <member name="P:QueryMaster.ServerInfo.Ping">
+            <summary>
+            Round-trip delay time.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.ServerInfo.Extra">
+            <summary>
+            Additional information provided by server.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.ServerInfo.ShipInfo">
+            <summary>
+            Valid only if the server is running The Ship. 
+            </summary>
+        </member>
+        <member name="P:QueryMaster.ServerInfo.IsModded">
+            <summary>
+            Indicates whether the game is a mod(Halflofe/HalfLifeMod)
+            </summary>
+            <remarks>Present only  in Obsolete server responses.</remarks>
+        </member>
+        <member name="P:QueryMaster.ServerInfo.ModInfo">
+            <summary>
+            Valid only if IsModded =true
+            </summary>
+            <remarks>Present only in Obsolete server responses.</remarks>
+        </member>
+        <member name="T:QueryMaster.TheShip">
+            <summary>
+            Contains extra information about the Ship server
+            </summary>
+        </member>
+        <member name="P:QueryMaster.TheShip.Mode">
+            <summary>
+            Indicates the game mode.(Hunt/Elimination/Duel/Deathmatch/VIP Team/Team Elimination)
+            </summary>
+        </member>
+        <member name="P:QueryMaster.TheShip.Witnesses">
+            <summary>
+            The number of witnesses necessary to have a player arrested. 
+            </summary>
+        </member>
+        <member name="P:QueryMaster.TheShip.Duration">
+            <summary>
+            Time (in seconds) before a player is arrested while being witnessed.
+            </summary>
+        </member>
+        <member name="T:QueryMaster.Mod">
+            <summary>
+            Contains information about the Mod.
+            </summary>
+            <remarks>Present only in Obsolete server responses.</remarks>
+        </member>
+        <member name="P:QueryMaster.Mod.Link">
+            <summary>
+            URL to mod website. 
+            </summary>
+        </member>
+        <member name="P:QueryMaster.Mod.DownloadLink">
+            <summary>
+            URL to download the mod. 
+            </summary>
+        </member>
+        <member name="P:QueryMaster.Mod.Version">
+            <summary>
+            Version of mod installed on server. 
+            </summary>
+        </member>
+        <member name="P:QueryMaster.Mod.Size">
+            <summary>
+            Space (in bytes) the mod takes up. 
+            </summary>
+        </member>
+        <member name="P:QueryMaster.Mod.IsOnlyMultiPlayer">
+            <summary>
+            Indicates the type of mod.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.Mod.IsHalfLifeDll">
+            <summary>
+            Indicates whether mod uses its own DLL
+            </summary>
+        </member>
+        <member name="T:QueryMaster.Player">
+            <summary>
+            Contains information of a player currently in server
+            </summary>
+        </member>
+        <member name="P:QueryMaster.Player.Name">
+            <summary>
+            Name of the player. 
+            </summary>
+        </member>
+        <member name="P:QueryMaster.Player.Score">
+            <summary>
+            Player's score (usually "frags" or "kills".) 
+            </summary>
+        </member>
+        <member name="P:QueryMaster.Player.Time">
+            <summary>
+            Time  player has been connected to the server.(returns TimeSpan instance)
+            </summary>
+        </member>
+        <member name="T:QueryMaster.Rule">
+            <summary>
+            Contains information of a server rule
+            </summary>
+        </member>
+        <member name="P:QueryMaster.Rule.Name">
+            <summary>
+            Name of the rule. 
+            </summary>
+        </member>
+        <member name="P:QueryMaster.Rule.Value">
+            <summary>
+            Value of the rule. 
+            </summary>
+        </member>
+        <member name="T:QueryMaster.PlayerInfo">
+            <summary>
+            Contains information of a player
+            </summary>
+        </member>
+        <member name="P:QueryMaster.PlayerInfo.Name">
+            <summary>
+            Name of player
+            </summary>
+        </member>
+        <member name="P:QueryMaster.PlayerInfo.Uid">
+            <summary>
+            UId of player(Steam ID)
+            </summary>
+        </member>
+        <member name="P:QueryMaster.PlayerInfo.WonId">
+            <summary>
+            Won Id
+            </summary>
+        </member>
+        <member name="P:QueryMaster.PlayerInfo.Team">
+            <summary>
+            Player's Team Name
+            </summary>
+        </member>
+        <member name="T:QueryMaster.ExtraInfo">
+            <summary>
+            Contains extra information about server
+            </summary>
+        </member>
+        <member name="P:QueryMaster.ExtraInfo.Port">
+            <summary>
+            The server's game port number.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.ExtraInfo.SteamID">
+            <summary>
+            Server's SteamID. 
+            </summary>
+        </member>
+        <member name="P:QueryMaster.ExtraInfo.SpecInfo">
+            <summary>
+            Contains information on Source TV.(if it is Source TV)
+            </summary>
+        </member>
+        <member name="P:QueryMaster.ExtraInfo.Keywords">
+            <summary>
+            Tags that describe the game according to the server. 
+            </summary>
+        </member>
+        <member name="P:QueryMaster.ExtraInfo.GameId">
+            <summary>
+            The server's 64-bit GameID.
+            </summary>
+        </member>
+        <member name="T:QueryMaster.SourceTVInfo">
+            <summary>
+            Contains information on SourceTV
+            </summary>
+        </member>
+        <member name="P:QueryMaster.SourceTVInfo.Port">
+            <summary>
+            Spectator port number for SourceTV.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.SourceTVInfo.Name">
+            <summary>
+            Name of the spectator server for SourceTV.
+            </summary>
+        </member>
+        <member name="T:QueryMaster.EngineType">
+            <summary>
+            Specifies the type of engine used by server
+            </summary>
+        </member>
+        <member name="F:QueryMaster.EngineType.Source">
+            <summary>
+            Source Engine
+            </summary>
+        </member>
+        <member name="F:QueryMaster.EngineType.GoldSource">
+            <summary>
+            Gold Source Engine
+            </summary>
+        </member>
+        <member name="T:QueryMaster.Game">
+            <summary>
+            Specifies the game
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.CounterStrike">
+            <summary>
+            Counter-Strike
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.Team_Fortress_Classic">
+            <summary>
+            Team Fortress Classic
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.Day_Of_Defeat">
+            <summary>
+            Day Of Defeat
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.Deathmatch_Classic">
+            <summary>
+            Deathmatch Classic
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.Opposing_Force">
+            <summary>
+            Opposing Force
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.Ricochet">
+            <summary>
+            Ricochet
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.Half_Life">
+            <summary>
+            Half-Life
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.Condition_Zero">
+            <summary>
+            Condition Zero
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.CounterStrike_1_6_dedicated_server">
+            <summary>
+            CounterStrike 1.6 dedicated server
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.Condition_Zero_Deleted_Scenes">
+            <summary>
+            Condition Zero Deleted Scenes
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.Half_Life_Blue_Shift">
+            <summary>
+            Half-Life:Blue Shift
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.Half_Life_2">
+            <summary>
+            Half-Life 2
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.CounterStrike_Source">
+            <summary>
+            Counter-Strike: Source
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.Half_Life_Source">
+            <summary>
+            Half-Life: Source
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.Day_Of_Defeat_Source">
+            <summary>
+            Day of Defeat: Source
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.Half_Life_2_Deathmatch">
+            <summary>
+            Half-Life 2: Deathmatch
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.Half_Life_2_Lost_Coast">
+            <summary>
+            Half-Life 2: Lost Coast
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.Half_Life_Deathmatch_Source">
+            <summary>
+            Half-Life Deathmatch: Source
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.Half_Life_2_Episode_One">
+            <summary>
+            Half-Life 2: Episode One
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.Portal">
+            <summary>
+            Portal
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.Half_Life_2_Episode_Two">
+            <summary>
+            Half-Life 2: Episode Two
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.Team_Fortress_2">
+            <summary>
+            Team Fortress 2
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.Left_4_Dead">
+            <summary>
+            Left 4 Dead
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.Left_4_Dead_2">
+            <summary>
+            Left 4 Dead 2
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.Dota_2">
+            <summary>
+            Dota 2 
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.Portal_2">
+            <summary>
+            Portal 2
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.Alien_Swarm">
+            <summary>
+            Alien Swarm
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.CounterStrike_Global_Offensive">
+            <summary>
+            Counter-Strike: Global Offensive
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.SiN_Episodes_Emergence">
+            <summary>
+            SiN Episodes: Emergence
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.Dark_Messiah_Of_Might_And_Magic">
+            <summary>
+            Dark Messiah of Might and Magic
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.Dark_Messiah_Might_And_Magic_MultiPlayer">
+            <summary>
+            Dark Messiah Might and Magic Multi-Player
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.The_Ship">
+            <summary>
+            The Ship
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.Bloody_Good_Time">
+            <summary>
+            Bloody Good Time
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.Vampire_The_Masquerade_Bloodlines">
+            <summary>
+            Vampire The Masquerade - Bloodlines
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.Garrys_Mod">
+            <summary>
+            Garry's Mod
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.Zombie_Panic_Source">
+            <summary>
+            Zombie Panic! Source
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.Age_of_Chivalry">
+            <summary>
+            Age of Chivalry
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.Synergy">
+            <summary>
+            Synergy
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.D_I_P_R_I_P">
+            <summary>
+            D.I.P.R.I.P.
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.Eternal_Silence">
+            <summary>
+            Eternal Silence
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.Pirates_Vikings_And_Knights_II">
+            <summary>
+            Pirates, Vikings, and Knights II
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.Dystopia">
+            <summary>
+            Dystopia
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.Insurgency">
+            <summary>
+            Insurgency
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.Nuclear_Dawn">
+            <summary>
+            Nuclear Dawn
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Game.Smashball">
+            <summary>
+            Smashball
+            </summary>
+        </member>
+        <member name="T:QueryMaster.Region">
+            <summary>
+            Specifies the Region
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Region.US_East_coast">
+            <summary>
+            US East coast 
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Region.US_West_coast">
+            <summary>
+            	US West coast 
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Region.South_America">
+            <summary>
+            South America
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Region.Europe">
+            <summary>
+            Europe
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Region.Asia">
+            <summary>
+            Asia
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Region.Australia">
+            <summary>
+            Australia
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Region.Middle_East">
+            <summary>
+            Middle East 
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Region.Africa">
+            <summary>
+            Africa
+            </summary>
+        </member>
+        <member name="F:QueryMaster.Region.Rest_of_the_world">
+            <summary>
+            Rest of the world 
+            </summary>
+        </member>
+        <member name="T:QueryMaster.QueryMasterException">
+            <summary>
+            The exception that is thrown by the QueryMaster library
+            </summary>
+        </member>
+        <member name="T:QueryMaster.InvalidHeaderException">
+            <summary>
+            The exception that is thrown when an invalid message header is received
+            </summary>
+        </member>
+        <member name="T:QueryMaster.InvalidPacketException">
+            <summary>
+            The exception that is thrown when an invalid packet is received
+            </summary>
+        </member>
+        <member name="T:QueryMaster.ParseException">
+            <summary>
+            The exception that is thrown when there is an error while parsing received packets
+            </summary>
+        </member>
+        <member name="T:QueryMaster.Server">
+            <summary>
+            Represents the connected server.Provides methods to query,listen to server logs and control the server
+            </summary>
+        </member>
+        <member name="M:QueryMaster.Server.GetInfo">
+            <summary>
+            Retrieves information about the server 
+            </summary>
+            <returns>Instance of ServerInfo class</returns>
+        </member>
+        <member name="M:QueryMaster.Server.GetPlayers">
+            <summary>
+            Retrieves information about the players currently on the server
+            </summary>
+            <returns>ReadOnlyCollection of Player instances</returns>
+        </member>
+        <member name="M:QueryMaster.Server.GetRules">
+            <summary>
+            Retrieves  server rules
+            </summary>
+            <returns>ReadOnlyCollection of Rule instances</returns>
+        </member>
+        <member name="M:QueryMaster.Server.GetLogs(System.Int32)">
+            <summary>
+            Listen to server logs.
+            </summary>
+            <param name="port">Local port</param>
+            <returns>Instance of Log class</returns>
+            <remarks>Receiver's socket address must be added to server's logaddress list before listening</remarks>
+        </member>
+        <member name="M:QueryMaster.Server.GetControl(System.String)">
+            <summary>
+            Gets valid rcon object that can be used to send rcon commands to server
+            </summary>
+            <param name="pass">Rcon password of server</param>
+            <returns>Instance of Rcon class</returns>
+        </member>
+        <member name="M:QueryMaster.Server.Ping">
+            <summary>
+            Gets Round-trip delay time
+            </summary>
+            <returns>Elapsed milliseconds</returns>
+            
+        </member>
+        <member name="M:QueryMaster.Server.Dispose">
+            <summary>
+            Disposes all the resources used by the server object
+            </summary>
+        </member>
+        <member name="P:QueryMaster.Server.IsObsolete">
+            <summary>
+            Returns true if server replies only to half life protocol messages.
+            </summary>
+        </member>
+        <member name="T:QueryMaster.IpFilter">
+            <summary>
+            Allows you to restrict the results to servers running a certain game.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.IpFilter.IsDedicated">
+            <summary>
+            Servers running dedicated 
+            </summary>
+        </member>
+        <member name="P:QueryMaster.IpFilter.IsSecure">
+            <summary>
+            Servers using anti-cheat technology.(eg:-VAC)
+            </summary>
+        </member>
+        <member name="P:QueryMaster.IpFilter.GameDirectory">
+            <summary>
+            Servers running the specified modification(ex. cstrike) 
+            </summary>
+        </member>
+        <member name="P:QueryMaster.IpFilter.Map">
+            <summary>
+            Servers running the specified map 
+            </summary>
+        </member>
+        <member name="P:QueryMaster.IpFilter.IsLinux">
+            <summary>
+            Servers running on a Linux platform 
+            </summary>
+        </member>
+        <member name="P:QueryMaster.IpFilter.IsNotEmpty">
+            <summary>
+            Servers that are not empty 
+            </summary>
+        </member>
+        <member name="P:QueryMaster.IpFilter.IsNotFull">
+            <summary>
+            Servers that are not full 
+            </summary>
+        </member>
+        <member name="P:QueryMaster.IpFilter.IsProxy">
+            <summary>
+            Servers that are spectator proxies 
+            </summary>
+        </member>
+        <member name="P:QueryMaster.IpFilter.NApp">
+            <summary>
+            Servers that are NOT running a game(AppId)(This was introduced to block Left 4 Dead games from the Steam Server Browser)
+            </summary>
+        </member>
+        <member name="P:QueryMaster.IpFilter.IsNoPlayers">
+            <summary>
+            Servers that are empty 
+            </summary>
+        </member>
+        <member name="P:QueryMaster.IpFilter.IsWhiteListed">
+            <summary>
+            Servers that are whitelisted 
+            </summary>
+        </member>
+        <member name="P:QueryMaster.IpFilter.Sv_Tags">
+            <summary>
+            Servers with all of the given tag(s) in sv_tags 
+            </summary>
+        </member>
+        <member name="P:QueryMaster.IpFilter.GameData">
+            <summary>
+            Servers with all of the given tag(s) in their 'hidden' tags (L4D2) 
+            </summary>
+        </member>
+        <member name="P:QueryMaster.IpFilter.GameDataOr">
+            <summary>
+            Servers with any of the given tag(s) in their 'hidden' tags (L4D2) 
+            </summary>
+        </member>
+        <member name="T:QueryMaster.LogEventArgs">
+            <summary>
+            Serves as base class for all EventArgs.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.LogEventArgs.Timestamp">
+            <summary>
+            Gets Timestamp.
+            </summary>
+        </member>
+        <member name="T:QueryMaster.ExceptionEventArgs">
+            <summary>
+            Provides data for Exception event.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.ExceptionEventArgs.LogLine">
+            <summary>
+            Gets Log line.
+            </summary>
+        </member>
+        <member name="T:QueryMaster.CvarEventArgs">
+            <summary>
+            Provides data for Server cvar event. 
+            </summary>
+        </member>
+        <member name="P:QueryMaster.CvarEventArgs.Cvar">
+            <summary>
+            Gets Cvar name.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.CvarEventArgs.Value">
+            <summary>
+            Gets Cvar Value.
+            </summary>
+        </member>
+        <member name="T:QueryMaster.LogStartEventArgs">
+            <summary>
+            Provides data log start event.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.LogStartEventArgs.FileName">
+            <summary>
+            Gets Filename.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.LogStartEventArgs.Game">
+            <summary>
+            Gets Game name.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.LogStartEventArgs.Protocol">
+            <summary>
+            Gets Protocol version.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.LogStartEventArgs.Release">
+            <summary>
+            Gets Release version.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.LogStartEventArgs.Build">
+            <summary>
+            Gets Build version.
+            </summary>
+        </member>
+        <member name="T:QueryMaster.MapLoadEventArgs">
+            <summary>
+            Provides data for map loaded event.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.MapLoadEventArgs.MapName">
+            <summary>
+            Gets Map name.
+            </summary>
+        </member>
+        <member name="T:QueryMaster.MapStartEventArgs">
+            <summary>
+            Provides data for map started event.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.MapStartEventArgs.MapCRC">
+            <summary>
+            Get map CRC value.
+            </summary>
+        </member>
+        <member name="T:QueryMaster.RconEventArgs">
+            <summary>
+            Provides data for rcon event.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.RconEventArgs.Challenge">
+            <summary>
+            Gets Challenge Id of remote client.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.RconEventArgs.Password">
+            <summary>
+            Gets Password.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.RconEventArgs.Command">
+            <summary>
+            Gets command sent by remote client.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.RconEventArgs.Ip">
+            <summary>
+            Gets IP-Address of client.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.RconEventArgs.Port">
+            <summary>
+            Gets Port number of client
+            </summary>
+        </member>
+        <member name="P:QueryMaster.RconEventArgs.IsValid">
+            <summary>
+            Returns true if password sent is valid.
+            </summary>
+        </member>
+        <member name="T:QueryMaster.ServerNameEventArgs">
+            <summary>
+            Provides data for servername event.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.ServerNameEventArgs.Name">
+            <summary>
+            Gets name of server.
+            </summary>
+        </member>
+        <member name="T:QueryMaster.ServerSayEventArgs">
+            <summary>
+            Provides data for server say event.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.ServerSayEventArgs.Message">
+            <summary>
+            Gets the message said by server.
+            </summary>
+        </member>
+        <member name="T:QueryMaster.PlayerEventArgs">
+            <summary>
+            Provides data for Playervalidate,playerenteredgame and player disconnected event.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.PlayerEventArgs.Player">
+            <summary>
+            Gets Player information.
+            </summary>
+        </member>
+        <member name="T:QueryMaster.ConnectEventArgs">
+            <summary>
+            Provides data for player connect event.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.ConnectEventArgs.Ip">
+            <summary>
+            Gets IP-Address of client.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.ConnectEventArgs.Port">
+            <summary>
+            Gets Port number of client.
+            </summary>
+        </member>
+        <member name="T:QueryMaster.KickEventArgs">
+            <summary>
+            Provides data for playerkicked event.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.KickEventArgs.Kicker">
+            <summary>
+            Gets the name of the admin who kicked the player.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.KickEventArgs.Message">
+            <summary>
+            Gets the message sent as a reason for the kick.
+            </summary>
+        </member>
+        <member name="T:QueryMaster.SuicideEventArgs">
+            <summary>
+            Provides data for suicide event.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.SuicideEventArgs.Weapon">
+            <summary>
+            Gets the weapon name.
+            </summary>
+        </member>
+        <member name="T:QueryMaster.TeamSelectionEventArgs">
+            <summary>
+            Provides data for team selection event.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.TeamSelectionEventArgs.Team">
+            <summary>
+            Gets the team name.
+            </summary>
+        </member>
+        <member name="T:QueryMaster.RoleSelectionEventArgs">
+            <summary>
+            Provides data for role selection event.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.RoleSelectionEventArgs.Role">
+            <summary>
+            Gets the role name.
+            </summary>
+        </member>
+        <member name="T:QueryMaster.NameChangeEventArgs">
+            <summary>
+            Provides data for player name change event.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.NameChangeEventArgs.NewName">
+            <summary>
+            Gets player's new name.
+            </summary>
+        </member>
+        <member name="T:QueryMaster.KillEventArgs">
+            <summary>
+            Provides data for player killed event.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.KillEventArgs.Victim">
+            <summary>
+            Gets Victim player's info.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.KillEventArgs.Weapon">
+            <summary>
+            Gets the name of the weapon used.
+            </summary>
+        </member>
+        <member name="T:QueryMaster.InjureEventArgs">
+            <summary>
+            Provides data for player injured event.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.InjureEventArgs.Damage">
+            <summary>
+            Gets damage.
+            </summary>
+        </member>
+        <member name="T:QueryMaster.PlayerOnPlayerEventArgs">
+            <summary>
+            Provides data for PlayerOnPLayerTriggered event.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.PlayerOnPlayerEventArgs.Source">
+            <summary>
+            Gets info about the player who triggered an action.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.PlayerOnPlayerEventArgs.Target">
+            <summary>
+            Gets info about the player on whom the ation was triggered.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.PlayerOnPlayerEventArgs.Action">
+            <summary>
+            Gets the name of the  action performed.
+            </summary>
+        </member>
+        <member name="T:QueryMaster.PlayerActionEventArgs">
+            <summary>
+            Provides data for Player action event.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.PlayerActionEventArgs.Action">
+            <summary>
+            Gets the name of the action performed.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.PlayerActionEventArgs.ExtraInfo">
+            <summary>
+            Gets additional data present in the message.
+            </summary>
+        </member>
+        <member name="T:QueryMaster.TeamActionEventArgs">
+            <summary>
+            Provides data for team action event.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.TeamActionEventArgs.Team">
+            <summary>
+            Gets the name of the team who triggered an action.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.TeamActionEventArgs.Action">
+            <summary>
+            Gets the name of the action performed.
+            </summary>
+        </member>
+        <member name="T:QueryMaster.WorldActionEventArgs">
+            <summary>
+            Provides data for WorldAction event.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.WorldActionEventArgs.Action">
+            <summary>
+            Gets the name of the action performed.
+            </summary>
+        </member>
+        <member name="T:QueryMaster.ChatEventArgs">
+            <summary>
+            Provides data for Say and TeamSay events.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.ChatEventArgs.Message">
+            <summary>
+            Gets the message said by player.
+            </summary>
+        </member>
+        <member name="T:QueryMaster.TeamAllianceEventArgs">
+            <summary>
+            Provides data for TeamAlliance event.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.TeamAllianceEventArgs.Team1">
+            <summary>
+            Gets the name of 1st team.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.TeamAllianceEventArgs.Team2">
+            <summary>
+            Gets the name of 2nd team.
+            </summary>
+        </member>
+        <member name="T:QueryMaster.TeamScoreReportEventArgs">
+            <summary>
+            Provides data for TeamScoreReport event.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.TeamScoreReportEventArgs.Team">
+            <summary>
+            Gets the name of team.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.TeamScoreReportEventArgs.Score">
+            <summary>
+            Gets the score of team.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.TeamScoreReportEventArgs.PlayerCount">
+            <summary>
+            Gets the player count.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.TeamScoreReportEventArgs.ExtraInfo">
+            <summary>
+            Gets the additional data present in the message.
+            </summary>
+        </member>
+        <member name="T:QueryMaster.PrivateChatEventArgs">
+            <summary>
+            Provides data for PrivateChat event.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.PrivateChatEventArgs.Sender">
+            <summary>
+            Gets Sender Player's info.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.PrivateChatEventArgs.Receiver">
+            <summary>
+            Gets Receiver Player's info.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.PrivateChatEventArgs.Message">
+            <summary>
+            Get the message sent by sender.
+            </summary>
+        </member>
+        <member name="T:QueryMaster.PlayerScoreReportEventArgs">
+            <summary>
+            Provides data for PlayerScoreReport event.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.PlayerScoreReportEventArgs.Score">
+            <summary>
+            Gets player score.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.PlayerScoreReportEventArgs.ExtraInfo">
+            <summary>
+            Gets the additional data present in the message.
+            </summary>
+        </member>
+        <member name="T:QueryMaster.WeaponEventArgs">
+            <summary>
+            Provides data for WeaponSelect and WeaponAcquired event.
+            </summary>
+        </member>
+        <member name="P:QueryMaster.WeaponEventArgs.Weapon">
+            <summary>
+            Gets name of weapon.
+            </summary>
+        </member>
+        <member name="T:QueryMaster.LogCallback">
+            <summary>
+            Encapsulates a method that has a parameter of type string which is the log message received from server.
+            Invoked when a log message is received from server.
+            </summary>
+            <param name="log">Received log message.</param>
+        </member>
+        <member name="T:QueryMaster.Logs">
+            <summary>
+            Provides methods to listen to logs and to set up events on desired type of log message.
+            </summary>
+        </member>
+        <member name="M:QueryMaster.Logs.Listen(QueryMaster.LogCallback)">
+            <summary>
+            Listen to logs sent by the server
+            </summary>
+            <param name="callback">Called when a log message is received</param>
+        </member>
+        <member name="M:QueryMaster.Logs.Dispose">
+            <summary>
+            Disposes the resources used by log instance
+            </summary>
+        </member>
+        <member name="E:QueryMaster.Logs.CvarStartMsg">
+            <summary>
+            Occurs when Server cvar starts(In TFC, if tfc_clanbattle is 1, this doesn't happen.).
+            </summary>
+        </member>
+        <member name="E:QueryMaster.Logs.ServerCvar">
+            <summary>
+            Occurs when someone changes a cvar over rcon.
+            </summary>
+        </member>
+        <member name="E:QueryMaster.Logs.CvarEndMsg">
+            <summary>
+            Occurs when Server cvar ends(In TFC, if tfc_clanbattle is 0, this doesn't happen.).
+            </summary>
+        </member>
+        <member name="E:QueryMaster.Logs.LogFileStarted">
+            <summary>
+            Occurs when Logging to file is started.
+            </summary>
+        </member>
+        <member name="E:QueryMaster.Logs.LogFileClosed">
+            <summary>
+            Occurs when Log file is closed.
+            </summary>
+        </member>
+        <member name="E:QueryMaster.Logs.MapLoaded">
+            <summary>
+            Occurs when map is loaded.
+            </summary>
+        </member>
+        <member name="E:QueryMaster.Logs.MapStarted">
+            <summary>
+            Occurs when Map starts.
+            </summary>
+        </member>
+        <member name="E:QueryMaster.Logs.RconMsg">
+            <summary>
+            Occurs when an rcon message is sent to server.
+            </summary>
+        </member>
+        <member name="E:QueryMaster.Logs.ServerName">
+            <summary>
+            Occurs when server name is displayed.
+            </summary>
+        </member>
+        <member name="E:QueryMaster.Logs.ServerSay">
+            <summary>
+            Occurs when Server says.
+            </summary>
+        </member>
+        <member name="E:QueryMaster.Logs.PlayerConnected">
+            <summary>
+            Occurs when a player is connected.
+            </summary>
+        </member>
+        <member name="E:QueryMaster.Logs.PlayerValidated">
+            <summary>
+            Occurs when a player is validated.
+            </summary>
+        </member>
+        <member name="E:QueryMaster.Logs.PlayerEnteredGame">
+            <summary>
+            Occurs when a player is enters game.
+            </summary>
+        </member>
+        <member name="E:QueryMaster.Logs.PlayerDisConnected">
+            <summary>
+            Occurs when a player is disconnected.
+            </summary>
+        </member>
+        <member name="E:QueryMaster.Logs.PlayerKicked">
+            <summary>
+            Occurs when a player is kicked.
+            </summary>
+        </member>
+        <member name="E:QueryMaster.Logs.PlayerSuicided">
+            <summary>
+            Occurs when a player commit suicide.
+            </summary>
+        </member>
+        <member name="E:QueryMaster.Logs.PlayerJoinedTeam">
+            <summary>
+            Occurs when a player Join team.
+            </summary>
+        </member>
+        <member name="E:QueryMaster.Logs.PlayerChangedRole">
+            <summary>
+            Occurs when a player change role.
+            </summary>
+        </member>
+        <member name="E:QueryMaster.Logs.PlayerChangedName">
+            <summary>
+            Occurs when a player changes name.
+            </summary>
+        </member>
+        <member name="E:QueryMaster.Logs.PlayerKilled">
+            <summary>
+            Occurs when a player is killed.
+            </summary>
+        </member>
+        <member name="E:QueryMaster.Logs.PlayerInjured">
+            <summary>
+            Occurs when a player is injured.
+            </summary>
+        </member>
+        <member name="E:QueryMaster.Logs.PlayerOnPLayerTriggered">
+            <summary>
+            Occurs when a player triggers  something on another player(in TFC this event may cover medic healings and infections, sentry gun destruction, spy uncovering.etc).
+            </summary>
+        </member>
+        <member name="E:QueryMaster.Logs.PlayerTriggered">
+            <summary>
+             Occurs when a player triggers an action.
+            </summary>
+        </member>
+        <member name="E:QueryMaster.Logs.TeamTriggered">
+            <summary>
+             Occurs when a team triggers an action(eg:team winning).
+            </summary>
+        </member>
+        <member name="E:QueryMaster.Logs.WorldTriggered">
+            <summary>
+             Occurs when server triggers an action(eg:roundstart,game events).
+            </summary>
+        </member>
+        <member name="E:QueryMaster.Logs.Say">
+            <summary>
+             Occurs when a player says. 
+            </summary>
+        </member>
+        <member name="E:QueryMaster.Logs.TeamSay">
+            <summary>
+             Occurs when a player uses teamsay.
+            </summary>
+        </member>
+        <member name="E:QueryMaster.Logs.TeamAlliance">
+            <summary>
+             Occurs when a team forms alliance with another team.
+            </summary>
+        </member>
+        <member name="E:QueryMaster.Logs.TeamScoreReport">
+            <summary>
+             Occurs when Team Score Report is displayed at round end.
+            </summary>
+        </member>
+        <member name="E:QueryMaster.Logs.PrivateChat">
+            <summary>
+            Occurs when a private message is sent.
+            </summary>
+        </member>
+        <member name="E:QueryMaster.Logs.PlayerScoreReport">
+            <summary>
+            Occurs when Player Score Report is displayed at round end.
+            </summary>
+        </member>
+        <member name="E:QueryMaster.Logs.PlayerSelectedWeapon">
+            <summary>
+            Occurs when Player selects a weapon.
+            </summary>
+        </member>
+        <member name="E:QueryMaster.Logs.PlayerAcquiredWeapon">
+            <summary>
+            Occurs when Player acquires a weapon.
+            </summary>
+        </member>
+        <member name="E:QueryMaster.Logs.ShutDown">
+            <summary>
+            Occurs when server shuts down.
+            </summary>
+        </member>
+        <member name="E:QueryMaster.Logs.Exception">
+            <summary>
+            Occurs when a log message cannot be parsed.
+            </summary>
+        </member>
+        <member name="T:QueryMaster.MasterQuery">
+            <summary>
+            Provides methods to create MasterServer instance
+            </summary>
+        </member>
+        <member name="F:QueryMaster.MasterQuery.GoldSrcServer">
+            <summary>
+            Master server for Gold Source games
+            </summary>
+        </member>
+        <member name="F:QueryMaster.MasterQuery.SourceServer">
+            <summary>
+            Master server for  Source games
+            </summary>
+        </member>
+        <member name="M:QueryMaster.MasterQuery.GetMasterServerInstance(QueryMaster.EngineType)">
+            <summary>
+            Gets the appropriate  masterserver query instance
+            </summary>
+            <param name="type">Engine used by server</param>
+            <returns>Master server instance</returns>
+        </member>
+        <member name="T:QueryMaster.MasterIpCallback">
+            <summary>
+            Encapsulates a method that has a parameter of type ReadOnlyCollection which accepts IPEndPoint instances.
+            Invoked when a reply from Master Server is received.
+            </summary>
+            <param name="endPoints">Server Sockets</param>
+        </member>
+        <member name="T:QueryMaster.MasterServer">
+            <summary>
+            Provides methods to query master server.
+            </summary>
+        </member>
+        <member name="M:QueryMaster.MasterServer.GetAddresses(QueryMaster.Region,QueryMaster.MasterIpCallback,QueryMaster.IpFilter)">
+            <summary>
+            Starts receiving socket addresses of servers.
+            </summary>
+            <param name="region">The region of the world that you wish to find servers in.</param>
+            <param name="callback">Called when a batch of Socket addresses are received.</param>
+            <param name="filter">Used to set filter on the type of server required.</param>
+        </member>
+        <member name="M:QueryMaster.MasterServer.Dispose">
+            <summary>
+            Disposes all the resources used MasterServer instance
+            </summary>
+        </member>
+        <member name="T:QueryMaster.Rcon">
+            <summary>
+            Provides methods to access server using rcon password.
+            </summary>
+        </member>
+        <member name="M:QueryMaster.Rcon.SendCommand(System.String)">
+            <summary>
+            Send a Command to server.
+            </summary>
+            <param name="cmd">Server command.</param>
+            <returns>Reply from server(string).</returns>
+        </member>
+        <member name="M:QueryMaster.Rcon.AddlogAddress(System.String,System.UInt16)">
+            <summary>
+            Add a client socket to server's logaddress list.
+            </summary>
+            <param name="ip">IP-Address of client.</param>
+            <param name="port">Port number of client.</param>
+        </member>
+        <member name="M:QueryMaster.Rcon.RemovelogAddress(System.String,System.UInt16)">
+            <summary>
+            Delete a client socket to server's logaddress list.
+            </summary>
+            <param name="ip">IP-Address of client.</param>
+            <param name="port">Port number of client.</param>
+        </member>
+        <member name="M:QueryMaster.Rcon.Dispose">
+            <summary>
+            Disposes rcon Object
+            </summary>
+        </member>
+        <member name="T:QueryMaster.ServerQuery">
+            <summary>
+            Provides methods to create Server instance
+            </summary>
+        </member>
+        <member name="M:QueryMaster.ServerQuery.GetServerInstance(QueryMaster.EngineType,System.String,System.UInt16,System.Nullable{System.Boolean},System.Int32,System.Int32)">
+            <summary>
+            Returns an object that represents the server
+            </summary>
+            <param name="type">Base engine which game uses</param>
+            <param name="ip">IP-Address of server</param>
+            <param name="port">Port number of server</param>
+            <param name="isObsolete">Obsolete Gold Source servers reply only to half life protocol.if set to true then it would use half life protocol.If set to null,then protocol is identified at runtime[Default : false]</param>
+            <param name="sendTimeOut">Sets Socket's SendTimeout Property.</param>
+            <param name="receiveTimeOut">Sets Socket's ReceiveTimeout.</param>
+            <returns>Instance of server class that represents the connected server.</returns>
+        </member>
+        <member name="M:QueryMaster.ServerQuery.GetServerInstance(QueryMaster.EngineType,System.Net.IPEndPoint,System.Nullable{System.Boolean},System.Int32,System.Int32)">
+            <summary>
+            Returns an object that represents the server
+            </summary>
+            <param name="type">Base engine which game uses</param>
+            <param name="endPoint">Socket address of server</param>
+            <param name="isObsolete">Obsolete Gold Source servers reply only to half life protocol.if set to true then it would use half life protocol.If set to null,then protocol is identified at runtime.</param>
+            <param name="sendTimeOut">Sets Socket's SendTimeout Property.</param>
+            <param name="receiveTimeOut">Sets Socket's ReceiveTimeout.</param>
+            <returns>Instance of server class that represents the connected server</returns>
+        </member>
+        <member name="M:QueryMaster.ServerQuery.GetServerInstance(QueryMaster.Game,System.Net.IPEndPoint,System.Nullable{System.Boolean},System.Int32,System.Int32)">
+            <summary>
+            Returns an object that represents the server
+            </summary>
+            <param name="game">Name of game</param>
+            <param name="endPoint">Socket address of server</param>
+            <param name="isObsolete">Obsolete Gold Source servers reply only to half life protocol.if set to true then it would use half life protocol.If set to null,then protocol is identified at runtime.</param>
+            <param name="sendTimeOut">Sets Socket's SendTimeout Property.</param>
+            <param name="receiveTimeOut">Sets Socket's ReceiveTimeout.</param>
+            <returns>Instance of server class that represents the connected server</returns>
+        </member>
+        <member name="M:QueryMaster.ServerQuery.GetServerInstance(QueryMaster.Game,System.String,System.UInt16,System.Nullable{System.Boolean},System.Int32,System.Int32)">
+            <summary>
+            Returns an object that represents the server
+            </summary>
+            <param name="game">Name of game</param>
+            <param name="ip">IP-Address of server</param>
+            <param name="port">Port number of server</param>
+            <param name="isObsolete">Obsolete Gold Source servers reply only to half life protocol.if set to true then it would use half life protocol.If set to null,then protocol is identified at runtime.</param>
+            <param name="sendTimeOut">Sets Socket's SendTimeout Property.</param>
+            <param name="receiveTimeOut">Sets Socket's ReceiveTimeout.</param>
+            <returns>Instance of server class that represents the connected server</returns>
+        </member>
+    </members>
+</doc>
