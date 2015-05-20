@@ -8,3 +8,6 @@ ServerBrowser/obj/*
 *.suo
 *.user
 *.DotSettings
+SteamServerBrowser_*/*
+SteamServerBrowser_*.zip
+Sourceforge/*
