@@ -6,7 +6,7 @@
       <Value Profile="(Default)">Office 2010 Black</Value>
     </Setting>
     <Setting Name="Branding" Type="System.String" Scope="User">
-      <Value Profile="(Default)">phgp</Value>
+      <Value Profile="(Default)" />
     </Setting>
     <Setting Name="LogoHeight" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">75</Value>

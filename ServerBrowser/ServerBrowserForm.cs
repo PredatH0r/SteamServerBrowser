@@ -8,11 +8,11 @@ using System.Net;
 using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
-using System.Linq;
 using DevExpress.LookAndFeel;
 using DevExpress.Utils;
 using DevExpress.XtraBars.Docking;
 using DevExpress.XtraEditors;
+using DevExpress.XtraGrid.Columns;
 using QueryMaster;
 
 namespace ServerBrowser
@@ -35,64 +35,12 @@ namespace ServerBrowser
     };
     #endregion
 
-    #region class ServerRow
-    public class ServerRow
+    #region Steam AppIds
+    public static class AppIds
     {
-      public IPEndPoint EndPoint { get; private set; }
-      public ServerInfo ServerInfo { get; set; }
-      public List<Player> Players { get; set; }
-      public string Status { get; set; }
-      public int Retries { get; set; }
-      public PlayerCountInfo PlayerCount { get; private set; }
-
-      public ServerRow(IPEndPoint ep)
-      {
-        this.EndPoint = ep;
-        this.PlayerCount = new PlayerCountInfo(this);
-      }
-    }
-    #endregion
-
-    #region class PlayerCountInfo
-    public class PlayerCountInfo : IComparable
-    {
-      private readonly ServerRow row;
-
-      public int RealPlayers { get; private set; }
-      public int Bots { get; private set; }
-      public int MaxPlayers { get; private set; }
-
-      public PlayerCountInfo(ServerRow row)
-      {
-        this.row = row;
-        this.Update();
-      }
-
-      public void Update()
-      {
-        if (row.ServerInfo == null)
-          return;
-        Bots = row.ServerInfo.Bots;
-        MaxPlayers = row.ServerInfo.MaxPlayers;
-        RealPlayers = row.Players == null ? row.ServerInfo.Players : row.Players.Count(p => !string.IsNullOrEmpty(p.Name));
-      }
-
-      public int CompareTo(object b)
-      {
-        PlayerCountInfo other = (PlayerCountInfo)b;
-        if (this.RealPlayers < other.RealPlayers) return -1;
-        if (this.RealPlayers > other.RealPlayers) return +1;
-        if (this.Bots < other.Bots) return -1;
-        if (this.Bots > other.Bots) return +1;
-        if (this.MaxPlayers < other.MaxPlayers) return -1;
-        if (this.MaxPlayers > other.MaxPlayers) return +1;
-        return 0;
-      }
-
-      public override string ToString()
-      {
-        return this.RealPlayers + "+" + this.Bots + " / " + this.MaxPlayers;
-      }
+      public const int Reflex = 328070;
+      public const int Toxikk = 324810;
+      public const int QlTesting = 344320;
     }
     #endregion
 
@@ -100,6 +48,10 @@ namespace ServerBrowser
     private readonly List<ServerRow> servers = new List<ServerRow>();
     private ServerRow lastSelectedServer;
     private volatile bool shutdown;
+    private volatile int steamAppId;
+    private readonly Dictionary<int, GameExtension> extenders = new Dictionary<int, GameExtension>();
+    private GameExtension currentExtension;
+    private int ignoreUiEvents;
 
     #region ctor()
     public ServerBrowserForm()
@@ -125,27 +77,23 @@ namespace ServerBrowser
     }
     #endregion
 
-    #region FillSteamServerRegions()
-    private void FillSteamServerRegions()
-    {
-      for (int i=0; i<steamRegions.Length; i+=2)
-        this.comboRegion.Properties.Items.Add(steamRegions[i]);
-      this.comboRegion.SelectedIndex = 0;
-      this.comboRegion.Properties.DropDownRows = steamRegions.Length/2;
-    }
-    #endregion
-
     #region OnLoad()
     protected override void OnLoad(EventArgs e)
     {
       base.OnLoad(e);
 
+      ++this.ignoreUiEvents;
+
+      this.InitGameInfoExtenders();
       this.InitBranding();
 
       if (this.btnSkin.Visible)
         this.LoadBonusSkins();
 
-      FillSteamServerRegions(); // will cause UpdateServerList due to fired events
+      FillSteamServerRegions();
+
+      --this.ignoreUiEvents;
+      this.UpdateServerList();
     }
     #endregion
 
@@ -155,6 +103,17 @@ namespace ServerBrowser
       this.shutdown = true;
       base.OnClosed(e);
     }
+    #endregion
+
+    #region InitGameInfoExtenders()
+
+    private void InitGameInfoExtenders()
+    {
+      extenders.Add(AppIds.Toxikk, new Toxikk());
+      extenders.Add(AppIds.Reflex, new Reflex());
+      extenders.Add(AppIds.QlTesting, new QuakeLive());
+    }
+
     #endregion
 
     #region InitBranding()
@@ -169,10 +128,6 @@ namespace ServerBrowser
       if (Properties.Settings.Default.Branding == "phgp")
       {
         this.brandingUrl = "http://www.phgp.tv/";
-
-        this.Width -= this.panelServerDetails.Width;
-        this.panelServerDetails.DockTo(this.panelPlayers, DockingStyle.Fill);
-        this.panelPlayers.Show();
         
         var img = new Bitmap(Properties.Resources.phgp);
         this.picLogo.Image = img;
@@ -220,9 +175,57 @@ namespace ServerBrowser
     }
     #endregion
 
+    #region FillSteamServerRegions()
+    private void FillSteamServerRegions()
+    {
+      for (int i = 0; i < steamRegions.Length; i += 2)
+        this.comboRegion.Properties.Items.Add(steamRegions[i]);
+      this.comboRegion.SelectedIndex = 0;
+      this.comboRegion.Properties.DropDownRows = steamRegions.Length / 2;
+    }
+    #endregion
+
+    #region SteamAppId
+    private int SteamAppID
+    {
+      get { return this.steamAppId; }
+      set
+      {
+        if (value == this.steamAppId)
+          return;
+        this.steamAppId = value;
+        this.CreatedColumnsForGameExtender();
+        this.panelRules.Visibility = this.currentExtension.SupportsRules ? DockVisibility.Visible : DockVisibility.Hidden;
+      }
+    }
+    #endregion
+
+    #region CreatedColumnsForGameExtender()
+    private void CreatedColumnsForGameExtender()
+    {
+      this.gvServers.BeginUpdate();
+      var cols = new List<GridColumn>(this.gvServers.Columns);
+      foreach (var col in cols)
+      {
+        if (col.Tag != null)
+          this.gvServers.Columns.Remove(col);
+        else
+          col.Visible = true;
+      }
+
+      if (!extenders.TryGetValue(this.SteamAppID, out this.currentExtension))
+        this.currentExtension = new GameExtension();
+      this.currentExtension.CustomizeGridColumns(gvServers);
+      this.gvServers.EndUpdate();
+    }
+    #endregion
+
     #region UpdateServerList()
     private void UpdateServerList()
     {
+      if (this.ignoreUiEvents > 0)
+        return;
+
       this.txtStatus.Caption = "Requesting server list from master server...";
       this.gvServers.BeginDataUpdate();
       servers.Clear();
@@ -232,15 +235,20 @@ namespace ServerBrowser
       IpFilter filter = new IpFilter();
       int appId;
       int.TryParse(this.txtAppId.Text, out appId);
+      this.SteamAppID = appId;
       filter.App = (Game) appId;
       var region = (QueryMaster.Region)steamRegions[this.comboRegion.SelectedIndex * 2 + 1];
-      master.GetAddresses(region, OnMasterServerReceive, filter);
+      master.GetAddresses(region, endpoints => OnMasterServerReceive(endpoints, appId), filter);
     }
     #endregion
 
     #region OnMasterServerReceive()
-    private void OnMasterServerReceive(ReadOnlyCollection<IPEndPoint> endPoints)
+    private void OnMasterServerReceive(ReadOnlyCollection<IPEndPoint> endPoints, int queryAppId)
     {
+      // ignore results from older queries with a different appId
+      if (queryAppId != this.SteamAppID)
+        return;
+
       string statusText;
       if (endPoints == null)
         statusText = "Master server request timed out";
@@ -292,11 +300,11 @@ namespace ServerBrowser
     private void UpdateServerDetails(ServerRow row, Action callback = null)
     {     
       Server server = ServerQuery.GetServerInstance(EngineType.Source, row.EndPoint, false, 500, 500);
-      string status = UpdateServerInfo(row, server) && UpdatePlayers(row, server) ? "ok" : "timeout";
+      string status = UpdateServerInfo(row, server) && UpdatePlayers(row, server) && UpdateRules(row, server) ? "ok" : "timeout";
       if (row.Retries > 0)
         status += " (" + row.Retries + ")";
       row.Status = status;
-      row.PlayerCount.Update();
+      row.Update();
 
       if (this.shutdown)
         return;
@@ -344,6 +352,26 @@ namespace ServerBrowser
     }
     #endregion
 
+    #region UpdateRules()
+    private bool UpdateRules(ServerRow row, Server server)
+    {
+      if (!this.currentExtension.SupportsRules)
+        return true;
+
+      for (int attempt = 0; attempt < 3; attempt++, row.Retries++)
+      {
+        try
+        {
+          row.Status = "try " + (row.Retries + 1);
+          row.Rules = new List<Rule>(server.GetRules());
+          return true;
+        }
+        catch { }
+      }
+      return false;
+    }
+    #endregion
+
     #region EnumerateProps()
     private List<Tuple<string, object>> EnumerateProps(params object[] objects)
     {
@@ -363,6 +391,15 @@ namespace ServerBrowser
     }
     #endregion
 
+    #region UpdateGridDataSources()
+    private void UpdateGridDataSources(ServerRow row)
+    {
+      this.gcDetails.DataSource = EnumerateProps(row.ServerInfo, row.ServerInfo == null ? null : row.ServerInfo.Extra);
+      this.gcPlayers.DataSource = row.Players;
+      this.gcRules.DataSource = row.Rules;
+    }
+    #endregion
+
 
     #region picLogo_Click
     private void picLogo_Click(object sender, EventArgs e)
@@ -379,7 +416,12 @@ namespace ServerBrowser
     #region rbGame_CheckedChanged
     private void rbGame_CheckedChanged(object sender, EventArgs e)
     {
-      this.txtAppId.Text = this.rbQuakeLive.Checked ? "344320" : this.rbReflex.Checked ? "328070" : this.rbToxikk.Checked ? "324810" : "";
+      this.txtAppId.Text = 
+        this.rbQuakeLive.Checked ? AppIds.QlTesting.ToString() : 
+        this.rbReflex.Checked ? AppIds.Reflex.ToString() : 
+        this.rbToxikk.Checked ? AppIds.Toxikk.ToString() : 
+        "";
+      this.UpdateServerList();
     }
     #endregion
 
@@ -397,6 +439,14 @@ namespace ServerBrowser
     }
     #endregion
 
+    #region gvServers_CustomUnboundColumnData
+    private void gvServers_CustomUnboundColumnData(object sender, DevExpress.XtraGrid.Views.Base.CustomColumnDataEventArgs e)
+    {
+      if (e.IsGetData)
+        e.Value = ((ServerRow)e.Row).GetExtenderCellValue(this.currentExtension, e.Column.FieldName);
+    }
+    #endregion
+
     #region gvServers_FocusedRowChanged
     private void gvServers_FocusedRowChanged(object sender, DevExpress.XtraGrid.Views.Base.FocusedRowChangedEventArgs e)
     {
@@ -407,8 +457,7 @@ namespace ServerBrowser
           return;
 
         this.lastSelectedServer = row;
-        this.gcDetails.DataSource = EnumerateProps(row.ServerInfo, row.ServerInfo == null ? null : row.ServerInfo.Extra);
-        this.gcPlayers.DataSource = row.Players;
+        this.UpdateGridDataSources(row);
 
         if (!this.cbAutoUpdateSelectedServer.Checked)
           return;
@@ -416,13 +465,10 @@ namespace ServerBrowser
         Application.DoEvents();
         row.Status = "updating...";
         ThreadPool.QueueUserWorkItem(dummy =>
-          UpdateServerDetails(row, () =>
+          this.UpdateServerDetails(row, () =>
           {
             if (this.gvServers.GetRow(this.gvServers.FocusedRowHandle) == row)
-            {
-              this.gcDetails.DataSource = EnumerateProps(row.ServerInfo, row.ServerInfo == null ? null : row.ServerInfo.Extra);
-              this.gcPlayers.DataSource = row.Players;
-            }
+              this.UpdateGridDataSources(row);
           }));
       }
       catch (Exception ex)
@@ -430,6 +476,7 @@ namespace ServerBrowser
         this.txtStatus.Caption = ex.Message;
       }
     }
+
     #endregion
 
     #region gvServers_DoubleClick
@@ -485,5 +532,6 @@ namespace ServerBrowser
         e.Cancel = true;
     }
     #endregion
+
   }
 }
