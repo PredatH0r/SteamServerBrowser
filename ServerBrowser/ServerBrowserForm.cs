@@ -416,6 +416,9 @@ namespace ServerBrowser
     #region rbGame_CheckedChanged
     private void rbGame_CheckedChanged(object sender, EventArgs e)
     {
+      if (!((CheckEdit)sender).Checked) // event is fired twice... for the radio button that get unchecked and the button that gets checked
+        return;
+
       this.txtAppId.Text = 
         this.rbQuakeLive.Checked ? AppIds.QlTesting.ToString() : 
         this.rbReflex.Checked ? AppIds.Reflex.ToString() : 
