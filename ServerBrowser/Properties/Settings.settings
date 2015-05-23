@@ -17,5 +17,11 @@
     <Setting Name="FontName" Type="System.String" Scope="User">
       <Value Profile="(Default)">Segoe UI</Value>
     </Setting>
+    <Setting Name="InitialGameID" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">324810</Value>
+    </Setting>
+    <Setting Name="FavGameIDs" Type="System.String" Scope="User">
+      <Value Profile="(Default)">324810,328070,440</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

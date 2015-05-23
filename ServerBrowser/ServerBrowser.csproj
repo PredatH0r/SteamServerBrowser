@@ -140,6 +140,9 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="SkinPicker.resx">
+      <DependentUpon>SkinPicker.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="app.config" />
     <None Include="CodeSigning.cmd" />
     <None Include="Properties\DataSources\Form1.ServerRow.datasource" />

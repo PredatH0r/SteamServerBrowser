@@ -7,9 +7,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Steam Game Server Browser")]
 [assembly: AssemblyDescription("Steam Game Server Browser")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("PredatH0r (predathor@gmx.at)")]
+[assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Steam Game Server Browser")]
-[assembly: AssemblyCopyright("free to copy")]
+[assembly: AssemblyCopyright("PredatH0r (predathor@gmx.at)")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 // Setting ComVisible to false makes the types in this assembly not visible 

@@ -82,5 +82,29 @@ namespace ServerBrowser.Properties {
                 this["FontName"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("324810")]
+        public int InitialGameID {
+            get {
+                return ((int)(this["InitialGameID"]));
+            }
+            set {
+                this["InitialGameID"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("324810,328070,440")]
+        public string FavGameIDs {
+            get {
+                return ((string)(this["FavGameIDs"]));
+            }
+            set {
+                this["FavGameIDs"] = value;
+            }
+        }
     }
 }

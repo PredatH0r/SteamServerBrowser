@@ -36,11 +36,9 @@ namespace ServerBrowser
       this.colKey = new DevExpress.XtraGrid.Columns.GridColumn();
       this.colValue = new DevExpress.XtraGrid.Columns.GridColumn();
       this.comboRegion = new DevExpress.XtraEditors.ComboBoxEdit();
-      this.txtAppId = new DevExpress.XtraEditors.TextEdit();
-      this.rbCustom = new DevExpress.XtraEditors.CheckEdit();
-      this.rbToxikk = new DevExpress.XtraEditors.CheckEdit();
-      this.rbReflex = new DevExpress.XtraEditors.CheckEdit();
-      this.rbQuakeLive = new DevExpress.XtraEditors.CheckEdit();
+      this.rbFavGame2 = new DevExpress.XtraEditors.CheckEdit();
+      this.rbFavGame1 = new DevExpress.XtraEditors.CheckEdit();
+      this.rbFavGame3 = new DevExpress.XtraEditors.CheckEdit();
       this.gcPlayers = new DevExpress.XtraGrid.GridControl();
       this.dsPlayer = new System.Windows.Forms.BindingSource(this.components);
       this.gvPlayers = new DevExpress.XtraGrid.Views.Grid.GridView();
@@ -52,6 +50,7 @@ namespace ServerBrowser
       this.gvServers = new DevExpress.XtraGrid.Views.Grid.GridView();
       this.colEndPoint = new DevExpress.XtraGrid.Columns.GridColumn();
       this.colName = new DevExpress.XtraGrid.Columns.GridColumn();
+      this.colDedicated = new DevExpress.XtraGrid.Columns.GridColumn();
       this.colPrivate = new DevExpress.XtraGrid.Columns.GridColumn();
       this.repositoryItemCheckEdit1 = new DevExpress.XtraEditors.Repository.RepositoryItemCheckEdit();
       this.colDescription = new DevExpress.XtraGrid.Columns.GridColumn();
@@ -93,16 +92,16 @@ namespace ServerBrowser
       this.labelControl3 = new DevExpress.XtraEditors.LabelControl();
       this.labelControl2 = new DevExpress.XtraEditors.LabelControl();
       this.panelGame = new DevExpress.XtraEditors.PanelControl();
+      this.labelControl5 = new DevExpress.XtraEditors.LabelControl();
+      this.labelControl4 = new DevExpress.XtraEditors.LabelControl();
+      this.comboGames = new DevExpress.XtraEditors.ComboBoxEdit();
       this.picLogo = new DevExpress.XtraEditors.PictureEdit();
-      this.colDedicated = new DevExpress.XtraGrid.Columns.GridColumn();
       ((System.ComponentModel.ISupportInitialize)(this.gcDetails)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.gvDetails)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.comboRegion.Properties)).BeginInit();
-      ((System.ComponentModel.ISupportInitialize)(this.txtAppId.Properties)).BeginInit();
-      ((System.ComponentModel.ISupportInitialize)(this.rbCustom.Properties)).BeginInit();
-      ((System.ComponentModel.ISupportInitialize)(this.rbToxikk.Properties)).BeginInit();
-      ((System.ComponentModel.ISupportInitialize)(this.rbReflex.Properties)).BeginInit();
-      ((System.ComponentModel.ISupportInitialize)(this.rbQuakeLive.Properties)).BeginInit();
+      ((System.ComponentModel.ISupportInitialize)(this.rbFavGame2.Properties)).BeginInit();
+      ((System.ComponentModel.ISupportInitialize)(this.rbFavGame1.Properties)).BeginInit();
+      ((System.ComponentModel.ISupportInitialize)(this.rbFavGame3.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.gcPlayers)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.dsPlayer)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.gvPlayers)).BeginInit();
@@ -135,6 +134,7 @@ namespace ServerBrowser
       this.panelOptions.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.panelGame)).BeginInit();
       this.panelGame.SuspendLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.comboGames.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.picLogo.Properties)).BeginInit();
       this.SuspendLayout();
       // 
@@ -180,7 +180,7 @@ namespace ServerBrowser
       // 
       // comboRegion
       // 
-      this.comboRegion.Location = new System.Drawing.Point(112, 3);
+      this.comboRegion.Location = new System.Drawing.Point(80, 3);
       this.comboRegion.Name = "comboRegion";
       this.comboRegion.Properties.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
             new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)});
@@ -190,59 +190,44 @@ namespace ServerBrowser
       this.comboRegion.TabIndex = 18;
       this.comboRegion.SelectedIndexChanged += new System.EventHandler(this.comboRegion_SelectedIndexChanged);
       // 
-      // txtAppId
+      // rbFavGame2
       // 
-      this.txtAppId.Location = new System.Drawing.Point(145, 29);
-      this.txtAppId.Name = "txtAppId";
-      this.txtAppId.Size = new System.Drawing.Size(117, 20);
-      this.txtAppId.TabIndex = 17;
+      this.rbFavGame2.Location = new System.Drawing.Point(154, 29);
+      this.rbFavGame2.Name = "rbFavGame2";
+      this.rbFavGame2.Properties.AutoWidth = true;
+      this.rbFavGame2.Properties.Caption = "Toxikk";
+      this.rbFavGame2.Properties.CheckStyle = DevExpress.XtraEditors.Controls.CheckStyles.Radio;
+      this.rbFavGame2.Properties.RadioGroupIndex = 1;
+      this.rbFavGame2.Size = new System.Drawing.Size(52, 19);
+      this.rbFavGame2.TabIndex = 15;
+      this.rbFavGame2.TabStop = false;
+      this.rbFavGame2.CheckedChanged += new System.EventHandler(this.rbFavGame_CheckedChanged);
       // 
-      // rbCustom
+      // rbFavGame1
       // 
-      this.rbCustom.Location = new System.Drawing.Point(30, 29);
-      this.rbCustom.Name = "rbCustom";
-      this.rbCustom.Properties.Caption = "Custom AppID";
-      this.rbCustom.Properties.CheckStyle = DevExpress.XtraEditors.Controls.CheckStyles.Radio;
-      this.rbCustom.Properties.RadioGroupIndex = 1;
-      this.rbCustom.Size = new System.Drawing.Size(107, 19);
-      this.rbCustom.TabIndex = 16;
-      this.rbCustom.TabStop = false;
+      this.rbFavGame1.Location = new System.Drawing.Point(76, 29);
+      this.rbFavGame1.Name = "rbFavGame1";
+      this.rbFavGame1.Properties.AutoWidth = true;
+      this.rbFavGame1.Properties.Caption = "Reflex";
+      this.rbFavGame1.Properties.CheckStyle = DevExpress.XtraEditors.Controls.CheckStyles.Radio;
+      this.rbFavGame1.Properties.RadioGroupIndex = 1;
+      this.rbFavGame1.Size = new System.Drawing.Size(53, 19);
+      this.rbFavGame1.TabIndex = 14;
+      this.rbFavGame1.TabStop = false;
+      this.rbFavGame1.CheckedChanged += new System.EventHandler(this.rbFavGame_CheckedChanged);
       // 
-      // rbToxikk
+      // rbFavGame3
       // 
-      this.rbToxikk.Location = new System.Drawing.Point(108, 3);
-      this.rbToxikk.Name = "rbToxikk";
-      this.rbToxikk.Properties.Caption = "Toxikk";
-      this.rbToxikk.Properties.CheckStyle = DevExpress.XtraEditors.Controls.CheckStyles.Radio;
-      this.rbToxikk.Properties.RadioGroupIndex = 1;
-      this.rbToxikk.Size = new System.Drawing.Size(71, 19);
-      this.rbToxikk.TabIndex = 15;
-      this.rbToxikk.TabStop = false;
-      this.rbToxikk.CheckedChanged += new System.EventHandler(this.rbGame_CheckedChanged);
-      // 
-      // rbReflex
-      // 
-      this.rbReflex.Location = new System.Drawing.Point(30, 3);
-      this.rbReflex.Name = "rbReflex";
-      this.rbReflex.Properties.Caption = "Reflex";
-      this.rbReflex.Properties.CheckStyle = DevExpress.XtraEditors.Controls.CheckStyles.Radio;
-      this.rbReflex.Properties.RadioGroupIndex = 1;
-      this.rbReflex.Size = new System.Drawing.Size(71, 19);
-      this.rbReflex.TabIndex = 14;
-      this.rbReflex.TabStop = false;
-      this.rbReflex.CheckedChanged += new System.EventHandler(this.rbGame_CheckedChanged);
-      // 
-      // rbQuakeLive
-      // 
-      this.rbQuakeLive.Location = new System.Drawing.Point(187, 3);
-      this.rbQuakeLive.Name = "rbQuakeLive";
-      this.rbQuakeLive.Properties.Caption = "Quake Live";
-      this.rbQuakeLive.Properties.CheckStyle = DevExpress.XtraEditors.Controls.CheckStyles.Radio;
-      this.rbQuakeLive.Properties.RadioGroupIndex = 1;
-      this.rbQuakeLive.Size = new System.Drawing.Size(87, 19);
-      this.rbQuakeLive.TabIndex = 13;
-      this.rbQuakeLive.TabStop = false;
-      this.rbQuakeLive.CheckedChanged += new System.EventHandler(this.rbGame_CheckedChanged);
+      this.rbFavGame3.Location = new System.Drawing.Point(233, 29);
+      this.rbFavGame3.Name = "rbFavGame3";
+      this.rbFavGame3.Properties.AutoWidth = true;
+      this.rbFavGame3.Properties.Caption = "Quake Live";
+      this.rbFavGame3.Properties.CheckStyle = DevExpress.XtraEditors.Controls.CheckStyles.Radio;
+      this.rbFavGame3.Properties.RadioGroupIndex = 1;
+      this.rbFavGame3.Size = new System.Drawing.Size(75, 19);
+      this.rbFavGame3.TabIndex = 13;
+      this.rbFavGame3.TabStop = false;
+      this.rbFavGame3.CheckedChanged += new System.EventHandler(this.rbFavGame_CheckedChanged);
       // 
       // gcPlayers
       // 
@@ -341,7 +326,6 @@ namespace ServerBrowser
       this.gvServers.SortInfo.AddRange(new DevExpress.XtraGrid.Columns.GridColumnSortInfo[] {
             new DevExpress.XtraGrid.Columns.GridColumnSortInfo(this.colPlayerCount, DevExpress.Data.ColumnSortOrder.Descending)});
       this.gvServers.FocusedRowChanged += new DevExpress.XtraGrid.Views.Base.FocusedRowChangedEventHandler(this.gvServers_FocusedRowChanged);
-      this.gvServers.CustomColumnSort += new DevExpress.XtraGrid.Views.Base.CustomColumnSortEventHandler(this.gvServers_CustomColumnSort);
       this.gvServers.CustomUnboundColumnData += new DevExpress.XtraGrid.Views.Base.CustomColumnDataEventHandler(this.gvServers_CustomUnboundColumnData);
       this.gvServers.DoubleClick += new System.EventHandler(this.gvServers_DoubleClick);
       // 
@@ -364,6 +348,17 @@ namespace ServerBrowser
       this.colName.Visible = true;
       this.colName.VisibleIndex = 1;
       this.colName.Width = 260;
+      // 
+      // colDedicated
+      // 
+      this.colDedicated.Caption = "Ded";
+      this.colDedicated.FieldName = "Dedicated";
+      this.colDedicated.Name = "colDedicated";
+      this.colDedicated.ToolTip = "Dedicated";
+      this.colDedicated.UnboundType = DevExpress.Data.UnboundColumnType.Boolean;
+      this.colDedicated.Visible = true;
+      this.colDedicated.VisibleIndex = 2;
+      this.colDedicated.Width = 35;
       // 
       // colPrivate
       // 
@@ -677,7 +672,7 @@ namespace ServerBrowser
       // 
       // btnSkin
       // 
-      this.btnSkin.Location = new System.Drawing.Point(677, 2);
+      this.btnSkin.Location = new System.Drawing.Point(645, 2);
       this.btnSkin.Name = "btnSkin";
       this.btnSkin.Size = new System.Drawing.Size(87, 27);
       this.btnSkin.TabIndex = 22;
@@ -687,7 +682,7 @@ namespace ServerBrowser
       // cbAutoUpdateSelectedServer
       // 
       this.cbAutoUpdateSelectedServer.EditValue = true;
-      this.cbAutoUpdateSelectedServer.Location = new System.Drawing.Point(456, 5);
+      this.cbAutoUpdateSelectedServer.Location = new System.Drawing.Point(424, 5);
       this.cbAutoUpdateSelectedServer.MenuManager = this.barManager1;
       this.cbAutoUpdateSelectedServer.Name = "cbAutoUpdateSelectedServer";
       this.cbAutoUpdateSelectedServer.Properties.Caption = "Auto-update selected server";
@@ -696,7 +691,7 @@ namespace ServerBrowser
       // 
       // labelControl1
       // 
-      this.labelControl1.Location = new System.Drawing.Point(62, 7);
+      this.labelControl1.Location = new System.Drawing.Point(30, 7);
       this.labelControl1.Name = "labelControl1";
       this.labelControl1.Size = new System.Drawing.Size(37, 13);
       this.labelControl1.TabIndex = 20;
@@ -704,7 +699,7 @@ namespace ServerBrowser
       // 
       // btnQueryMaster
       // 
-      this.btnQueryMaster.Location = new System.Drawing.Point(331, 2);
+      this.btnQueryMaster.Location = new System.Drawing.Point(299, 2);
       this.btnQueryMaster.Name = "btnQueryMaster";
       this.btnQueryMaster.Size = new System.Drawing.Size(87, 27);
       this.btnQueryMaster.TabIndex = 19;
@@ -757,14 +752,14 @@ namespace ServerBrowser
       this.panelOptions.Controls.Add(this.btnSkin);
       this.panelOptions.Controls.Add(this.cbAutoUpdateSelectedServer);
       this.panelOptions.Dock = System.Windows.Forms.DockStyle.Fill;
-      this.panelOptions.Location = new System.Drawing.Point(289, 0);
+      this.panelOptions.Location = new System.Drawing.Point(333, 0);
       this.panelOptions.Name = "panelOptions";
-      this.panelOptions.Size = new System.Drawing.Size(1055, 58);
+      this.panelOptions.Size = new System.Drawing.Size(1011, 58);
       this.panelOptions.TabIndex = 26;
       // 
       // labelControl3
       // 
-      this.labelControl3.Location = new System.Drawing.Point(456, 32);
+      this.labelControl3.Location = new System.Drawing.Point(424, 32);
       this.labelControl3.Name = "labelControl3";
       this.labelControl3.Size = new System.Drawing.Size(375, 13);
       this.labelControl3.TabIndex = 24;
@@ -772,7 +767,7 @@ namespace ServerBrowser
       // 
       // labelControl2
       // 
-      this.labelControl2.Location = new System.Drawing.Point(62, 32);
+      this.labelControl2.Location = new System.Drawing.Point(30, 32);
       this.labelControl2.Name = "labelControl2";
       this.labelControl2.Size = new System.Drawing.Size(282, 13);
       this.labelControl2.TabIndex = 23;
@@ -781,16 +776,49 @@ namespace ServerBrowser
       // panelGame
       // 
       this.panelGame.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.NoBorder;
-      this.panelGame.Controls.Add(this.rbReflex);
-      this.panelGame.Controls.Add(this.txtAppId);
-      this.panelGame.Controls.Add(this.rbCustom);
-      this.panelGame.Controls.Add(this.rbQuakeLive);
-      this.panelGame.Controls.Add(this.rbToxikk);
+      this.panelGame.Controls.Add(this.labelControl5);
+      this.panelGame.Controls.Add(this.labelControl4);
+      this.panelGame.Controls.Add(this.comboGames);
+      this.panelGame.Controls.Add(this.rbFavGame1);
+      this.panelGame.Controls.Add(this.rbFavGame3);
+      this.panelGame.Controls.Add(this.rbFavGame2);
       this.panelGame.Dock = System.Windows.Forms.DockStyle.Left;
       this.panelGame.Location = new System.Drawing.Point(0, 0);
       this.panelGame.Name = "panelGame";
-      this.panelGame.Size = new System.Drawing.Size(289, 58);
+      this.panelGame.Size = new System.Drawing.Size(333, 58);
       this.panelGame.TabIndex = 24;
+      // 
+      // labelControl5
+      // 
+      this.labelControl5.Location = new System.Drawing.Point(30, 32);
+      this.labelControl5.Name = "labelControl5";
+      this.labelControl5.Size = new System.Drawing.Size(27, 13);
+      this.labelControl5.TabIndex = 18;
+      this.labelControl5.Text = "Favs:";
+      this.labelControl5.ToolTip = "To change a favorite, select a game and hold the Ctrl key and click on a fav";
+      // 
+      // labelControl4
+      // 
+      this.labelControl4.Location = new System.Drawing.Point(30, 6);
+      this.labelControl4.Name = "labelControl4";
+      this.labelControl4.Size = new System.Drawing.Size(31, 13);
+      this.labelControl4.TabIndex = 17;
+      this.labelControl4.Text = "Game:";
+      this.labelControl4.ToolTip = "If a game is not listed here, you can enter it\'s Steam ApplicationID here";
+      // 
+      // comboGames
+      // 
+      this.comboGames.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.comboGames.Location = new System.Drawing.Point(76, 3);
+      this.comboGames.MenuManager = this.barManager1;
+      this.comboGames.Name = "comboGames";
+      this.comboGames.Properties.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)});
+      this.comboGames.Properties.DropDownRows = 30;
+      this.comboGames.Size = new System.Drawing.Size(230, 20);
+      this.comboGames.TabIndex = 16;
+      this.comboGames.SelectedIndexChanged += new System.EventHandler(this.comboGames_SelectedIndexChanged);
       // 
       // picLogo
       // 
@@ -807,17 +835,6 @@ namespace ServerBrowser
       this.picLogo.TabIndex = 23;
       this.picLogo.Visible = false;
       this.picLogo.Click += new System.EventHandler(this.picLogo_Click);
-      // 
-      // colDedicated
-      // 
-      this.colDedicated.Caption = "Ded";
-      this.colDedicated.FieldName = "Dedicated";
-      this.colDedicated.Name = "colDedicated";
-      this.colDedicated.ToolTip = "Dedicated";
-      this.colDedicated.UnboundType = DevExpress.Data.UnboundColumnType.Boolean;
-      this.colDedicated.Visible = true;
-      this.colDedicated.VisibleIndex = 2;
-      this.colDedicated.Width = 35;
       // 
       // ServerBrowserForm
       // 
@@ -838,11 +855,9 @@ namespace ServerBrowser
       ((System.ComponentModel.ISupportInitialize)(this.gcDetails)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.gvDetails)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.comboRegion.Properties)).EndInit();
-      ((System.ComponentModel.ISupportInitialize)(this.txtAppId.Properties)).EndInit();
-      ((System.ComponentModel.ISupportInitialize)(this.rbCustom.Properties)).EndInit();
-      ((System.ComponentModel.ISupportInitialize)(this.rbToxikk.Properties)).EndInit();
-      ((System.ComponentModel.ISupportInitialize)(this.rbReflex.Properties)).EndInit();
-      ((System.ComponentModel.ISupportInitialize)(this.rbQuakeLive.Properties)).EndInit();
+      ((System.ComponentModel.ISupportInitialize)(this.rbFavGame2.Properties)).EndInit();
+      ((System.ComponentModel.ISupportInitialize)(this.rbFavGame1.Properties)).EndInit();
+      ((System.ComponentModel.ISupportInitialize)(this.rbFavGame3.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.gcPlayers)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.dsPlayer)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.gvPlayers)).EndInit();
@@ -876,6 +891,8 @@ namespace ServerBrowser
       this.panelOptions.PerformLayout();
       ((System.ComponentModel.ISupportInitialize)(this.panelGame)).EndInit();
       this.panelGame.ResumeLayout(false);
+      this.panelGame.PerformLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.comboGames.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.picLogo.Properties)).EndInit();
       this.ResumeLayout(false);
 
@@ -889,12 +906,10 @@ namespace ServerBrowser
     private DevExpress.XtraGrid.Views.Grid.GridView gvPlayers;
     private DevExpress.XtraGrid.GridControl gcServers;
     private DevExpress.XtraGrid.Views.Grid.GridView gvServers;
-    private CheckEdit rbQuakeLive;
+    private CheckEdit rbFavGame3;
     private ComboBoxEdit comboRegion;
-    private TextEdit txtAppId;
-    private CheckEdit rbCustom;
-    private CheckEdit rbToxikk;
-    private CheckEdit rbReflex;
+    private CheckEdit rbFavGame2;
+    private CheckEdit rbFavGame1;
     private DevExpress.XtraBars.BarManager barManager1;
     private DevExpress.XtraBars.Bar barStatus;
     private DevExpress.XtraBars.BarStaticItem txtStatus;
@@ -947,6 +962,9 @@ namespace ServerBrowser
     private DevExpress.XtraGrid.Columns.GridColumn gridColumn2;
     private System.Windows.Forms.BindingSource dsRules;
     private DevExpress.XtraGrid.Columns.GridColumn colDedicated;
+    private ComboBoxEdit comboGames;
+    private LabelControl labelControl4;
+    private LabelControl labelControl5;
 
 
 

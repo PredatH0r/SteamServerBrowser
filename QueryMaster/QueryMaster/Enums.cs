@@ -208,7 +208,11 @@ namespace QueryMaster
         /// <summary>
         /// Smashball
         /// </summary>
-        Smashball = 17730
+        Smashball = 17730,
+
+        Toxikk = 324810,
+        Reflex = 328070,
+        QuakeLiveTesting = 344320
     }
 
     /// <summary>

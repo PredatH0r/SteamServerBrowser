@@ -6,6 +6,7 @@ using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using DevExpress.LookAndFeel;
@@ -35,28 +36,21 @@ namespace ServerBrowser
     };
     #endregion
 
-    #region Steam AppIds
-    public static class AppIds
-    {
-      public const int Reflex = 328070;
-      public const int Toxikk = 324810;
-      public const int QlTesting = 344320;
-    }
-    #endregion
-
     private string brandingUrl;
     private readonly List<ServerRow> servers = new List<ServerRow>();
     private ServerRow lastSelectedServer;
     private volatile bool shutdown;
-    private volatile int steamAppId;
-    private readonly Dictionary<int, GameExtension> extenders = new Dictionary<int, GameExtension>();
+    private volatile Game steamAppId;
+    private readonly Dictionary<Game, GameExtension> extenders = new Dictionary<Game, GameExtension>();
     private GameExtension currentExtension;
     private int ignoreUiEvents;
+    private readonly CheckEdit[] favGameRadioButtons;
+    private readonly List<Game> gameIdForComboBoxIndex = new List<Game>();
 
     #region ctor()
     public ServerBrowserForm()
     {
-      // change font before InitializeComponent() to get correct auto-scaling
+      // change font before InitializeComponent() for correct auto-scaling
       if (Properties.Settings.Default.FontSizeDelta != 0)
       {
         AppearanceObject.DefaultFont = new Font(
@@ -65,15 +59,17 @@ namespace ServerBrowser
       }
 
       InitializeComponent();
-
+      this.favGameRadioButtons = new[] {rbFavGame1, rbFavGame2, rbFavGame3};
       // ReSharper disable AssignNullToNotNullAttribute
       this.Icon = new Icon(this.GetType().Assembly.GetManifestResourceStream("ServerBrowser.rocket.ico"));
       // ReSharper restore AssignNullToNotNullAttribute
 
-      this.gcServers.DataSource = servers;
+      // make the server list panel fill the remaining space (this can't be done in the Forms Designer)
       this.panelServerList.Parent.Controls.Remove(this.panelServerList);
       this.panelServerList.Dock = DockingStyle.Fill;
       this.Controls.Add(this.panelServerList);
+
+      this.gcServers.DataSource = servers;
     }
     #endregion
 
@@ -84,13 +80,13 @@ namespace ServerBrowser
 
       ++this.ignoreUiEvents;
 
+      this.FillGameCombo();
+      this.FillSteamServerRegions();
       this.InitGameInfoExtenders();
       this.InitBranding();
-
       if (this.btnSkin.Visible)
         this.LoadBonusSkins();
-
-      FillSteamServerRegions();
+      this.InitAppSettings();
 
       --this.ignoreUiEvents;
       this.UpdateServerList();
@@ -100,8 +96,36 @@ namespace ServerBrowser
     #region OnClosed()
     protected override void OnClosed(EventArgs e)
     {
+      Properties.Settings.Default.InitialGameID = (int) this.SteamAppID;
+      Properties.Settings.Default.Save();
+
       this.shutdown = true;
       base.OnClosed(e);
+    }
+    #endregion
+
+    #region FillGameCombo()
+    private void FillGameCombo()
+    {
+      List<Tuple<string, Game>> list = new List<Tuple<string, Game>>();
+      foreach (Game game in Enum.GetValues(typeof(Game)))
+        list.Add(new Tuple<string, Game>(this.GetGameCaption(game), game));
+      list.Sort();
+      foreach (var tuple in list)
+      {
+        this.comboGames.Properties.Items.Add(tuple.Item1);
+        this.gameIdForComboBoxIndex.Add(tuple.Item2);
+      }
+    }
+    #endregion
+
+    #region FillSteamServerRegions()
+    private void FillSteamServerRegions()
+    {
+      for (int i = 0; i < steamRegions.Length; i += 2)
+        this.comboRegion.Properties.Items.Add(steamRegions[i]);
+      this.comboRegion.SelectedIndex = 0;
+      this.comboRegion.Properties.DropDownRows = steamRegions.Length / 2;
     }
     #endregion
 
@@ -109,9 +133,9 @@ namespace ServerBrowser
 
     private void InitGameInfoExtenders()
     {
-      extenders.Add(AppIds.Toxikk, new Toxikk());
-      extenders.Add(AppIds.Reflex, new Reflex());
-      extenders.Add(AppIds.QlTesting, new QuakeLive());
+      extenders.Add(Game.Toxikk, new Toxikk());
+      extenders.Add(Game.Reflex, new Reflex());
+      extenders.Add(Game.QuakeLiveTesting, new QuakeLive());
     }
 
     #endregion
@@ -128,25 +152,26 @@ namespace ServerBrowser
       if (Properties.Settings.Default.Branding == "phgp")
       {
         this.brandingUrl = "http://www.phgp.tv/";
-        
+
         var img = new Bitmap(Properties.Resources.phgp);
         this.picLogo.Image = img;
-        this.picLogo.Width = img.Width*topHeight/img.Height;
+        this.picLogo.Width = img.Width * topHeight / img.Height;
         this.picLogo.Visible = true;
-        
+
         this.panelGame.Visible = false;
-        this.rbReflex.Checked = true;
+        this.rbFavGame1.Checked = true;
 
         UserLookAndFeel.Default.SkinName = "Visual Studio 2013 Dark";
         this.btnSkin.Visible = false;
+
+        Properties.Settings.Default.InitialGameID = (int)Game.Reflex;
         return;
       }
 
       UserLookAndFeel.Default.SkinName = Properties.Settings.Default.Skin;
-      this.rbToxikk.Checked = true;
     }
     #endregion
-    
+
     #region LoadBonusSkins()
 
     /// <summary>
@@ -175,18 +200,75 @@ namespace ServerBrowser
     }
     #endregion
 
-    #region FillSteamServerRegions()
-    private void FillSteamServerRegions()
+    #region InitAppSettings()
+    private void InitAppSettings()
     {
-      for (int i = 0; i < steamRegions.Length; i += 2)
-        this.comboRegion.Properties.Items.Add(steamRegions[i]);
-      this.comboRegion.SelectedIndex = 0;
-      this.comboRegion.Properties.DropDownRows = steamRegions.Length / 2;
+      InitFavGameRadioButtons();
+      this.SteamAppID = (Game)Properties.Settings.Default.InitialGameID;
     }
     #endregion
 
+    #region InitFavGameRadioButtons()
+    private void InitFavGameRadioButtons()
+    {
+      var favGameIds = Properties.Settings.Default.FavGameIDs.Split(',');
+      CheckEdit prevRadio = null;
+      for (int i = 0; i < favGameRadioButtons.Length; i++)
+      {
+        var radio = favGameRadioButtons[i];
+        int id;
+        if (i < favGameIds.Length && int.TryParse(favGameIds[i], out id))
+        {
+          radio.Text = this.GetGameCaption((Game) id);
+          radio.Tag = (Game) id;
+          if (prevRadio != null)
+            radio.Left = prevRadio.Right + 20;
+          prevRadio = radio;
+        }
+        else
+        {
+          radio.Visible = false;
+          radio.Tag = (Game)0;
+        }
+      }
+      if (prevRadio != null && this.panelGame.Width < prevRadio.Right)
+        this.panelGame.Width = prevRadio.Right;
+    }
+
+    #endregion
+
+    #region GetGameCaption()
+    private string GetGameCaption(Game game)
+    {
+      string rawName = game.ToString();
+      var sb = new StringBuilder();
+      bool prevWasUpper = true;
+      foreach (char c in rawName)
+      {
+        if (c == '_')
+        {
+          sb.Append(" ");
+          prevWasUpper = true;
+          continue;
+        }
+
+        if (Char.IsUpper(c))
+        {
+          if (!prevWasUpper)
+            sb.Append(" ");
+          prevWasUpper = true;
+        }
+        else
+          prevWasUpper = false;
+
+        sb.Append(c);
+      }
+      return sb.ToString();
+    }
+    #endregion
+    
     #region SteamAppId
-    private int SteamAppID
+    private Game SteamAppID
     {
       get { return this.steamAppId; }
       set
@@ -195,7 +277,21 @@ namespace ServerBrowser
           return;
         this.steamAppId = value;
         this.CreatedColumnsForGameExtender();
+        var parentPanel = this.panelRules.ParentPanel; // BUG this doesn't work yet
+        var curTopmost = parentPanel == null ? -1 : parentPanel.ActiveChildIndex;
         this.panelRules.Visibility = this.currentExtension.SupportsRules ? DockVisibility.Visible : DockVisibility.Hidden;
+        if (parentPanel != null)
+          parentPanel.ActiveChildIndex = curTopmost;
+
+        ++this.ignoreUiEvents;
+        foreach (var rbFav in this.favGameRadioButtons)
+          rbFav.Checked = (Game) rbFav.Tag == this.steamAppId;
+        int index = this.gameIdForComboBoxIndex.IndexOf(value);
+        if (index >= 0)
+          this.comboGames.SelectedIndex = index;
+        else
+          this.comboGames.Text = ((int)value).ToString();
+        --this.ignoreUiEvents;
       }
     }
     #endregion
@@ -225,6 +321,8 @@ namespace ServerBrowser
     {
       if (this.ignoreUiEvents > 0)
         return;
+      if (this.SteamAppID == 0) // this would result in a truncated list of all games
+        return;
 
       this.txtStatus.Caption = "Requesting server list from master server...";
       this.gvServers.BeginDataUpdate();
@@ -233,17 +331,14 @@ namespace ServerBrowser
 
       MasterServer master = MasterQuery.GetMasterServerInstance(EngineType.Source);
       IpFilter filter = new IpFilter();
-      int appId;
-      int.TryParse(this.txtAppId.Text, out appId);
-      this.SteamAppID = appId;
-      filter.App = (Game) appId;
+      filter.App = this.SteamAppID;
       var region = (QueryMaster.Region)steamRegions[this.comboRegion.SelectedIndex * 2 + 1];
-      master.GetAddresses(region, endpoints => OnMasterServerReceive(endpoints, appId), filter);
+      master.GetAddresses(region, endpoints => OnMasterServerReceive(endpoints, this.SteamAppID), filter);
     }
     #endregion
 
     #region OnMasterServerReceive()
-    private void OnMasterServerReceive(ReadOnlyCollection<IPEndPoint> endPoints, int queryAppId)
+    private void OnMasterServerReceive(ReadOnlyCollection<IPEndPoint> endPoints, Game queryAppId)
     {
       // ignore results from older queries with a different appId
       if (queryAppId != this.SteamAppID)
@@ -343,7 +438,8 @@ namespace ServerBrowser
         try
         {
           row.Status = "try " + (row.Retries + 1);
-          row.Players = new List<Player>(server.GetPlayers());
+          var players = server.GetPlayers();
+          row.Players = players == null ? null : new List<Player>(players);
           return true;
         }
         catch { }
@@ -355,7 +451,7 @@ namespace ServerBrowser
     #region UpdateRules()
     private bool UpdateRules(ServerRow row, Server server)
     {
-      if (!this.currentExtension.SupportsRules)
+      if (this.currentExtension != null && !this.currentExtension.SupportsRules)
         return true;
 
       for (int attempt = 0; attempt < 3; attempt++, row.Retries++)
@@ -413,18 +509,41 @@ namespace ServerBrowser
     }
     #endregion
 
-    #region rbGame_CheckedChanged
-    private void rbGame_CheckedChanged(object sender, EventArgs e)
+    #region comboGames_SelectedIndexChanged
+    private void comboGames_SelectedIndexChanged(object sender, EventArgs e)
     {
-      if (!((CheckEdit)sender).Checked) // event is fired twice... for the radio button that get unchecked and the button that gets checked
+      if (this.ignoreUiEvents > 0) return;
+      var idx = this.comboGames.SelectedIndex;
+      if (idx < 0)
+        return;
+      this.SteamAppID = this.gameIdForComboBoxIndex[idx];
+      this.UpdateServerList();
+    }
+    #endregion
+
+    #region rbFavGame_CheckedChanged
+    private void rbFavGame_CheckedChanged(object sender, EventArgs e)
+    {
+      var radio = (CheckEdit) sender; 
+      if (!radio.Checked) // ignore the "uncheck" event
         return;
 
-      this.txtAppId.Text = 
-        this.rbQuakeLive.Checked ? AppIds.QlTesting.ToString() : 
-        this.rbReflex.Checked ? AppIds.Reflex.ToString() : 
-        this.rbToxikk.Checked ? AppIds.Toxikk.ToString() : 
-        "";
-      this.UpdateServerList();
+      if (ModifierKeys == Keys.Control)
+      {
+        // redefine a favorite
+        var idx = Array.IndexOf(this.favGameRadioButtons, radio);
+        var ids = Properties.Settings.Default.FavGameIDs.Split(',');
+        ids[idx] = ((int)this.SteamAppID).ToString();
+        Properties.Settings.Default.FavGameIDs = string.Join(",", ids);
+        Properties.Settings.Default.Save();
+        this.InitFavGameRadioButtons();
+      }
+      else
+      {
+        // update server list for selected favorite
+        this.SteamAppID = (Game)radio.Tag;
+        this.UpdateServerList();
+      }
     }
     #endregion
 
@@ -438,7 +557,23 @@ namespace ServerBrowser
     #region btnQueryMaster_Click
     private void btnQueryMaster_Click(object sender, EventArgs e)
     {
+      if (this.comboGames.SelectedIndex < 0)
+      {
+        int id;
+        if (!int.TryParse(this.comboGames.Text, out id))
+          return;
+        this.SteamAppID = (Game) id;
+      }
+
       UpdateServerList();
+    }
+    #endregion
+
+    #region btnSkin_Click
+    private void btnSkin_Click(object sender, EventArgs e)
+    {
+      using (var dlg = new SkinPicker())
+        dlg.ShowDialog(this);
     }
     #endregion
 
@@ -501,33 +636,6 @@ namespace ServerBrowser
     }
     #endregion
 
-    #region gvServers_CustomColumnSort
-    private void gvServers_CustomColumnSort(object sender, DevExpress.XtraGrid.Views.Base.CustomColumnSortEventArgs e)
-    {
-      //if (e.Column == this.colPlayerCount)
-      //{
-      //  var a = this.servers[e.ListSourceRowIndex1].PlayerCount.Replace(" ", "");
-      //  var b = this.servers[e.ListSourceRowIndex1].PlayerCount.Replace(" ", "");
-      //  var aa = a.Split('+', '/');
-      //  var bb = b.Split('+', '/');
-      //  for (int i = 0; i < aa.Length; i++)
-      //  {
-      //    e.Result = StringComparer.InvariantCulture.Compare(aa[i], bb[i]);
-      //    if (e.Result != 0)
-      //      return;
-      //  }
-      //}
-    }
-    #endregion
-
-    #region btnSkin_Click
-    private void btnSkin_Click(object sender, EventArgs e)
-    {
-      using (var dlg = new SkinPicker())
-        dlg.ShowDialog(this);
-    }
-    #endregion
-
     #region dockManager1_StartDocking
     private void dockManager1_StartDocking(object sender, DockPanelCancelEventArgs e)
     {
@@ -535,6 +643,5 @@ namespace ServerBrowser
         e.Cancel = true;
     }
     #endregion
-
   }
 }

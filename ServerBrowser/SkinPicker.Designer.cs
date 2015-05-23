@@ -47,7 +47,7 @@
       this.gallery.DesignGalleryItemIndex = 0;
       this.gallery.Dock = System.Windows.Forms.DockStyle.Fill;
       // 
-      // galleryControlGallery1
+      // 
       // 
       this.gallery.Gallery.AllowFilter = false;
       this.gallery.Gallery.ColumnCount = 8;
@@ -84,7 +84,7 @@
       this.btnCancel.Name = "btnCancel";
       this.btnCancel.Size = new System.Drawing.Size(84, 23);
       this.btnCancel.TabIndex = 2;
-      this.btnCancel.Text = "Abbrechen";
+      this.btnCancel.Text = "Cancel";
       this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
       // 
       // btnOk
@@ -103,7 +103,7 @@
       this.btnReset.Name = "btnReset";
       this.btnReset.Size = new System.Drawing.Size(158, 23);
       this.btnReset.TabIndex = 0;
-      this.btnReset.Text = "Standarddesign verwenden";
+      this.btnReset.Text = "Use standard skin";
       this.btnReset.Click += new System.EventHandler(this.btnReset_Click);
       // 
       // SkinPicker
@@ -114,9 +114,9 @@
       this.Controls.Add(this.gallery);
       this.Controls.Add(this.panelControl1);
       this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
-      this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
       this.Name = "SkinPicker";
-      this.Text = "Design und Farbschema";
+      this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+      this.Text = "Skin Selector";
       this.Load += new System.EventHandler(this.SkinPicker_Load);
       ((System.ComponentModel.ISupportInitialize)(this.gallery)).EndInit();
       this.gallery.ResumeLayout(false);
