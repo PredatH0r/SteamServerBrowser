@@ -277,10 +277,13 @@ namespace ServerBrowser
           return;
         this.steamAppId = value;
         this.CreatedColumnsForGameExtender();
-        var parentPanel = this.panelRules.ParentPanel; // BUG this doesn't work yet
+        
+        // show/hide the Rules panel but don't bring it to the front
+        var parentPanel = this.panelRules.SavedParent;
         var curTopmost = parentPanel == null ? -1 : parentPanel.ActiveChildIndex;
         this.panelRules.Visibility = this.currentExtension.SupportsRules ? DockVisibility.Visible : DockVisibility.Hidden;
-        if (parentPanel != null)
+        parentPanel = this.panelRules.ParentPanel;
+        if (parentPanel != null && curTopmost >= 0)
           parentPanel.ActiveChildIndex = curTopmost;
 
         ++this.ignoreUiEvents;
