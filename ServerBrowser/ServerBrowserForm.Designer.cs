@@ -96,6 +96,7 @@ namespace ServerBrowser
       this.labelControl4 = new DevExpress.XtraEditors.LabelControl();
       this.comboGames = new DevExpress.XtraEditors.ComboBoxEdit();
       this.picLogo = new DevExpress.XtraEditors.PictureEdit();
+      this.timerUpdateServerList = new System.Windows.Forms.Timer(this.components);
       ((System.ComponentModel.ISupportInitialize)(this.gcDetails)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.gvDetails)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.comboRegion.Properties)).BeginInit();
@@ -836,6 +837,12 @@ namespace ServerBrowser
       this.picLogo.Visible = false;
       this.picLogo.Click += new System.EventHandler(this.picLogo_Click);
       // 
+      // timerUpdateServerList
+      // 
+      this.timerUpdateServerList.Enabled = true;
+      this.timerUpdateServerList.Interval = 250;
+      this.timerUpdateServerList.Tick += new System.EventHandler(this.timerUpdateServerList_Tick);
+      // 
       // ServerBrowserForm
       // 
       this.Appearance.Options.UseFont = true;
@@ -965,6 +972,7 @@ namespace ServerBrowser
     private ComboBoxEdit comboGames;
     private LabelControl labelControl4;
     private LabelControl labelControl5;
+    private System.Windows.Forms.Timer timerUpdateServerList;
 
 
 
