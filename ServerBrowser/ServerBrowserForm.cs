@@ -159,12 +159,10 @@ namespace ServerBrowser
         this.picLogo.Visible = true;
 
         this.panelGame.Visible = false;
-        this.rbFavGame1.Checked = true;
+        Properties.Settings.Default.InitialGameID = (int)Game.Reflex;
 
         UserLookAndFeel.Default.SkinName = "Visual Studio 2013 Dark";
         this.btnSkin.Visible = false;
-
-        Properties.Settings.Default.InitialGameID = (int)Game.Reflex;
         return;
       }
 
