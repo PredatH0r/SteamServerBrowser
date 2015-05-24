@@ -15,7 +15,7 @@ namespace ServerBrowser
       Application.EnableVisualStyles();
       Application.SetCompatibleTextRenderingDefault(false);
       
-      ThreadPool.SetMinThreads(50, 45);
+      ThreadPool.SetMinThreads(100, 90);
       ThreadPool.SetMaxThreads(100, 90);
 
       UserLookAndFeel.Default.SkinName = "Office 2010 Black";

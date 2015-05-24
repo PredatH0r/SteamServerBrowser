@@ -37,7 +37,7 @@ namespace ServerBrowser
     #endregion
 
     private string brandingUrl;
-    private readonly List<ServerRow> servers = new List<ServerRow>();
+    private List<ServerRow> servers;
     private ServerRow lastSelectedServer;
     private volatile bool shutdown;
     private volatile Game steamAppId;
@@ -71,8 +71,6 @@ namespace ServerBrowser
       this.panelServerList.Parent.Controls.Remove(this.panelServerList);
       this.panelServerList.Dock = DockingStyle.Fill;
       this.Controls.Add(this.panelServerList);
-
-      this.gcServers.DataSource = servers;
     }
     #endregion
 
@@ -330,7 +328,9 @@ namespace ServerBrowser
 
       this.txtStatus.Caption = "Requesting server list from master server...";
       this.gvServers.BeginDataUpdate();
-      servers.Clear();
+      var rows = new List<ServerRow>(); // local reference to guarantee thread safety
+      this.servers = rows;
+      this.gcServers.DataSource = this.servers;
       this.gvServers.EndDataUpdate();
 
       MasterServer master = MasterQuery.GetMasterServerInstance(EngineType.Source);
@@ -339,12 +339,12 @@ namespace ServerBrowser
       var region = (QueryMaster.Region)steamRegions[this.comboRegion.SelectedIndex * 2 + 1];
 
       var requestId = ++this.currentRequestId;
-      master.GetAddresses(region, endpoints => OnMasterServerReceive(endpoints, requestId), filter);
+      master.GetAddresses(region, endpoints => OnMasterServerReceive(endpoints, requestId, rows), filter);
     }
     #endregion
 
     #region OnMasterServerReceive()
-    private void OnMasterServerReceive(ReadOnlyCollection<IPEndPoint> endPoints, int requestId)
+    private void OnMasterServerReceive(ReadOnlyCollection<IPEndPoint> endPoints, int requestId, List<ServerRow> rows)
     {
       // ignore results from older queries
       if (requestId != this.currentRequestId)
@@ -363,16 +363,16 @@ namespace ServerBrowser
           if (ep.Address.Equals(IPAddress.Any))
           {
             statusText = "Master server returned " + this.servers.Count + " servers";
-            this.AllServersReceived(requestId);
+            this.AllServersReceived(requestId, rows);
           }
           else if (servers.Count >= maxResults)
           {
             statusText = "Server list limited to " + maxResults + " entries";
-            this.AllServersReceived(requestId);
+            this.AllServersReceived(requestId, rows);
             break;
           }
           else
-            servers.Add(new ServerRow(ep));
+            rows.Add(new ServerRow(ep));
         }
       }
 
@@ -385,12 +385,15 @@ namespace ServerBrowser
     #endregion
 
     #region AllServersReceived()
-    private void AllServersReceived(int requestId)
+    private void AllServersReceived(int requestId, List<ServerRow> rows)
     {
-      foreach (var row in this.servers)
+      foreach (var row in rows)
       {
+        if (requestId != this.currentRequestId)
+          return;
         var safeRow = row;
         ThreadPool.QueueUserWorkItem(context => UpdateServerDetails(safeRow, requestId));
+        Thread.Sleep(5); // launching all threads at once results in totally wrong ping values
       }
     }
     #endregion
@@ -402,7 +405,10 @@ namespace ServerBrowser
         return;
 
       Server server = ServerQuery.GetServerInstance(EngineType.Source, row.EndPoint, false, 500, 500);
-      string status = UpdateServerInfo(row, server, requestId) && UpdatePlayers(row, server, requestId) && UpdateRules(row, server, requestId) ? "ok" : "timeout";
+      string status = 
+        UpdateServerInfo(row, server, requestId) && 
+        UpdatePlayers(row, server, requestId) && 
+        UpdateRules(row, server, requestId) ? "ok" : "timeout";
       if (requestId != this.currentRequestId) // status might have changed
         return;
 

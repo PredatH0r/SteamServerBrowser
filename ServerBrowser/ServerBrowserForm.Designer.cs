@@ -858,7 +858,7 @@ namespace ServerBrowser
       this.Controls.Add(this.barDockControlTop);
       this.Font = new System.Drawing.Font("Segoe UI", 9F);
       this.Name = "ServerBrowserForm";
-      this.Text = "Steam Server Browser 1.1";
+      this.Text = "Steam Server Browser 1.2";
       ((System.ComponentModel.ISupportInitialize)(this.gcDetails)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.gvDetails)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.comboRegion.Properties)).EndInit();
