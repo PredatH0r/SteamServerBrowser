@@ -492,9 +492,13 @@ namespace ServerBrowser
         });
         return true;
       }
-      catch
+      catch (TimeoutException)
       {
         return false;
+      }
+      catch
+      {
+        return true;
       }
     }
     #endregion
