@@ -177,9 +177,9 @@ namespace QueryMaster
         info.Keywords = (edf & 0x20) > 0 ? parser.ReadString() : string.Empty;
         info.GameId = (edf & 0x10) > 0 ? parser.ReadLong() : 0;
         server.Extra = info;
-        server.Address = socket.Address.Address + ":" + socket.Address.Port;
-        server.Ping = Latency;
       }
+      server.Address = socket.Address.Address + ":" + socket.Address.Port;
+      server.Ping = Latency;
       return server;
     }
 
