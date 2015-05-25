@@ -43,7 +43,7 @@ namespace QueryMaster
         /// <summary>
         /// Steam Application ID of game. 
         /// </summary>
-        public short Id { get; internal set; }
+        public ushort Id { get; internal set; }
         /// <summary>
         /// Number of players on the server. 
         /// </summary>
@@ -225,7 +225,7 @@ namespace QueryMaster
         /// <summary>
         /// The server's game port number.
         /// </summary>
-        public short Port { get; internal set; }
+        public ushort Port { get; internal set; }
         /// <summary>
         /// Server's SteamID. 
         /// </summary>
@@ -252,11 +252,16 @@ namespace QueryMaster
         /// <summary>
         /// Spectator port number for SourceTV.
         /// </summary>
-        public short Port { get; internal set; }
+        public ushort Port { get; internal set; }
         /// <summary>
         /// Name of the spectator server for SourceTV.
         /// </summary>
         public string Name { get; internal set; }
+
+      public override string ToString()
+      {
+        return Name + " :" + Port;
+      }
     }
 
 

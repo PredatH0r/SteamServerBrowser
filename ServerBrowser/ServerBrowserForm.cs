@@ -412,6 +412,9 @@ namespace ServerBrowser
       string status;
       using (Server server = ServerQuery.GetServerInstance(EngineType.Source, row.EndPoint, false, 500, 500))
       {
+        row.Retries = 0;
+        row.Status = "updating";
+        this.serverListUpdateNeeded = true;
         server.Retries = 3;
         status =
           UpdateServerInfo(row, server, requestId) &&
@@ -478,12 +481,14 @@ namespace ServerBrowser
 
       try
       {
-        row.Status = "try " + (row.Retries + 1);
+        row.Status = "updating " + row.Retries;
+        this.serverListUpdateNeeded = true;
         updater(retry =>
         {
           if (requestId != currentRequestId)
             throw new OperationCanceledException();
-          row.Status = "try " + (++row.Retries + 1);
+          row.Status = "updating " + (++row.Retries + 1);
+          this.serverListUpdateNeeded = true;
         });
         return true;
       }
@@ -505,7 +510,7 @@ namespace ServerBrowser
         props.Sort((a, b) => StringComparer.InvariantCultureIgnoreCase.Compare(a.Name, b.Name));
         foreach (var prop in props)
         {
-          if (prop.Name != "Extra" && prop.Name != "Item")
+          if (prop.Name != "Extra" && prop.Name != "Item" && prop.Name != "ShipInfo")
             result.Add(new Tuple<string, object>(prop.Name.ToLower(), prop.GetValue(obj, null)));
         }
       }
@@ -516,7 +521,10 @@ namespace ServerBrowser
     #region UpdateGridDataSources()
     private void UpdateGridDataSources(ServerRow row)
     {
-      this.gcDetails.DataSource = EnumerateProps(row.ServerInfo, row.ServerInfo == null ? null : row.ServerInfo.Extra);
+      this.gcDetails.DataSource = EnumerateProps(
+        row.ServerInfo, 
+        row.ServerInfo == null ? null : row.ServerInfo.Extra, 
+        row.ServerInfo == null ? null : row.ServerInfo.ShipInfo);
       this.gcPlayers.DataSource = row.Players;
       this.gcRules.DataSource = row.Rules;
     }

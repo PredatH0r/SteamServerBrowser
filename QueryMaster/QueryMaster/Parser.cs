@@ -18,6 +18,8 @@ namespace QueryMaster
             LastPosition = Data.Length - 1;
         }
 
+        internal bool HasMore { get { return CurrentPosition + 1 <= LastPosition; } }
+
         internal byte ReadByte()
         {
             CurrentPosition++;
@@ -27,15 +29,15 @@ namespace QueryMaster
 
         }
 
-        internal short ReadShort()
+        internal ushort ReadShort()
         {
             CurrentPosition++;
             if (CurrentPosition + 3 > LastPosition)
                 throw new ParseException("Unable to parse bytes to short.");
-            short num;
+            ushort num;
             if (!BitConverter.IsLittleEndian)
                 Array.Reverse(Data, CurrentPosition, 2);
-            num = BitConverter.ToInt16(Data, CurrentPosition);
+            num = BitConverter.ToUInt16(Data, CurrentPosition);
             CurrentPosition++;
             return num;
         }

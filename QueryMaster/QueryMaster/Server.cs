@@ -166,17 +166,20 @@ namespace QueryMaster
       }
 
       server.GameVersion = parser.ReadString();
-      var edf = parser.ReadByte();
-      var info = new ExtraInfo();
-      info.Port = (edf & 0x80) > 0 ? parser.ReadShort() : (short) 0;
-      info.SteamID = (edf & 0x10) > 0 ? parser.ReadLong() : 0;
-      if ((edf & 0x40) > 0)
-        info.SpecInfo = new SourceTVInfo {Port = parser.ReadShort(), Name = parser.ReadString()};
-      info.Keywords = (edf & 0x20) > 0 ? parser.ReadString() : string.Empty;
-      info.GameId = (edf & 0x10) > 0 ? parser.ReadLong() : 0;
-      server.Extra = info;
-      server.Address = socket.Address.Address + ":" + socket.Address.Port;
-      server.Ping = Latency;
+      if (parser.HasMore)
+      {
+        var edf = parser.ReadByte();
+        var info = new ExtraInfo();
+        info.Port = (edf & 0x80) > 0 ? parser.ReadShort() : (ushort)0;
+        info.SteamID = (edf & 0x10) > 0 ? parser.ReadLong() : 0;
+        if ((edf & 0x40) > 0)
+          info.SpecInfo = new SourceTVInfo {Port = parser.ReadShort(), Name = parser.ReadString()};
+        info.Keywords = (edf & 0x20) > 0 ? parser.ReadString() : string.Empty;
+        info.GameId = (edf & 0x10) > 0 ? parser.ReadLong() : 0;
+        server.Extra = info;
+        server.Address = socket.Address.Address + ":" + socket.Address.Port;
+        server.Ping = Latency;
+      }
       return server;
     }
 

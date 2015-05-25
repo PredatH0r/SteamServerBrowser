@@ -7,6 +7,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerBrowser", "ServerBrow
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QueryMaster", "QueryMaster\QueryMaster\QueryMaster.csproj", "{4CA9C894-518F-42D7-BBE2-CFDFE7A03F8A}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{99D5D9E8-F715-4A3B-827B-DDD750AC415D}"
+	ProjectSection(SolutionItems) = preProject
+		CreateDistribZip.cmd = CreateDistribZip.cmd
+		README.md = README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug TA DEMO|Any CPU = Debug TA DEMO|Any CPU

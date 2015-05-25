@@ -7,7 +7,7 @@ namespace QueryMaster
 {
     static class Util
     {
-        private static Dictionary<string, short> GoldSourceGames = new Dictionary<string, short>()
+       private static readonly Dictionary<string, ushort> GoldSourceGames = new Dictionary<string, ushort>()
        {
             {"Counter-Strike",10},
             { "Team Fortress Classic",20},
@@ -21,7 +21,7 @@ namespace QueryMaster
             {"Condition Zero Deleted Scenes",100},
             {"Half-Life: Blue Shift",130},
        };
-        internal static short GetGameId(string name)
+        internal static ushort GetGameId(string name)
         {
             if (GoldSourceGames.ContainsKey(name))
                 return GoldSourceGames[name];
