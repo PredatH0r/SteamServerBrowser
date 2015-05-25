@@ -6,7 +6,6 @@ using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using DevExpress.LookAndFeel;
@@ -136,7 +135,7 @@ namespace ServerBrowser
     {
       extenders.Add(Game.Toxikk, new Toxikk());
       extenders.Add(Game.Reflex, new Reflex());
-      extenders.Add(Game.QuakeLiveTesting, new QuakeLive());
+      extenders.Add(Game.QuakeLive_Testing, new QuakeLive());
     }
 
     #endregion
@@ -239,30 +238,7 @@ namespace ServerBrowser
     #region GetGameCaption()
     private string GetGameCaption(Game game)
     {
-      string rawName = game.ToString();
-      var sb = new StringBuilder();
-      bool prevWasUpper = true;
-      foreach (char c in rawName)
-      {
-        if (c == '_')
-        {
-          sb.Append(" ");
-          prevWasUpper = true;
-          continue;
-        }
-
-        if (Char.IsUpper(c))
-        {
-          if (!prevWasUpper)
-            sb.Append(" ");
-          prevWasUpper = true;
-        }
-        else
-          prevWasUpper = false;
-
-        sb.Append(c);
-      }
-      return sb.ToString();
+      return game.ToString().Replace("_", " ");
     }
     #endregion
     
@@ -413,15 +389,14 @@ namespace ServerBrowser
       using (Server server = ServerQuery.GetServerInstance(EngineType.Source, row.EndPoint, false, 500, 500))
       {
         row.Retries = 0;
-        row.Status = "updating";
-        this.serverListUpdateNeeded = true;
         server.Retries = 3;
-        status =
-          UpdateServerInfo(row, server, requestId) &&
-          UpdatePlayers(row, server, requestId) &&
-          UpdateRules(row, server, requestId)
-            ? "ok"
-            : "timeout";
+        status = "timeout";
+        if (this.UpdateServerInfo(row, server, requestId))
+        {
+          this.UpdatePlayers(row, server, requestId);
+          this.UpdateRules(row, server, requestId);
+          status = "ok";
+        }
       }
 
       if (requestId != this.currentRequestId) // status might have changed
