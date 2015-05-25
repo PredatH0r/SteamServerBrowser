@@ -334,6 +334,7 @@ namespace ServerBrowser
       this.gvServers.EndDataUpdate();
 
       MasterServer master = MasterQuery.GetMasterServerInstance(EngineType.Source);
+      master.GetAddressesLimit = maxResults;
       IpFilter filter = new IpFilter();
       filter.App = this.SteamAppID;
       var region = (QueryMaster.Region)steamRegions[this.comboRegion.SelectedIndex * 2 + 1];
@@ -387,14 +388,18 @@ namespace ServerBrowser
     #region AllServersReceived()
     private void AllServersReceived(int requestId, List<ServerRow> rows)
     {
-      foreach (var row in rows)
+      // use a background thread so that the caller doesn't have to wait for the accumulated Therad.Sleep()
+      ThreadPool.QueueUserWorkItem(dummy =>
       {
-        if (requestId != this.currentRequestId)
-          return;
-        var safeRow = row;
-        ThreadPool.QueueUserWorkItem(context => UpdateServerDetails(safeRow, requestId));
-        Thread.Sleep(5); // launching all threads at once results in totally wrong ping values
-      }
+        foreach (var row in rows)
+        {
+          if (requestId != this.currentRequestId)
+            return;
+          var safeRow = row;
+          ThreadPool.QueueUserWorkItem(context => UpdateServerDetails(safeRow, requestId));
+          Thread.Sleep(5); // launching all threads at once results in totally wrong ping values
+        }
+      });
     }
     #endregion
 
@@ -404,11 +409,18 @@ namespace ServerBrowser
       if (requestId != this.currentRequestId) // drop obsolete requests
         return;
 
-      Server server = ServerQuery.GetServerInstance(EngineType.Source, row.EndPoint, false, 500, 500);
-      string status = 
-        UpdateServerInfo(row, server, requestId) && 
-        UpdatePlayers(row, server, requestId) && 
-        UpdateRules(row, server, requestId) ? "ok" : "timeout";
+      string status;
+      using (Server server = ServerQuery.GetServerInstance(EngineType.Source, row.EndPoint, false, 500, 500))
+      {
+        server.Retries = 3;
+        status =
+          UpdateServerInfo(row, server, requestId) &&
+          UpdatePlayers(row, server, requestId) &&
+          UpdateRules(row, server, requestId)
+            ? "ok"
+            : "timeout";
+      }
+
       if (requestId != this.currentRequestId) // status might have changed
         return;
 
@@ -428,65 +440,60 @@ namespace ServerBrowser
     #region UpdateServerInfo()
     private bool UpdateServerInfo(ServerRow row, Server server, int requestId)
     {
-      for (row.Retries = 0; row.Retries < 3; row.Retries++)
+      return UpdateDetail(row, server, requestId, retryHandler =>
       {
-        if (requestId != this.currentRequestId)
-          return false;
-
-        try
-        {
-          row.Status = "try " + (row.Retries + 1);
-          row.ServerInfo = server.GetInfo();
-          return true;
-        }
-        catch { }
-      }
-      return false;
+        row.ServerInfo = server.GetInfo(retryHandler);
+      });
     }
     #endregion
 
     #region UpdatePlayers()
     private bool UpdatePlayers(ServerRow row, Server server, int requestId)
     {
-      if (requestId != this.currentRequestId)
-        return false;
-      for (int attempt=0; attempt < 3; attempt++, row.Retries++)
+      return UpdateDetail(row, server, requestId, retryHandler =>
       {
-        try
-        {
-          row.Status = "try " + (row.Retries + 1);
-          var players = server.GetPlayers();
-          row.Players = players == null ? null : new List<Player>(players);
-          return true;
-        }
-        catch { }
-      }
-      return false;
+        var players = server.GetPlayers(retryHandler);
+        row.Players = players == null ? null : new List<Player>(players);
+      });
     }
     #endregion
 
     #region UpdateRules()
     private bool UpdateRules(ServerRow row, Server server, int requestId)
     {
-      if (requestId != this.currentRequestId)
-        return false;
-      if (this.currentExtension != null && !this.currentExtension.SupportsRules)
+      if (currentExtension != null && !currentExtension.SupportsRules)
         return true;
-
-      for (int attempt = 0; attempt < 3; attempt++, row.Retries++)
+      return UpdateDetail(row, server, requestId, retryHandler =>
       {
-        try
-        {
-          row.Status = "try " + (row.Retries + 1);
-          row.Rules = new List<Rule>(server.GetRules());
-          return true;
-        }
-        catch { }
-      }
-      return false;
+        row.Rules = new List<Rule>(server.GetRules(retryHandler));
+      });
     }
     #endregion
 
+    #region UpdateDetail()
+    private bool UpdateDetail(ServerRow row, Server server, int requestId, Action<Action<int>> updater)
+    {
+      if (requestId != this.currentRequestId)
+        return false;
+
+      try
+      {
+        row.Status = "try " + (row.Retries + 1);
+        updater(retry =>
+        {
+          if (requestId != currentRequestId)
+            throw new OperationCanceledException();
+          row.Status = "try " + (++row.Retries + 1);
+        });
+        return true;
+      }
+      catch
+      {
+        return false;
+      }
+    }
+    #endregion
+    
     #region EnumerateProps()
     private List<Tuple<string, object>> EnumerateProps(params object[] objects)
     {

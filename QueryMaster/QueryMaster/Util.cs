@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 
 namespace QueryMaster
@@ -62,5 +62,30 @@ namespace QueryMaster
             Buffer.BlockCopy(array3, 0, newArray, array1.Length + array2.Length, array3.Length);
             return newArray;
         }
+
+        internal static T RunWithRetries<T>(Func<T> action, int maxTries, Action<int> onTimeout = null)
+        {
+          int attempt = 0;
+          while (true)
+          {
+            ++attempt;
+            try
+            {
+              return action();
+            }
+            catch (SocketException ex)
+            {
+              if (ex.SocketErrorCode != SocketError.TimedOut)
+                throw;
+
+              if (onTimeout != null)
+                onTimeout(attempt);
+
+              if (attempt >= maxTries)
+                throw new TimeoutException("Request timed out", ex);
+            }
+          }
+        }
+
     }
 }
