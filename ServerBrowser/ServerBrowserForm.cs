@@ -97,6 +97,7 @@ namespace ServerBrowser
     protected override void OnClosed(EventArgs e)
     {
       Properties.Settings.Default.InitialGameID = (int) this.SteamAppID;
+      Properties.Settings.Default.MasterServer = this.comboMasterServer.Text;
       Properties.Settings.Default.Save();
 
       this.shutdown = true;
@@ -203,6 +204,11 @@ namespace ServerBrowser
     {
       InitFavGameRadioButtons();
       this.SteamAppID = (Game)Properties.Settings.Default.InitialGameID;
+
+      var info = Properties.Settings.Default.MasterServer;
+      if (string.IsNullOrEmpty(info))
+        info = "hl2master.steampowered.com:27011";
+      this.comboMasterServer.Text = info;
     }
     #endregion
 
@@ -274,6 +280,22 @@ namespace ServerBrowser
     }
     #endregion
 
+    #region MasterServerEndpoint
+    private IPEndPoint MasterServerEndpoint
+    {
+      get
+      {
+        string info = this.comboMasterServer.Text;
+        var parts = info.Split(':');
+        int port;
+        if (parts.Length < 2 || !int.TryParse(parts[1], out port))
+          port = 27011;
+        var ips = Dns.GetHostAddresses(parts[0]);
+        return ips.Length == 0 ? new IPEndPoint(IPAddress.None, 0) : new IPEndPoint(ips[0], port);
+      }
+    }
+    #endregion
+
     #region CreatedColumnsForGameExtender()
     private void CreatedColumnsForGameExtender()
     {
@@ -309,7 +331,7 @@ namespace ServerBrowser
       this.gcServers.DataSource = this.servers;
       this.gvServers.EndDataUpdate();
 
-      MasterServer master = MasterQuery.GetMasterServerInstance(EngineType.Source);
+      MasterServer master = new MasterServer(this.MasterServerEndpoint);
       master.GetAddressesLimit = maxResults;
       IpFilter filter = new IpFilter();
       filter.App = this.SteamAppID;
@@ -426,9 +448,9 @@ namespace ServerBrowser
     #endregion
 
     #region UpdatePlayers()
-    private bool UpdatePlayers(ServerRow row, Server server, int requestId)
+    private void UpdatePlayers(ServerRow row, Server server, int requestId)
     {
-      return UpdateDetail(row, server, requestId, retryHandler =>
+      UpdateDetail(row, server, requestId, retryHandler =>
       {
         var players = server.GetPlayers(retryHandler);
         row.Players = players == null ? null : new List<Player>(players);
@@ -437,11 +459,11 @@ namespace ServerBrowser
     #endregion
 
     #region UpdateRules()
-    private bool UpdateRules(ServerRow row, Server server, int requestId)
+    private void UpdateRules(ServerRow row, Server server, int requestId)
     {
       if (currentExtension != null && !currentExtension.SupportsRules)
-        return true;
-      return UpdateDetail(row, server, requestId, retryHandler =>
+        return;
+      UpdateDetail(row, server, requestId, retryHandler =>
       {
         row.Rules = new List<Rule>(server.GetRules(retryHandler));
       });
@@ -582,6 +604,13 @@ namespace ServerBrowser
     }
     #endregion
 
+    #region cbAdvancedOptions_CheckedChanged
+    private void cbAdvancedOptions_CheckedChanged(object sender, EventArgs e)
+    {
+      this.panelAdvancedOptions.Visible = this.cbAdvancedOptions.Checked;
+    }
+    #endregion
+
     #region btnSkin_Click
     private void btnSkin_Click(object sender, EventArgs e)
     {
@@ -667,5 +696,42 @@ namespace ServerBrowser
       this.gvServers.EndDataUpdate();
     }
     #endregion
+
+    #region btnServerQuery_Click
+    private void btnServerQuery_Click(object sender, EventArgs e)
+    {
+      try
+      {
+        string[] parts = this.txtServerQuery.Text.Split(':');
+
+        var addr = Dns.GetHostAddresses(parts[0]);
+        if (addr.Length == 0) return;
+        var endpoint = new IPEndPoint(addr[0], parts.Length > 1 ? int.Parse(parts[1]) : 25785);
+        ServerRow serverRow = null;
+        foreach (var row in this.servers)
+        {
+          if (row.EndPoint.Equals(endpoint))
+          {
+            serverRow = row;
+            break;
+          }
+        }
+        ++this.currentRequestId;
+        if (serverRow == null)
+        {
+          this.gvServers.BeginDataUpdate();
+          serverRow = new ServerRow(endpoint);
+          this.servers.Add(serverRow);
+          this.gvServers.EndDataUpdate();
+          this.gvServers.FocusedRowHandle = this.gvServers.GetRowHandle(this.servers.Count - 1);
+        }
+        this.UpdateServerDetails(serverRow, this.currentRequestId, () => this.UpdateGridDataSources(serverRow));
+      }
+      catch
+      {
+      }
+    }
+    #endregion
+
   }
 }

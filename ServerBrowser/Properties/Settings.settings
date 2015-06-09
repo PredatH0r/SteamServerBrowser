@@ -23,5 +23,8 @@
     <Setting Name="FavGameIDs" Type="System.String" Scope="User">
       <Value Profile="(Default)">324810,328070,440</Value>
     </Setting>
+    <Setting Name="MasterServer" Type="System.String" Scope="User">
+      <Value Profile="(Default)">hl2master.steampowered.com:27011</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

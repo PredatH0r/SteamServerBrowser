@@ -106,5 +106,17 @@ namespace ServerBrowser.Properties {
                 this["FavGameIDs"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("hl2master.steampowered.com:27011")]
+        public string MasterServer {
+            get {
+                return ((string)(this["MasterServer"]));
+            }
+            set {
+                this["MasterServer"] = value;
+            }
+        }
     }
 }

@@ -23,7 +23,7 @@ namespace QueryMaster
     private static readonly IPEndPoint SeedEndpoint = new IPEndPoint(IPAddress.Any, 0);    
     private readonly IPEndPoint endPoint;
 
-    internal MasterServer(IPEndPoint endPoint)
+    public MasterServer(IPEndPoint endPoint)
     {
       this.endPoint = endPoint;
       this.Retries = 5;
