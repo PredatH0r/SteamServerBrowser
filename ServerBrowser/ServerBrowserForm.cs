@@ -10,6 +10,7 @@ using System.Threading;
 using System.Windows.Forms;
 using DevExpress.LookAndFeel;
 using DevExpress.Utils;
+using DevExpress.XtraBars;
 using DevExpress.XtraBars.Docking;
 using DevExpress.XtraEditors;
 using DevExpress.XtraGrid.Columns;
@@ -35,14 +36,14 @@ namespace ServerBrowser
     };
     #endregion
 
-    private const string Version = "1.4";
+    private const string Version = "1.5";
     private string brandingUrl;
     private List<ServerRow> servers;
     private ServerRow lastSelectedServer;
     private volatile bool shutdown;
     private volatile Game steamAppId;
     private readonly Dictionary<Game, GameExtension> extenders = new Dictionary<Game, GameExtension>();
-    private GameExtension currentExtension;
+    private GameExtension gameExtension;
     private int ignoreUiEvents;
     private readonly CheckEdit[] favGameRadioButtons;
     private readonly List<Game> gameIdForComboBoxIndex = new List<Game>();
@@ -50,6 +51,7 @@ namespace ServerBrowser
     private const int maxResults = 500;
     private volatile int currentRequestId; // logical clock to drop obsolete replies, e.g. when the user selected a different game in the meantime
     private readonly PasswordForm passwordForm = new PasswordForm();
+    private bool showGamePortInAddress;
 
     #region ctor()
     public ServerBrowserForm()
@@ -91,6 +93,8 @@ namespace ServerBrowser
       if (this.btnSkin.Visible)
         this.LoadBonusSkins();
       this.InitAppSettings();
+
+      this.miConnect.ItemAppearance.Normal.Font = new Font(this.miConnect.ItemAppearance.Normal.Font, FontStyle.Bold);
 
       --this.ignoreUiEvents;
       this.UpdateServerList();
@@ -213,6 +217,9 @@ namespace ServerBrowser
       if (string.IsNullOrEmpty(info))
         info = "hl2master.steampowered.com:27011";
       this.comboMasterServer.Text = info;
+
+      this.showGamePortInAddress = Properties.Settings.Default.ShowGamePortInAddress;
+      this.cbShowGamePort.Checked = this.showGamePortInAddress;
     }
     #endregion
 
@@ -261,12 +268,12 @@ namespace ServerBrowser
         if (value == this.steamAppId)
           return;
         this.steamAppId = value;
-        this.CreatedColumnsForGameExtender();
+        this.InitGameExtension();
         
         // show/hide the Rules panel but don't bring it to the front
         var parentPanel = this.panelRules.SavedParent;
         var curTopmost = parentPanel == null ? -1 : parentPanel.ActiveChildIndex;
-        this.panelRules.Visibility = this.currentExtension.SupportsRulesQuery ? DockVisibility.Visible : DockVisibility.Hidden;
+        this.panelRules.Visibility = this.gameExtension.SupportsRulesQuery ? DockVisibility.Visible : DockVisibility.Hidden;
         parentPanel = this.panelRules.ParentPanel;
         if (parentPanel != null && curTopmost >= 0)
           parentPanel.ActiveChildIndex = curTopmost;
@@ -300,8 +307,8 @@ namespace ServerBrowser
     }
     #endregion
 
-    #region CreatedColumnsForGameExtender()
-    private void CreatedColumnsForGameExtender()
+    #region InitGameExtension()
+    private void InitGameExtension()
     {
       this.gvServers.BeginUpdate();
       var cols = new List<GridColumn>(this.gvServers.Columns);
@@ -313,10 +320,12 @@ namespace ServerBrowser
           col.Visible = true;
       }
 
-      if (!extenders.TryGetValue(this.SteamAppID, out this.currentExtension))
-        this.currentExtension = new GameExtension();
-      this.currentExtension.CustomizeGridColumns(gvServers);
+      if (!extenders.TryGetValue(this.SteamAppID, out this.gameExtension))
+        this.gameExtension = new GameExtension();
+      this.gameExtension.CustomizeGridColumns(gvServers);
       this.gvServers.EndUpdate();
+
+      this.miConnectSpectator.Visibility = this.gameExtension.SupportsConnectAsSpectator ? BarItemVisibility.Always : BarItemVisibility.Never;
     }
     #endregion
 
@@ -465,7 +474,7 @@ namespace ServerBrowser
     #region UpdateRules()
     private void UpdateRules(ServerRow row, Server server, int requestId)
     {
-      if (currentExtension != null && !currentExtension.SupportsRulesQuery)
+      if (gameExtension != null && !gameExtension.SupportsRulesQuery)
         return;
       UpdateDetail(row, server, requestId, retryHandler =>
       {
@@ -536,7 +545,7 @@ namespace ServerBrowser
     #endregion
 
     #region ConnectToGameServer()
-    private void ConnectToGameServer(ServerRow row)
+    private void ConnectToGameServer(ServerRow row, bool spectate)
     {
       string password = null;
       if (row.ServerInfo.IsPrivate)
@@ -547,8 +556,17 @@ namespace ServerBrowser
       }
 
       this.Cursor = Cursors.WaitCursor;
-      this.currentExtension.Connect(row, password);
+      this.gameExtension.Connect(row, password, spectate);
       this.Cursor = Cursors.Default;
+    }
+    #endregion
+
+    #region GetServerAddress()
+    private string GetServerAddress(ServerRow row)
+    {
+      return this.showGamePortInAddress && row.ServerInfo != null && row.ServerInfo.Extra != null
+        ? row.EndPoint.Address + ":" + row.ServerInfo.Extra.Port
+        : row.EndPoint.ToString();
     }
     #endregion
 
@@ -632,6 +650,15 @@ namespace ServerBrowser
     }
     #endregion
 
+    #region cbShowGamePort_CheckedChanged
+    private void cbShowGamePort_CheckedChanged(object sender, EventArgs e)
+    {
+      this.showGamePortInAddress = this.cbShowGamePort.Checked;
+      Properties.Settings.Default.ShowGamePortInAddress = this.showGamePortInAddress;
+      Properties.Settings.Default.Save();
+    }
+    #endregion
+
     #region btnSkin_Click
     private void btnSkin_Click(object sender, EventArgs e)
     {
@@ -643,8 +670,12 @@ namespace ServerBrowser
     #region gvServers_CustomUnboundColumnData
     private void gvServers_CustomUnboundColumnData(object sender, DevExpress.XtraGrid.Views.Base.CustomColumnDataEventArgs e)
     {
-      if (e.IsGetData)
-        e.Value = ((ServerRow)e.Row).GetExtenderCellValue(this.currentExtension, e.Column.FieldName);
+      if (!e.IsGetData) return;
+      var row = (ServerRow) e.Row;
+      if (e.Column == this.colEndPoint)
+        e.Value = GetServerAddress(row);
+      else
+        e.Value = row.GetExtenderCellValue(this.gameExtension, e.Column.FieldName);
     }
     #endregion
 
@@ -689,11 +720,23 @@ namespace ServerBrowser
         if (!hit.InRow)
           return;
         var row = (ServerRow) this.gvServers.GetRow(hit.RowHandle);
-        this.ConnectToGameServer(row);
+        this.ConnectToGameServer(row, (ModifierKeys & Keys.Shift) != 0);
       }
       catch (Exception ex)
       {
         this.txtStatus.Text = ex.Message;
+      }
+    }
+    #endregion
+
+    #region gvServers_MouseDown
+    private void gvServers_MouseDown(object sender, MouseEventArgs e)
+    {
+      var hit = this.gvServers.CalcHitInfo(e.Location);
+      if (hit.InRow && e.Button == MouseButtons.Right)
+      {
+        this.gvServers.FocusedRowHandle = hit.RowHandle;
+        this.menuServers.ShowPopup(this.gcServers.PointToScreen(e.Location));
       }
     }
     #endregion
@@ -753,5 +796,26 @@ namespace ServerBrowser
     }
     #endregion
 
+    #region miConnect_ItemClick
+    private void miConnect_ItemClick(object sender, ItemClickEventArgs e)
+    {
+      this.ConnectToGameServer((ServerRow)this.gvServers.GetFocusedRow(), false);
+    }
+    #endregion
+
+    #region miConnectSpectator_ItemClick
+    private void miConnectSpectator_ItemClick(object sender, ItemClickEventArgs e)
+    {
+      this.ConnectToGameServer((ServerRow)this.gvServers.GetFocusedRow(), true);
+    }
+    #endregion
+
+    #region miCopyAddress_ItemClick
+    private void miCopyAddress_ItemClick(object sender, ItemClickEventArgs e)
+    {
+      var addr = this.GetServerAddress((ServerRow) this.gvServers.GetFocusedRow());
+      Clipboard.SetText(addr);
+    }
+    #endregion
   }
 }

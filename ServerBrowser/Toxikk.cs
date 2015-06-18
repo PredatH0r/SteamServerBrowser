@@ -15,6 +15,8 @@ namespace ServerBrowser
     public Toxikk()
     {
       consoleKey = (Keys)Properties.Settings.Default.ToxikkConsoleKey;
+      this.SupportsRulesQuery = true;
+      this.SupportsConnectAsSpectator = true;
     }
 
     #region CustomizeGridColumns()
@@ -54,7 +56,7 @@ namespace ServerBrowser
 
     #region Connect()
 
-    public override bool Connect(ServerRow server, string password)
+    public override bool Connect(ServerRow server, string password, bool spectate)
     {
       if (consoleKey == Keys.None)
       {
@@ -68,13 +70,13 @@ namespace ServerBrowser
         }
       }
 
-      ThreadPool.QueueUserWorkItem(context => ConnectInBackground(server, password), null);
+      ThreadPool.QueueUserWorkItem(context => ConnectInBackground(server, password, spectate), null);
       return true;
     }
     #endregion
 
     #region ConnectInBackground()
-    private bool ConnectInBackground(ServerRow server, string password)
+    private bool ConnectInBackground(ServerRow server, string password, bool spectate)
     {
       var win = FindToxikkWindow();
       if (win == IntPtr.Zero)
@@ -100,6 +102,8 @@ namespace ServerBrowser
       var msg = "open " + server.EndPoint.Address + ":" + server.ServerInfo.Extra.Port;
       if (!string.IsNullOrEmpty(password))
         msg += "?password=" + password;
+      if (spectate)
+        msg += "?spectatoronly=1";
       foreach (var c in msg)
         Win32.PostMessage(win, Win32.WM_CHAR, c, 0);
 

@@ -130,5 +130,17 @@ namespace ServerBrowser.Properties {
                 this["ToxikkConsoleKey"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ShowGamePortInAddress {
+            get {
+                return ((bool)(this["ShowGamePortInAddress"]));
+            }
+            set {
+                this["ShowGamePortInAddress"] = value;
+            }
+        }
     }
 }

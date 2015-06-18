@@ -14,6 +14,7 @@ namespace ServerBrowser
     public GameExtension()
     {
       this.SupportsRulesQuery = true;
+      this.SupportsConnectAsSpectator = false;
     }
 
     /// <summary>
@@ -21,6 +22,7 @@ namespace ServerBrowser
     /// For games which don't, this should be overridden to return false, otherwise all servers will have a "timeout" status.
     /// </summary>
     public bool SupportsRulesQuery { get; protected set; }
+    public bool SupportsConnectAsSpectator { get; protected set; }
 
     /// <summary>
     /// Allows server list columns to be customized for specific games.
@@ -42,9 +44,9 @@ namespace ServerBrowser
       return row.GetRule(fieldName);
     }
 
-    public virtual bool Connect(ServerRow server, string password)
+    public virtual bool Connect(ServerRow server, string password, bool spectate)
     {
-      var proc = Process.Start("steam://connect/" + server.EndPoint + (string.IsNullOrEmpty(password) ? "" : "/" + password + "/"));
+      var proc = Process.Start("steam://connect/" + server.EndPoint + (string.IsNullOrEmpty(password) ? "" : "/" + password));
       return proc != null;
     }
 
