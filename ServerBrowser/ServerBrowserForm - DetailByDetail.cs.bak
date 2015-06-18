@@ -6,6 +6,7 @@ using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using DevExpress.LookAndFeel;
@@ -35,9 +36,8 @@ namespace ServerBrowser
     };
     #endregion
 
-    private const string Version = "1.4";
     private string brandingUrl;
-    private List<ServerRow> servers;
+    private readonly List<ServerRow> servers = new List<ServerRow>();
     private ServerRow lastSelectedServer;
     private volatile bool shutdown;
     private volatile Game steamAppId;
@@ -49,7 +49,6 @@ namespace ServerBrowser
     private volatile bool serverListUpdateNeeded;
     private const int maxResults = 500;
     private volatile int currentRequestId; // logical clock to drop obsolete replies, e.g. when the user selected a different game in the meantime
-    private readonly PasswordForm passwordForm = new PasswordForm();
 
     #region ctor()
     public ServerBrowserForm()
@@ -73,7 +72,7 @@ namespace ServerBrowser
       this.panelServerList.Dock = DockingStyle.Fill;
       this.Controls.Add(this.panelServerList);
 
-      base.Text += " " + Version;
+      this.gcServers.DataSource = servers;
     }
     #endregion
 
@@ -101,7 +100,6 @@ namespace ServerBrowser
     protected override void OnClosed(EventArgs e)
     {
       Properties.Settings.Default.InitialGameID = (int) this.SteamAppID;
-      Properties.Settings.Default.MasterServer = this.comboMasterServer.Text;
       Properties.Settings.Default.Save();
 
       this.shutdown = true;
@@ -140,7 +138,7 @@ namespace ServerBrowser
     {
       extenders.Add(Game.Toxikk, new Toxikk());
       extenders.Add(Game.Reflex, new Reflex());
-      extenders.Add(Game.QuakeLive_Testing, new QuakeLive());
+      extenders.Add(Game.QuakeLiveTesting, new QuakeLive());
     }
 
     #endregion
@@ -208,11 +206,6 @@ namespace ServerBrowser
     {
       InitFavGameRadioButtons();
       this.SteamAppID = (Game)Properties.Settings.Default.InitialGameID;
-
-      var info = Properties.Settings.Default.MasterServer;
-      if (string.IsNullOrEmpty(info))
-        info = "hl2master.steampowered.com:27011";
-      this.comboMasterServer.Text = info;
     }
     #endregion
 
@@ -248,7 +241,30 @@ namespace ServerBrowser
     #region GetGameCaption()
     private string GetGameCaption(Game game)
     {
-      return game.ToString().Replace("_", " ");
+      string rawName = game.ToString();
+      var sb = new StringBuilder();
+      bool prevWasUpper = true;
+      foreach (char c in rawName)
+      {
+        if (c == '_')
+        {
+          sb.Append(" ");
+          prevWasUpper = true;
+          continue;
+        }
+
+        if (Char.IsUpper(c))
+        {
+          if (!prevWasUpper)
+            sb.Append(" ");
+          prevWasUpper = true;
+        }
+        else
+          prevWasUpper = false;
+
+        sb.Append(c);
+      }
+      return sb.ToString();
     }
     #endregion
     
@@ -266,7 +282,7 @@ namespace ServerBrowser
         // show/hide the Rules panel but don't bring it to the front
         var parentPanel = this.panelRules.SavedParent;
         var curTopmost = parentPanel == null ? -1 : parentPanel.ActiveChildIndex;
-        this.panelRules.Visibility = this.currentExtension.SupportsRulesQuery ? DockVisibility.Visible : DockVisibility.Hidden;
+        this.panelRules.Visibility = this.currentExtension.SupportsRules ? DockVisibility.Visible : DockVisibility.Hidden;
         parentPanel = this.panelRules.ParentPanel;
         if (parentPanel != null && curTopmost >= 0)
           parentPanel.ActiveChildIndex = curTopmost;
@@ -280,22 +296,6 @@ namespace ServerBrowser
         else
           this.comboGames.Text = ((int)value).ToString();
         --this.ignoreUiEvents;
-      }
-    }
-    #endregion
-
-    #region MasterServerEndpoint
-    private IPEndPoint MasterServerEndpoint
-    {
-      get
-      {
-        string info = this.comboMasterServer.Text;
-        var parts = info.Split(':');
-        int port;
-        if (parts.Length < 2 || !int.TryParse(parts[1], out port))
-          port = 27011;
-        var ips = Dns.GetHostAddresses(parts[0]);
-        return ips.Length == 0 ? new IPEndPoint(IPAddress.None, 0) : new IPEndPoint(ips[0], port);
       }
     }
     #endregion
@@ -328,26 +328,23 @@ namespace ServerBrowser
       if (this.SteamAppID == 0) // this would result in a truncated list of all games
         return;
 
-      this.txtStatus.Text = "Requesting server list from master server...";
+      this.txtStatus.Caption = "Requesting server list from master server...";
       this.gvServers.BeginDataUpdate();
-      var rows = new List<ServerRow>(); // local reference to guarantee thread safety
-      this.servers = rows;
-      this.gcServers.DataSource = this.servers;
+      servers.Clear();
       this.gvServers.EndDataUpdate();
 
-      MasterServer master = new MasterServer(this.MasterServerEndpoint);
-      master.GetAddressesLimit = maxResults;
+      MasterServer master = MasterQuery.GetMasterServerInstance(EngineType.Source);
       IpFilter filter = new IpFilter();
       filter.App = this.SteamAppID;
       var region = (QueryMaster.Region)steamRegions[this.comboRegion.SelectedIndex * 2 + 1];
 
       var requestId = ++this.currentRequestId;
-      master.GetAddresses(region, endpoints => OnMasterServerReceive(endpoints, requestId, rows), filter);
+      master.GetAddresses(region, endpoints => OnMasterServerReceive(endpoints, requestId), filter);
     }
     #endregion
 
     #region OnMasterServerReceive()
-    private void OnMasterServerReceive(ReadOnlyCollection<IPEndPoint> endPoints, int requestId, List<ServerRow> rows)
+    private void OnMasterServerReceive(ReadOnlyCollection<IPEndPoint> endPoints, int requestId)
     {
       // ignore results from older queries
       if (requestId != this.currentRequestId)
@@ -366,144 +363,161 @@ namespace ServerBrowser
           if (ep.Address.Equals(IPAddress.Any))
           {
             statusText = "Master server returned " + this.servers.Count + " servers";
-            this.AllServersReceived(requestId, rows);
+            ThreadPool.QueueUserWorkItem(context => this.AllServersReceived(requestId));
           }
           else if (servers.Count >= maxResults)
           {
             statusText = "Server list limited to " + maxResults + " entries";
-            this.AllServersReceived(requestId, rows);
+            ThreadPool.QueueUserWorkItem(context => this.AllServersReceived(requestId));
             break;
           }
           else
-            rows.Add(new ServerRow(ep));
+            servers.Add(new ServerRow(ep));
         }
       }
 
       this.serverListUpdateNeeded = true;
       this.BeginInvoke((Action) (() =>
       {
-        this.txtStatus.Text = statusText;
+        this.txtStatus.Caption = statusText;
       }));
     }
     #endregion
 
     #region AllServersReceived()
-    private void AllServersReceived(int requestId, List<ServerRow> rows)
+    private void AllServersReceived(int requestId)
     {
-      // use a background thread so that the caller doesn't have to wait for the accumulated Therad.Sleep()
+      var barrier = new CountdownEvent(this.servers.Count);
+
+      // queue requests for general server information
+      var serverDict = new Dictionary<ServerRow,Server>();
+      foreach (var row in this.servers)
+      {
+        var safeRow = row;
+        row.Status = "updating";
+        row.Retries = 0;
+        Server server = ServerQuery.GetServerInstance(EngineType.Source, row.EndPoint, false, 500, 500);
+        serverDict.Add(row, server);
+        ThreadPool.QueueUserWorkItem(context => UpdateServerDetail(UpdateServerInfo, safeRow, server, requestId, barrier));
+      }
+      barrier.Wait();
+
+      // queue requests for server details
+      barrier.Reset();
+      foreach (var row in this.servers)
+      {
+        var safeRow = row;
+        var server = serverDict[row];
+        ThreadPool.QueueUserWorkItem(context => UpdateServerDetail(UpdatePlayers, safeRow, server, requestId, barrier));
+      }
+      barrier.Wait();
+
+      // queue requests for general server/game settings
+      barrier.Reset();
+      foreach (var row in this.servers)
+      {
+        var safeRow = row;
+        var server = serverDict[row];
+        ThreadPool.QueueUserWorkItem(context => UpdateServerDetail(UpdateRules, safeRow, server, requestId, barrier, true));
+      }
+      barrier.Wait();
+    }
+    #endregion
+
+    #region UpdateSingleServer()
+    private void UpdateSingleServer(ServerRow row)
+    {
+      row.Status = "updating";
+      row.Retries = 0;
+      this.serverListUpdateNeeded = true;
+      Application.DoEvents();
+
+      var requestId = this.currentRequestId;
       ThreadPool.QueueUserWorkItem(dummy =>
       {
-        foreach (var row in rows)
+        var server = ServerQuery.GetServerInstance(EngineType.Source, row.EndPoint, false, 500, 500);
+        this.UpdateServerDetail(UpdateServerInfo, row, server, requestId);
+        this.UpdateServerDetail(UpdatePlayers, row, server, requestId);
+        this.UpdateServerDetail(UpdateRules, row, server, requestId, null, true);
+        this.BeginInvoke((Action)(() =>
         {
-          if (requestId != this.currentRequestId)
-            return;
-          var safeRow = row;
-          ThreadPool.QueueUserWorkItem(context => UpdateServerDetails(safeRow, requestId));
-          Thread.Sleep(5); // launching all threads at once results in totally wrong ping values
-        }
+          if (this.gvServers.GetRow(this.gvServers.FocusedRowHandle) == row)
+            this.UpdateGridDataSources(row);
+        }));
       });
     }
     #endregion
 
-    #region UpdateServerDetails()
-    private void UpdateServerDetails(ServerRow row, int requestId, Action callback = null)
+    #region UpdateServerDetail()
+    private bool UpdateServerDetail(Action<ServerRow,Server> updateFunction, ServerRow row, Server server, int requestId, CountdownEvent barrier = null, bool setFinalStatus = false)
     {
-      if (requestId != this.currentRequestId) // drop obsolete requests
-        return;
-
-      string status;
-      using (Server server = ServerQuery.GetServerInstance(EngineType.Source, row.EndPoint, false, 500, 500))
+      const int MaxAttempts = 3;
+      try
       {
-        row.Retries = 0;
-        server.Retries = 3;
-        status = "timeout";
-        if (this.UpdateServerInfo(row, server, requestId))
+        if (row.Status == "timeout")
+          return false;
+
+        int attempt;
+        for (attempt = 0; attempt < MaxAttempts; attempt++)
         {
-          this.UpdatePlayers(row, server, requestId);
-          this.UpdateRules(row, server, requestId);
-          status = "ok";
+          if (requestId != this.currentRequestId) // drop obsolete requests
+            return false;
+
+          try
+          {
+            row.Status = "updating" + (row.Retries > 0 ? " (" + row.Retries + ")" : "");
+            updateFunction(row, server);
+            break;
+          }
+          catch
+          {
+            ++row.Retries;
+          }
         }
+
+        if (requestId != this.currentRequestId) // status might have changed
+          return false;
+
+        if (attempt >= MaxAttempts)
+          row.Status = "timeout";
+        else if (setFinalStatus)
+          row.Status = "ok" + (row.Retries == 0 ? "" : " (" + row.Retries + ")");
+        row.Update();
+
+        this.serverListUpdateNeeded = true;
+        return attempt < MaxAttempts;
       }
-
-      if (requestId != this.currentRequestId) // status might have changed
-        return;
-
-      if (row.Retries > 0)
-        status += " (" + row.Retries + ")";
-      row.Status = status;
-      row.Update();
-
-      if (this.shutdown)
-        return;
-      this.serverListUpdateNeeded = true;
-      if (callback != null)
-        this.BeginInvoke(callback);
+      finally
+      {
+       if (barrier != null)
+          barrier.Signal();
+      }
     }
     #endregion
 
     #region UpdateServerInfo()
-    private bool UpdateServerInfo(ServerRow row, Server server, int requestId)
+    private void UpdateServerInfo(ServerRow row, Server server)
     {
-      return UpdateDetail(row, server, requestId, retryHandler =>
-      {
-        row.ServerInfo = server.GetInfo(retryHandler);
-      });
+      row.ServerInfo = server.GetInfo();
     }
     #endregion
 
     #region UpdatePlayers()
-    private void UpdatePlayers(ServerRow row, Server server, int requestId)
+    private void UpdatePlayers(ServerRow row, Server server)
     {
-      UpdateDetail(row, server, requestId, retryHandler =>
-      {
-        var players = server.GetPlayers(retryHandler);
-        row.Players = players == null ? null : new List<Player>(players);
-      });
+      var players = server.GetPlayers();
+      row.Players = players == null ? null : new List<Player>(players);
     }
     #endregion
 
     #region UpdateRules()
-    private void UpdateRules(ServerRow row, Server server, int requestId)
+    private void UpdateRules(ServerRow row, Server server)
     {
-      if (currentExtension != null && !currentExtension.SupportsRulesQuery)
-        return;
-      UpdateDetail(row, server, requestId, retryHandler =>
-      {
-        row.Rules = new List<Rule>(server.GetRules(retryHandler));
-      });
+      if (this.currentExtension.SupportsRules)
+        row.Rules = new List<Rule>(server.GetRules());
     }
     #endregion
 
-    #region UpdateDetail()
-    private bool UpdateDetail(ServerRow row, Server server, int requestId, Action<Action<int>> updater)
-    {
-      if (requestId != this.currentRequestId)
-        return false;
-
-      try
-      {
-        row.Status = "updating " + row.Retries;
-        this.serverListUpdateNeeded = true;
-        updater(retry =>
-        {
-          if (requestId != currentRequestId)
-            throw new OperationCanceledException();
-          row.Status = "updating " + (++row.Retries + 1);
-          this.serverListUpdateNeeded = true;
-        });
-        return true;
-      }
-      catch (TimeoutException)
-      {
-        return false;
-      }
-      catch
-      {
-        return true;
-      }
-    }
-    #endregion
-    
     #region EnumerateProps()
     private List<Tuple<string, object>> EnumerateProps(params object[] objects)
     {
@@ -515,7 +529,7 @@ namespace ServerBrowser
         props.Sort((a, b) => StringComparer.InvariantCultureIgnoreCase.Compare(a.Name, b.Name));
         foreach (var prop in props)
         {
-          if (prop.Name != "Extra" && prop.Name != "Item" && prop.Name != "ShipInfo")
+          if (prop.Name != "Extra" && prop.Name != "Item")
             result.Add(new Tuple<string, object>(prop.Name.ToLower(), prop.GetValue(obj, null)));
         }
       }
@@ -526,29 +540,9 @@ namespace ServerBrowser
     #region UpdateGridDataSources()
     private void UpdateGridDataSources(ServerRow row)
     {
-      this.gcDetails.DataSource = EnumerateProps(
-        row.ServerInfo, 
-        row.ServerInfo == null ? null : row.ServerInfo.Extra, 
-        row.ServerInfo == null ? null : row.ServerInfo.ShipInfo);
+      this.gcDetails.DataSource = EnumerateProps(row.ServerInfo, row.ServerInfo == null ? null : row.ServerInfo.Extra);
       this.gcPlayers.DataSource = row.Players;
       this.gcRules.DataSource = row.Rules;
-    }
-    #endregion
-
-    #region ConnectToGameServer()
-    private void ConnectToGameServer(ServerRow row)
-    {
-      string password = null;
-      if (row.ServerInfo.IsPrivate)
-      {
-        if (this.passwordForm.ShowDialog(this) == DialogResult.Cancel)
-          return;
-        password = this.passwordForm.Password;
-      }
-
-      this.Cursor = Cursors.WaitCursor;
-      this.currentExtension.Connect(row, password);
-      this.Cursor = Cursors.Default;
     }
     #endregion
 
@@ -625,13 +619,6 @@ namespace ServerBrowser
     }
     #endregion
 
-    #region cbAdvancedOptions_CheckedChanged
-    private void cbAdvancedOptions_CheckedChanged(object sender, EventArgs e)
-    {
-      this.panelAdvancedOptions.Visible = this.cbAdvancedOptions.Checked;
-    }
-    #endregion
-
     #region btnSkin_Click
     private void btnSkin_Click(object sender, EventArgs e)
     {
@@ -660,24 +647,14 @@ namespace ServerBrowser
         this.lastSelectedServer = row;
         this.UpdateGridDataSources(row);
 
-        if (!this.cbAutoUpdateSelectedServer.Checked)
-          return;
-
-        Application.DoEvents();
-        row.Status = "updating...";
-        ThreadPool.QueueUserWorkItem(dummy =>
-          this.UpdateServerDetails(row, this.currentRequestId, () =>
-          {
-            if (this.gvServers.GetRow(this.gvServers.FocusedRowHandle) == row)
-              this.UpdateGridDataSources(row);
-          }));
+        if (this.cbAutoUpdateSelectedServer.Checked)
+          this.UpdateSingleServer(row);
       }
       catch (Exception ex)
       {
-        this.txtStatus.Text = ex.Message;
+        this.txtStatus.Caption = ex.Message;
       }
     }
-
     #endregion
 
     #region gvServers_DoubleClick
@@ -689,11 +666,12 @@ namespace ServerBrowser
         if (!hit.InRow)
           return;
         var row = (ServerRow) this.gvServers.GetRow(hit.RowHandle);
-        this.ConnectToGameServer(row);
+        Process.Start("steam://connect/" + row.EndPoint);
+
       }
       catch (Exception ex)
       {
-        this.txtStatus.Text = ex.Message;
+        this.txtStatus.Caption = ex.Message;
       }
     }
     #endregion
@@ -712,46 +690,11 @@ namespace ServerBrowser
       if (!this.serverListUpdateNeeded)
         return;
       this.serverListUpdateNeeded = false;
+      this.timerUpdateServerList.Stop();
       this.gvServers.BeginDataUpdate();
       this.gvServers.EndDataUpdate();
+      this.timerUpdateServerList.Start();
     }
     #endregion
-
-    #region btnServerQuery_Click
-    private void btnServerQuery_Click(object sender, EventArgs e)
-    {
-      try
-      {
-        string[] parts = this.txtServerQuery.Text.Split(':');
-
-        var addr = Dns.GetHostAddresses(parts[0]);
-        if (addr.Length == 0) return;
-        var endpoint = new IPEndPoint(addr[0], parts.Length > 1 ? int.Parse(parts[1]) : 25785);
-        ServerRow serverRow = null;
-        foreach (var row in this.servers)
-        {
-          if (row.EndPoint.Equals(endpoint))
-          {
-            serverRow = row;
-            break;
-          }
-        }
-        ++this.currentRequestId;
-        if (serverRow == null)
-        {
-          this.gvServers.BeginDataUpdate();
-          serverRow = new ServerRow(endpoint);
-          this.servers.Add(serverRow);
-          this.gvServers.EndDataUpdate();
-          this.gvServers.FocusedRowHandle = this.gvServers.GetRowHandle(this.servers.Count - 1);
-        }
-        this.UpdateServerDetails(serverRow, this.currentRequestId, () => this.UpdateGridDataSources(serverRow));
-      }
-      catch
-      {
-      }
-    }
-    #endregion
-
   }
 }

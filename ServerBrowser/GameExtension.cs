@@ -1,4 +1,5 @@
-﻿using DevExpress.Data;
+﻿using System.Diagnostics;
+using DevExpress.Data;
 using DevExpress.Utils;
 using DevExpress.XtraGrid.Columns;
 using DevExpress.XtraGrid.Views.Grid;
@@ -12,14 +13,14 @@ namespace ServerBrowser
   {
     public GameExtension()
     {
-      this.SupportsRules = true;
+      this.SupportsRulesQuery = true;
     }
 
     /// <summary>
     /// Returns information whether the game servers of this particular game are expected to reply to AS2_GETRULES queries.
     /// For games which don't, this should be overridden to return false, otherwise all servers will have a "timeout" status.
     /// </summary>
-    public bool SupportsRules { get; protected set; }
+    public bool SupportsRulesQuery { get; protected set; }
 
     /// <summary>
     /// Allows server list columns to be customized for specific games.
@@ -39,6 +40,12 @@ namespace ServerBrowser
     public virtual object GetCellValue(ServerRow row, string fieldName)
     {
       return row.GetRule(fieldName);
+    }
+
+    public virtual bool Connect(ServerRow server, string password)
+    {
+      var proc = Process.Start("steam://connect/" + server.EndPoint + (string.IsNullOrEmpty(password) ? "" : "/" + password + "/"));
+      return proc != null;
     }
 
     /// <summary>

@@ -7,7 +7,7 @@ namespace ServerBrowser
     public Reflex()
     {
       // Reflex doesn't reply to A2S_GETRULES queries and would thus show "timeout" for all servers.
-      this.SupportsRules = false;
+      this.SupportsRulesQuery = false;
     }
 
     public override void CustomizeGridColumns(GridView view)

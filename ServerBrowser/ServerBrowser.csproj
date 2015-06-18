@@ -95,16 +95,33 @@
       <HintPath>DLL\DevExpress.XtraPrinting.v14.2.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="PresentationCore" />
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Data.Linq" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Runtime.Remoting" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="UIAutomationClient" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="KeyBindForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="KeyBindForm.Designer.cs">
+      <DependentUpon>KeyBindForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PasswordForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PasswordForm.Designer.cs">
+      <DependentUpon>PasswordForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Reflex.cs" />
     <Compile Include="GameExtension.cs" />
     <Compile Include="PlayerCountInfo.cs" />
@@ -126,6 +143,13 @@
     </Compile>
     <Compile Include="QuakeLive.cs" />
     <Compile Include="Toxikk.cs" />
+    <Compile Include="Win32.cs" />
+    <EmbeddedResource Include="KeyBindForm.resx">
+      <DependentUpon>KeyBindForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PasswordForm.resx">
+      <DependentUpon>PasswordForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="ServerBrowserForm.resx">
       <DependentUpon>ServerBrowserForm.cs</DependentUpon>
     </EmbeddedResource>

@@ -118,5 +118,17 @@ namespace ServerBrowser.Properties {
                 this["MasterServer"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int ToxikkConsoleKey {
+            get {
+                return ((int)(this["ToxikkConsoleKey"]));
+            }
+            set {
+                this["ToxikkConsoleKey"] = value;
+            }
+        }
     }
 }

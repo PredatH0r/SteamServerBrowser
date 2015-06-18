@@ -26,5 +26,8 @@
     <Setting Name="MasterServer" Type="System.String" Scope="User">
       <Value Profile="(Default)">hl2master.steampowered.com:27011</Value>
     </Setting>
+    <Setting Name="ToxikkConsoleKey" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
