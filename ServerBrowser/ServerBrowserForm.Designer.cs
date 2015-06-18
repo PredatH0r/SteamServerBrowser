@@ -921,8 +921,9 @@ namespace ServerBrowser
       // 
       this.cbShowGamePort.Location = new System.Drawing.Point(745, 12);
       this.cbShowGamePort.Name = "cbShowGamePort";
+      this.cbShowGamePort.Properties.AutoWidth = true;
       this.cbShowGamePort.Properties.Caption = "Show Game Port in Address (instead of Query Port)";
-      this.cbShowGamePort.Size = new System.Drawing.Size(287, 19);
+      this.cbShowGamePort.Size = new System.Drawing.Size(269, 19);
       this.cbShowGamePort.TabIndex = 30;
       this.cbShowGamePort.ToolTip = resources.GetString("cbShowGamePort.ToolTip");
       this.cbShowGamePort.CheckedChanged += new System.EventHandler(this.cbShowGamePort_CheckedChanged);
