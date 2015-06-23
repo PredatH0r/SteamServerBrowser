@@ -36,7 +36,7 @@ namespace ServerBrowser
     };
     #endregion
 
-    private const string Version = "1.5";
+    private const string Version = "1.6";
     private string brandingUrl;
     private List<ServerRow> servers;
     private ServerRow lastSelectedServer;
@@ -733,8 +733,9 @@ namespace ServerBrowser
     private void gvServers_MouseDown(object sender, MouseEventArgs e)
     {
       var hit = this.gvServers.CalcHitInfo(e.Location);
-      if (hit.InRow && e.Button == MouseButtons.Right)
+      if (hit.InDataRow && e.Button == MouseButtons.Right)
       {
+        this.gcServers.Focus();
         this.gvServers.FocusedRowHandle = hit.RowHandle;
         this.menuServers.ShowPopup(this.gcServers.PointToScreen(e.Location));
       }
@@ -815,6 +816,45 @@ namespace ServerBrowser
     {
       var addr = this.GetServerAddress((ServerRow) this.gvServers.GetFocusedRow());
       Clipboard.SetText(addr);
+    }
+    #endregion
+
+    #region gvPlayers_MouseDown
+    private void gvPlayers_MouseDown(object sender, MouseEventArgs e)
+    {
+      var hit = this.gvPlayers.CalcHitInfo(e.Location);
+      if (hit.InDataRow && e.Button == MouseButtons.Right)
+      {
+        this.gcPlayers.Focus();
+        this.gvPlayers.FocusedRowHandle = hit.RowHandle;
+        var server = (ServerRow) this.gvServers.GetFocusedRow();
+        var player = (Player) this.gvPlayers.GetFocusedRow();
+        var items = this.gameExtension.GetPlayerContextMenu(server, player);
+        if (items == null || items.Count == 0)
+          return;
+        
+        // clear old menu items
+        var oldItemList = new List<BarItem>();
+        foreach(BarItemLink oldLink in this.menuPlayers.ItemLinks)
+          oldItemList.Add(oldLink.Item);
+        foreach (var oldItem in oldItemList)
+        {
+          this.barManager1.Items.Remove(oldItem);
+          oldItem.Dispose();
+        }
+        this.menuPlayers.ClearLinks();
+        
+        // add new menu items
+        foreach (var item in items)
+        {
+          var menuItem = new BarButtonItem(this.barManager1, item.Text);
+          var safeItemRef = item;
+          menuItem.ItemClick += (o, args) => safeItemRef.Handler();
+          this.menuPlayers.AddItem(menuItem);          
+        }
+
+        this.menuPlayers.ShowPopup(this.gcPlayers.PointToScreen(e.Location));
+      }
     }
     #endregion
   }

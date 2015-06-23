@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Windows.Forms;
 using DevExpress.Data;
 using DevExpress.XtraGrid.Views.Grid;
+using QueryMaster;
 
 namespace ServerBrowser
 {
@@ -153,6 +155,27 @@ namespace ServerBrowser
         Win32.PostMessage(win, Win32.WM_LBUTTONUP, 0, 0);
         Thread.Sleep(500);
       }
+    }
+    #endregion
+
+    
+    #region GetPlayerContextMenu()
+    public override List<PlayerContextMenuItem> GetPlayerContextMenu(ServerRow server, Player player)
+    {
+      var strSteamIds = server.GetRule("p1073741829");
+      var strNames = server.GetRule("p1073741832");
+      if (string.IsNullOrEmpty(strSteamIds) || string.IsNullOrEmpty(strNames))
+        return null;
+      var names = strNames.Trim(';').Split(',');
+      var idx = Array.IndexOf(names, player.Name);
+      var steamIds = strSteamIds.Trim(';').Split(',');
+      if (idx < 0 || idx >= steamIds.Length)
+        return null;
+      var menuItem = new PlayerContextMenuItem("Add to Steam Friends", () =>
+      {
+        Process.Start("steam://friends/add/" + steamIds[idx]);
+      });
+      return new List<PlayerContextMenuItem> { menuItem };
     }
     #endregion
   }

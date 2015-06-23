@@ -1,8 +1,11 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using DevExpress.Data;
 using DevExpress.Utils;
 using DevExpress.XtraGrid.Columns;
 using DevExpress.XtraGrid.Views.Grid;
+using QueryMaster;
 
 namespace ServerBrowser
 {
@@ -72,6 +75,23 @@ namespace ServerBrowser
       view.Columns.Add(col);
       col.VisibleIndex = visibleIndex >= 0 ? visibleIndex : view.Columns.Count;
       return col;
+    }
+
+    public virtual List<PlayerContextMenuItem> GetPlayerContextMenu(ServerRow server, Player player)
+    {
+      return null;
+    }
+  }
+
+  public class PlayerContextMenuItem
+  {
+    public readonly string Text;
+    public readonly Action Handler;
+
+    public PlayerContextMenuItem(string text, Action handler)
+    {
+      this.Text = text;
+      this.Handler = handler;
     }
   }
 }

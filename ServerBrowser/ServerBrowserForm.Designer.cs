@@ -110,6 +110,7 @@ namespace ServerBrowser
       this.panelControl1 = new DevExpress.XtraEditors.PanelControl();
       this.txtStatus = new DevExpress.XtraEditors.LabelControl();
       this.menuServers = new DevExpress.XtraBars.PopupMenu(this.components);
+      this.menuPlayers = new DevExpress.XtraBars.PopupMenu(this.components);
       ((System.ComponentModel.ISupportInitialize)(this.gcDetails)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.gvDetails)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.comboRegion.Properties)).BeginInit();
@@ -158,6 +159,7 @@ namespace ServerBrowser
       ((System.ComponentModel.ISupportInitialize)(this.panelControl1)).BeginInit();
       this.panelControl1.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.menuServers)).BeginInit();
+      ((System.ComponentModel.ISupportInitialize)(this.menuPlayers)).BeginInit();
       this.SuspendLayout();
       // 
       // gcDetails
@@ -280,6 +282,7 @@ namespace ServerBrowser
       this.gvPlayers.Name = "gvPlayers";
       this.gvPlayers.OptionsView.ShowGroupPanel = false;
       this.gvPlayers.OptionsView.ShowIndicator = false;
+      this.gvPlayers.MouseDown += new System.Windows.Forms.MouseEventHandler(this.gvPlayers_MouseDown);
       // 
       // colName1
       // 
@@ -975,6 +978,11 @@ namespace ServerBrowser
       this.menuServers.Manager = this.barManager1;
       this.menuServers.Name = "menuServers";
       // 
+      // menuPlayers
+      // 
+      this.menuPlayers.Manager = this.barManager1;
+      this.menuPlayers.Name = "menuPlayers";
+      // 
       // ServerBrowserForm
       // 
       this.Appearance.Options.UseFont = true;
@@ -1045,6 +1053,7 @@ namespace ServerBrowser
       this.panelControl1.ResumeLayout(false);
       this.panelControl1.PerformLayout();
       ((System.ComponentModel.ISupportInitialize)(this.menuServers)).EndInit();
+      ((System.ComponentModel.ISupportInitialize)(this.menuPlayers)).EndInit();
       this.ResumeLayout(false);
 
     }
@@ -1129,6 +1138,7 @@ namespace ServerBrowser
     private DevExpress.XtraBars.BarButtonItem miConnectSpectator;
     private DevExpress.XtraBars.PopupMenu menuServers;
     private DevExpress.XtraBars.BarButtonItem miCopyAddress;
+    private DevExpress.XtraBars.PopupMenu menuPlayers;
 
 
 
