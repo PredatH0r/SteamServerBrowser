@@ -10,6 +10,7 @@ namespace ServerBrowser
     private readonly Dictionary<string, object> extenderFieldCache = new Dictionary<string, object>();
 
     public IPEndPoint EndPoint { get; private set; }
+    public int RequestId { get; set; }
     public ServerInfo ServerInfo { get; set; }
     public PlayerCountInfo PlayerCount { get; private set; }
     internal int Retries { get; set; }
@@ -37,7 +38,7 @@ namespace ServerBrowser
         return null;
       object value;
       if (!this.extenderFieldCache.TryGetValue(field, out value))
-        this.extenderFieldCache[field] = value = extension.GetCellValue(this, field);
+        this.extenderFieldCache[field] = value = extension.GetServerCellValue(this, field);
       return value;
     }
 

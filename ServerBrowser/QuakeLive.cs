@@ -11,7 +11,7 @@ namespace ServerBrowser
       { 0, "FFA" },{ 1, "Duel" },{ 2, "Race" },{ 3, "TDM" },{ 4, "CA" },{ 5, "CTF" },{ 6, "1Flag" },{ 8, "Harv" },{ 9, "FT" },{ 10, "Dom" },{ 11, "A&D" },{ 12, "RR" }
     };
 
-    public override void CustomizeGridColumns(GridView view)
+    public override void CustomizeServerGridColumns(GridView view)
     {
       var colDescription = view.Columns["ServerInfo.Description"];
       var idx = colDescription.VisibleIndex;
@@ -24,7 +24,7 @@ namespace ServerBrowser
       AddColumn(view, "g_instagib", "Insta", "Instagib", 35, ++idx, UnboundColumnType.Boolean);
     }
 
-    public override object GetCellValue(ServerRow row, string fieldName)
+    public override object GetServerCellValue(ServerRow row, string fieldName)
     {
       switch (fieldName)
       {
@@ -54,7 +54,7 @@ namespace ServerBrowser
         case "g_instagib": 
           return row.GetRule(fieldName) == "1";
       }
-      return base.GetCellValue(row, fieldName);
+      return base.GetServerCellValue(row, fieldName);
     }
   }
 }

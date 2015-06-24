@@ -31,7 +31,7 @@ namespace ServerBrowser
     /// Allows server list columns to be customized for specific games.
     /// Derived classes can use the <see cref="AddColumn"/> method to add columns with typical settings.
     /// </summary>
-    public virtual void CustomizeGridColumns(GridView view)
+    public virtual void CustomizeServerGridColumns(GridView view)
     {      
     }
 
@@ -42,7 +42,7 @@ namespace ServerBrowser
     /// </summary>
     /// <param name="row">ServerRow object with all the data known about the server</param>
     /// <param name="fieldName">FieldName of the GridColumn that was added with CustomizeGridColumns</param>
-    public virtual object GetCellValue(ServerRow row, string fieldName)
+    public virtual object GetServerCellValue(ServerRow row, string fieldName)
     {
       return row.GetRule(fieldName);
     }
@@ -75,6 +75,28 @@ namespace ServerBrowser
       view.Columns.Add(col);
       col.VisibleIndex = visibleIndex >= 0 ? visibleIndex : view.Columns.Count;
       return col;
+    }
+
+
+    /// <summary>
+    /// Allows player list columns to be customized for specific games.
+    /// Derived classes can use the <see cref="AddColumn"/> method to add columns with typical settings.
+    /// </summary>
+    public virtual void CustomizePlayerGridColumns(GridView view)
+    {
+    }
+
+    /// <summary>
+    /// Gets a value for a game specific column.
+    /// Derived classes can put game specific logic here for more complex value calculations.
+    /// The default implementation just looks up the given fieldName in the row's Rules collection.
+    /// </summary>
+    /// <param name="server">ServerRow object with all the data known about the server</param>
+    /// <param name="player">Player object with all the data known about the player</param>
+    /// <param name="fieldName">FieldName of the GridColumn that was added with CustomizePlayerGridColumns</param>
+    public virtual object GetPlayerCellValue(ServerRow server, Player player, string fieldName)
+    {
+      return null;
     }
 
     public virtual List<PlayerContextMenuItem> GetPlayerContextMenu(ServerRow server, Player player)

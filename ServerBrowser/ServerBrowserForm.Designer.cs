@@ -282,6 +282,7 @@ namespace ServerBrowser
       this.gvPlayers.Name = "gvPlayers";
       this.gvPlayers.OptionsView.ShowGroupPanel = false;
       this.gvPlayers.OptionsView.ShowIndicator = false;
+      this.gvPlayers.CustomUnboundColumnData += new DevExpress.XtraGrid.Views.Base.CustomColumnDataEventHandler(this.gvPlayers_CustomUnboundColumnData);
       this.gvPlayers.MouseDown += new System.Windows.Forms.MouseEventHandler(this.gvPlayers_MouseDown);
       // 
       // colName1

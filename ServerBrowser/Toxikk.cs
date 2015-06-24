@@ -13,6 +13,10 @@ namespace ServerBrowser
   {
     private const int SecondsToWaitForMainWindowAfterLaunch = 45;
     private Keys consoleKey;
+    private ServerRow serverForPlayerInfos;
+    private int serverRequestId; // logical timestamp to detect whether data in playerInfos needs to be updated
+    private readonly Dictionary<string,ToxikkPlayerInfo> playerInfos = new Dictionary<string, ToxikkPlayerInfo>();
+
 
     public Toxikk()
     {
@@ -21,8 +25,8 @@ namespace ServerBrowser
       this.SupportsConnectAsSpectator = true;
     }
 
-    #region CustomizeGridColumns()
-    public override void CustomizeGridColumns(GridView view)
+    #region CustomizeServerGridColumns()
+    public override void CustomizeServerGridColumns(GridView view)
     {
       var colDescription = view.Columns["ServerInfo.Description"];
       var idx = colDescription.VisibleIndex;
@@ -39,8 +43,8 @@ namespace ServerBrowser
     }
     #endregion
 
-    #region GetCellValue()
-    public override object GetCellValue(ServerRow row, string fieldName)
+    #region GetServerCellValue()
+    public override object GetServerCellValue(ServerRow row, string fieldName)
     {
       switch (fieldName)
       {
@@ -52,7 +56,7 @@ namespace ServerBrowser
           var gt = row.ServerInfo.Description;
           return gt == null ? null : gt.Contains("BloodLust") ? "BL" : gt.Contains("TeamGame") ? "SA" : gt.Contains("Cell") ? "CC" : gt;
       }
-      return base.GetCellValue(row, fieldName);
+      return base.GetServerCellValue(row, fieldName);
     }
     #endregion
 
@@ -158,25 +162,83 @@ namespace ServerBrowser
     }
     #endregion
 
-    
+
+    #region CustomizePlayerGridColumns()
+    public override void CustomizePlayerGridColumns(GridView view)
+    {
+      AddColumn(view, "Team", "Team", "Team", 35, 0);
+      AddColumn(view, "SC", "SC", "Skill Class", 35, 2);
+    }
+    #endregion
+
+    #region GetPlayerCellValue()
+    public override object GetPlayerCellValue(ServerRow server, Player player, string fieldName)
+    {
+      this.UpdatePlayerInfos(server);
+      ToxikkPlayerInfo info;
+      if (!this.playerInfos.TryGetValue(player.Name, out info))
+        return null;
+      if (fieldName == "Team")
+        return info.Team;
+      if (fieldName == "SC")
+        return info.SkillClass;
+      return null;
+    }
+    #endregion
+
     #region GetPlayerContextMenu()
     public override List<PlayerContextMenuItem> GetPlayerContextMenu(ServerRow server, Player player)
     {
-      var strSteamIds = server.GetRule("p1073741829");
-      var strNames = server.GetRule("p1073741832");
-      if (string.IsNullOrEmpty(strSteamIds) || string.IsNullOrEmpty(strNames))
-        return null;
-      var names = strNames.Trim(';').Split(',');
-      var idx = Array.IndexOf(names, player.Name);
-      var steamIds = strSteamIds.Trim(';').Split(',');
-      if (idx < 0 || idx >= steamIds.Length)
+      this.UpdatePlayerInfos(server);
+      ToxikkPlayerInfo info;
+      if (!this.playerInfos.TryGetValue(player.Name, out info))
         return null;
       var menuItem = new PlayerContextMenuItem("Add to Steam Friends", () =>
       {
-        Process.Start("steam://friends/add/" + steamIds[idx]);
+        Process.Start("steam://friends/add/" + info.SteamId);
       });
       return new List<PlayerContextMenuItem> { menuItem };
     }
     #endregion
+
+    #region UpdatePlayerInfos()
+    private void UpdatePlayerInfos(ServerRow server)
+    {
+      if (server == this.serverForPlayerInfos && server.RequestId == this.serverRequestId)
+        return;
+      this.serverForPlayerInfos = server;
+      this.serverRequestId = server.RequestId;
+      this.playerInfos.Clear();
+      var strSteamIds = server.GetRule("p1073741829") ?? "";
+      if (string.IsNullOrEmpty(strSteamIds))
+        return;
+      var strNames = server.GetRule("p1073741832") ?? "";
+      var strSkill = server.GetRule("p1073741837") ?? "";
+      int teamSepIdx = strNames.IndexOf(';');
+      var names = strNames.Split(',', ';');
+      var steamIds = strSteamIds.Split(',', ';');
+      var skills = strSkill.Split(',',';');
+      int i = 0;
+      foreach (var name in names)
+      {
+        var info = new ToxikkPlayerInfo();
+        info.Team = strNames.IndexOf(name) < teamSepIdx ? "Red" : "Blue";
+        if (i < steamIds.Length) 
+          info.SteamId = steamIds[i];
+        if (i < skills.Length)
+          info.SkillClass = skills[i];
+        this.playerInfos.Add(name, info);
+        ++i;
+      }
+    }
+    #endregion
   }
+
+  class ToxikkPlayerInfo
+  {
+    public string SteamId;
+    public string SkillClass;
+    public string Team;
+  }
+
 }

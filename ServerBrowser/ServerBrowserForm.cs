@@ -52,6 +52,13 @@ namespace ServerBrowser
     private volatile int currentRequestId; // logical clock to drop obsolete replies, e.g. when the user selected a different game in the meantime
     private readonly PasswordForm passwordForm = new PasswordForm();
     private bool showGamePortInAddress;
+    private volatile bool refreshInProgress;
+    private volatile CountdownEvent pendingUpdateTasks = new CountdownEvent(0);
+
+    class UpdateRequest
+    {
+      
+    }
 
     #region ctor()
     public ServerBrowserForm()
@@ -322,7 +329,8 @@ namespace ServerBrowser
 
       if (!extenders.TryGetValue(this.SteamAppID, out this.gameExtension))
         this.gameExtension = new GameExtension();
-      this.gameExtension.CustomizeGridColumns(gvServers);
+      this.gameExtension.CustomizeServerGridColumns(gvServers);
+      this.gameExtension.CustomizePlayerGridColumns(gvPlayers);
       this.gvServers.EndUpdate();
 
       this.miConnectSpectator.Visibility = this.gameExtension.SupportsConnectAsSpectator ? BarItemVisibility.Always : BarItemVisibility.Never;
@@ -337,6 +345,7 @@ namespace ServerBrowser
       if (this.SteamAppID == 0) // this would result in a truncated list of all games
         return;
 
+      this.refreshInProgress = true;
       this.txtStatus.Text = "Requesting server list from master server...";
       this.gvServers.BeginDataUpdate();
       var rows = new List<ServerRow>(); // local reference to guarantee thread safety
@@ -402,6 +411,7 @@ namespace ServerBrowser
       // use a background thread so that the caller doesn't have to wait for the accumulated Therad.Sleep()
       ThreadPool.QueueUserWorkItem(dummy =>
       {
+        this.pendingUpdateTasks = new CountdownEvent(rows.Count);
         foreach (var row in rows)
         {
           if (requestId != this.currentRequestId)
@@ -410,6 +420,10 @@ namespace ServerBrowser
           ThreadPool.QueueUserWorkItem(context => UpdateServerDetails(safeRow, requestId));
           Thread.Sleep(5); // launching all threads at once results in totally wrong ping values
         }
+
+        this.pendingUpdateTasks.Wait();
+        if (requestId == this.currentRequestId)
+          this.refreshInProgress = false;
       });
     }
     #endregion
@@ -456,6 +470,7 @@ namespace ServerBrowser
       return UpdateDetail(row, server, requestId, retryHandler =>
       {
         row.ServerInfo = server.GetInfo(retryHandler);
+        row.RequestId = requestId;
       });
     }
     #endregion
@@ -855,6 +870,16 @@ namespace ServerBrowser
 
         this.menuPlayers.ShowPopup(this.gcPlayers.PointToScreen(e.Location));
       }
+    }
+    #endregion
+
+    #region gvPlayers_CustomUnboundColumnData
+    private void gvPlayers_CustomUnboundColumnData(object sender, DevExpress.XtraGrid.Views.Base.CustomColumnDataEventArgs e)
+    {
+      if (!e.IsGetData) return;
+      var server = (ServerRow)this.gvServers.GetFocusedRow();
+      var player = (Player) e.Row;
+      e.Value = this.gameExtension.GetPlayerCellValue(server, player, e.Column.FieldName);
     }
     #endregion
   }

@@ -10,7 +10,7 @@ namespace ServerBrowser
       this.SupportsRulesQuery = false;
     }
 
-    public override void CustomizeGridColumns(GridView view)
+    public override void CustomizeServerGridColumns(GridView view)
     {
       var colDescription = view.Columns["ServerInfo.Description"];
       var idx = colDescription.VisibleIndex;
@@ -19,7 +19,7 @@ namespace ServerBrowser
       AddColumn(view, "_location", "Loc", "Location", 40, ++idx);
     }
 
-    public override object GetCellValue(ServerRow row, string fieldName)
+    public override object GetServerCellValue(ServerRow row, string fieldName)
     {
       if (fieldName == "_gametype")
       {
@@ -36,7 +36,7 @@ namespace ServerBrowser
         return parts.Length > 1 ? parts[1] : null;
       }
 
-      return base.GetCellValue(row, fieldName);
+      return base.GetServerCellValue(row, fieldName);
     }
   }
 }
