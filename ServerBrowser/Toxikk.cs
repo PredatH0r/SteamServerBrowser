@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Threading;
 using System.Windows.Forms;
 using DevExpress.Data;
@@ -236,10 +237,13 @@ namespace ServerBrowser
         info.Team = !isTeamGame ? "Player" : teamSepIdx < 0 || strNames.IndexOf(name) < teamSepIdx ? "Red" : "Blue";
         if (i < steamIds.Length) 
           info.SteamId = steamIds[i];
-        if (i < skills.Length)
-          info.SkillClass = decimal.Parse(skills[i], System.Globalization.CultureInfo.InvariantCulture);
-        if (i < ranks.Length)
-          info.Rank = int.Parse(ranks[i]);
+
+        decimal sc;
+        if (i < skills.Length && decimal.TryParse(skills[i], NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out sc))
+          info.SkillClass = sc;
+        int rank;
+        if (i < ranks.Length && int.TryParse(ranks[i], out rank))
+          info.Rank = rank;
         this.playerInfos.Add(name, info);
         ++i;
       }

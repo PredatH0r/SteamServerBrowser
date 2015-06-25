@@ -36,7 +36,7 @@ namespace ServerBrowser
     };
     #endregion
 
-    private const string Version = "1.6.2";
+    private const string Version = "1.6.3";
     private string brandingUrl;
     private List<ServerRow> servers;
     private ServerRow lastSelectedServer;
