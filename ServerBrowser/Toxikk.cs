@@ -176,12 +176,11 @@ namespace ServerBrowser
     {
       this.UpdatePlayerInfos(server);
       ToxikkPlayerInfo info;
-      if (!this.playerInfos.TryGetValue(player.Name, out info))
-        return null;
+      this.playerInfos.TryGetValue(player.Name, out info);
       if (fieldName == "Team")
-        return info.Team;
+        return info == null ? "n/a" : info.Team;
       if (fieldName == "SC")
-        return info.SkillClass;
+        return info == null ? null : info.SkillClass;
       return null;
     }
     #endregion
@@ -204,15 +203,18 @@ namespace ServerBrowser
     #region UpdatePlayerInfos()
     private void UpdatePlayerInfos(ServerRow server)
     {
+      // no need for update if it's the same server and update timestamp
       if (server == this.serverForPlayerInfos && server.RequestId == this.serverRequestId)
         return;
+
       this.serverForPlayerInfos = server;
       this.serverRequestId = server.RequestId;
       this.playerInfos.Clear();
-      var strSteamIds = server.GetRule("p1073741829") ?? "";
-      if (string.IsNullOrEmpty(strSteamIds))
-        return;
+
       var strNames = server.GetRule("p1073741832") ?? "";
+      if (string.IsNullOrEmpty(strNames))
+        return;
+      var strSteamIds = server.GetRule("p1073741829") ?? "";
       var strSkill = server.GetRule("p1073741837") ?? "";
       int teamSepIdx = strNames.IndexOf(';');
       var names = strNames.Split(',', ';');
@@ -222,7 +224,7 @@ namespace ServerBrowser
       foreach (var name in names)
       {
         var info = new ToxikkPlayerInfo();
-        info.Team = strNames.IndexOf(name) < teamSepIdx ? "Red" : "Blue";
+        info.Team = teamSepIdx < 0 || strNames.IndexOf(name) < teamSepIdx ? "Red" : "Blue";
         if (i < steamIds.Length) 
           info.SteamId = steamIds[i];
         if (i < skills.Length)

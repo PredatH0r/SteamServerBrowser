@@ -111,6 +111,7 @@ namespace ServerBrowser
       this.txtStatus = new DevExpress.XtraEditors.LabelControl();
       this.menuServers = new DevExpress.XtraBars.PopupMenu(this.components);
       this.menuPlayers = new DevExpress.XtraBars.PopupMenu(this.components);
+      this.miUpdateServerInfo = new DevExpress.XtraBars.BarButtonItem();
       ((System.ComponentModel.ISupportInitialize)(this.gcDetails)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.gvDetails)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.comboRegion.Properties)).BeginInit();
@@ -502,8 +503,9 @@ namespace ServerBrowser
       this.barManager1.Items.AddRange(new DevExpress.XtraBars.BarItem[] {
             this.miConnect,
             this.miConnectSpectator,
-            this.miCopyAddress});
-      this.barManager1.MaxItemId = 3;
+            this.miCopyAddress,
+            this.miUpdateServerInfo});
+      this.barManager1.MaxItemId = 4;
       // 
       // barDockControlTop
       // 
@@ -973,6 +975,7 @@ namespace ServerBrowser
       // menuServers
       // 
       this.menuServers.LinksPersistInfo.AddRange(new DevExpress.XtraBars.LinkPersistInfo[] {
+            new DevExpress.XtraBars.LinkPersistInfo(this.miUpdateServerInfo),
             new DevExpress.XtraBars.LinkPersistInfo(this.miConnect),
             new DevExpress.XtraBars.LinkPersistInfo(this.miConnectSpectator),
             new DevExpress.XtraBars.LinkPersistInfo(this.miCopyAddress, true)});
@@ -983,6 +986,13 @@ namespace ServerBrowser
       // 
       this.menuPlayers.Manager = this.barManager1;
       this.menuPlayers.Name = "menuPlayers";
+      // 
+      // miUpdateServerInfo
+      // 
+      this.miUpdateServerInfo.Caption = "Update Information";
+      this.miUpdateServerInfo.Id = 3;
+      this.miUpdateServerInfo.Name = "miUpdateServerInfo";
+      this.miUpdateServerInfo.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miUpdateServerInfo_ItemClick);
       // 
       // ServerBrowserForm
       // 
@@ -1140,6 +1150,7 @@ namespace ServerBrowser
     private DevExpress.XtraBars.PopupMenu menuServers;
     private DevExpress.XtraBars.BarButtonItem miCopyAddress;
     private DevExpress.XtraBars.PopupMenu menuPlayers;
+    private DevExpress.XtraBars.BarButtonItem miUpdateServerInfo;
 
 
 
