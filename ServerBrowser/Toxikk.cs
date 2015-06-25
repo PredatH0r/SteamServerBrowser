@@ -167,7 +167,8 @@ namespace ServerBrowser
     public override void CustomizePlayerGridColumns(GridView view)
     {
       AddColumn(view, "Team", "Team", "Team", 45, 0);
-      AddColumn(view, "SC", "SC", "Skill Class", 35, 2);
+      AddColumn(view, "Rank", "Rank", "Rank", 35, 1, UnboundColumnType.Integer);
+      AddColumn(view, "SC", "SC", "Skill Class", 35, 2, UnboundColumnType.Decimal);
     }
     #endregion
 
@@ -176,11 +177,15 @@ namespace ServerBrowser
     {
       this.UpdatePlayerInfos(server);
       ToxikkPlayerInfo info;
-      this.playerInfos.TryGetValue(player.Name, out info);
+      if (!this.playerInfos.TryGetValue(player.Name, out info))
+        return null;
+
       if (fieldName == "Team")
-        return info == null ? null : info.Team;
+        return info.Team;
       if (fieldName == "SC")
-        return info == null ? null : info.SkillClass;
+        return info.SkillClass;
+      if (fieldName == "Rank")
+        return info.Rank;
       return null;
     }
     #endregion
@@ -218,10 +223,12 @@ namespace ServerBrowser
       bool isTeamGame = gameType != "BL";
       var strSteamIds = (server.GetRule("p1073741829") ?? "") + (server.GetRule("p1073741830") ?? "") + (server.GetRule("p1073741831") ?? "");
       var strSkill = server.GetRule("p1073741837") ?? "";
+      var strRank = server.GetRule("p1073741838") ?? "";
       int teamSepIdx = strNames.IndexOf(';');
       var names = strNames.Split(',', ';');
       var steamIds = strSteamIds.Split(',', ';');
       var skills = strSkill.Split(',',';');
+      var ranks = strRank.Split(',', ';');
       int i = 0;
       foreach (var name in names)
       {
@@ -230,7 +237,9 @@ namespace ServerBrowser
         if (i < steamIds.Length) 
           info.SteamId = steamIds[i];
         if (i < skills.Length)
-          info.SkillClass = skills[i];
+          info.SkillClass = decimal.Parse(skills[i], System.Globalization.CultureInfo.InvariantCulture);
+        if (i < ranks.Length)
+          info.Rank = int.Parse(ranks[i]);
         this.playerInfos.Add(name, info);
         ++i;
       }
@@ -241,7 +250,8 @@ namespace ServerBrowser
   class ToxikkPlayerInfo
   {
     public string SteamId;
-    public string SkillClass;
+    public decimal SkillClass;
+    public int Rank;
     public string Team;
   }
 
