@@ -166,7 +166,7 @@ namespace ServerBrowser
     #region CustomizePlayerGridColumns()
     public override void CustomizePlayerGridColumns(GridView view)
     {
-      AddColumn(view, "Team", "Team", "Team", 35, 0);
+      AddColumn(view, "Team", "Team", "Team", 45, 0);
       AddColumn(view, "SC", "SC", "Skill Class", 35, 2);
     }
     #endregion
@@ -178,7 +178,7 @@ namespace ServerBrowser
       ToxikkPlayerInfo info;
       this.playerInfos.TryGetValue(player.Name, out info);
       if (fieldName == "Team")
-        return info == null ? "n/a" : info.Team;
+        return info == null ? null : info.Team;
       if (fieldName == "SC")
         return info == null ? null : info.SkillClass;
       return null;
@@ -211,10 +211,12 @@ namespace ServerBrowser
       this.serverRequestId = server.RequestId;
       this.playerInfos.Clear();
 
-      var strNames = server.GetRule("p1073741832") ?? "";
+      var strNames = (server.GetRule("p1073741832") ?? "") + (server.GetRule("p1073741833") ?? "") + (server.GetRule("p1073741834") ?? "");
       if (string.IsNullOrEmpty(strNames))
         return;
-      var strSteamIds = server.GetRule("p1073741829") ?? "";
+      var gameType = (string)server.GetExtenderCellValue(this, "_gametype");
+      bool isTeamGame = gameType != "BL";
+      var strSteamIds = (server.GetRule("p1073741829") ?? "") + (server.GetRule("p1073741830") ?? "") + (server.GetRule("p1073741831") ?? "");
       var strSkill = server.GetRule("p1073741837") ?? "";
       int teamSepIdx = strNames.IndexOf(';');
       var names = strNames.Split(',', ';');
@@ -224,7 +226,7 @@ namespace ServerBrowser
       foreach (var name in names)
       {
         var info = new ToxikkPlayerInfo();
-        info.Team = teamSepIdx < 0 || strNames.IndexOf(name) < teamSepIdx ? "Red" : "Blue";
+        info.Team = !isTeamGame ? "Player" : teamSepIdx < 0 || strNames.IndexOf(name) < teamSepIdx ? "Red" : "Blue";
         if (i < steamIds.Length) 
           info.SteamId = steamIds[i];
         if (i < skills.Length)
