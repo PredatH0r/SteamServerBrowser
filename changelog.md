@@ -1,10 +1,12 @@
-1.6.2
+1.6.4
 ---
 - added context menu to server list to allow update, connect, connect as spec, copy address to clipboard
 - allow game extensions to add additional columns and context menu to Players view
 - show player's skill class and current team for TOXIKK
 - player context menu for TOXIKK allows adding players to Steam friend list
 - show TOXIKK player Rank and Skill Class in player list
+- fixed NumberFormatException parsing player SC and Rank when server returns bad information
+- fixed NullReferenceException when trying to connect to a server which didn't provide any data
 
 1.5
 ---
