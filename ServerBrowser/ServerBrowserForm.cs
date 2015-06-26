@@ -36,7 +36,7 @@ namespace ServerBrowser
     };
     #endregion
 
-    private const string Version = "1.6.3";
+    private const string Version = "1.6.4";
     private string brandingUrl;
     private List<ServerRow> servers;
     private ServerRow lastSelectedServer;
@@ -591,6 +591,9 @@ namespace ServerBrowser
     #region ConnectToGameServer()
     private void ConnectToGameServer(ServerRow row, bool spectate)
     {
+      if (row.ServerInfo == null)
+        return;
+
       string password = null;
       if (row.ServerInfo.IsPrivate)
       {
