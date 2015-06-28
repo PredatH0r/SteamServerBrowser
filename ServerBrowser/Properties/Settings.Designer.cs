@@ -142,5 +142,29 @@ namespace ServerBrowser.Properties {
                 this["ShowGamePortInAddress"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int RefreshInterval {
+            get {
+                return ((int)(this["RefreshInterval"]));
+            }
+            set {
+                this["RefreshInterval"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ShowDetailColumns {
+            get {
+                return ((bool)(this["ShowDetailColumns"]));
+            }
+            set {
+                this["ShowDetailColumns"] = value;
+            }
+        }
     }
 }

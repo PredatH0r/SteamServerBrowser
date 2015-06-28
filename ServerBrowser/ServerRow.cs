@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Net;
 using QueryMaster;
@@ -18,6 +19,7 @@ namespace ServerBrowser
     public bool Dedicated { get { return ServerInfo != null && ServerInfo.ServerType == "Dedicated"; } }
     public List<Player> Players { get; set; }
     public List<Rule> Rules { get; set; }
+    public int? TotalPlayers { get { return ServerInfo == null ? (int?)null : ServerInfo.Players + ServerInfo.Bots; } }
 
     public ServerRow(IPEndPoint ep)
     {

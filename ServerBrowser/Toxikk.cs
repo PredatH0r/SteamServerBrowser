@@ -12,6 +12,10 @@ namespace ServerBrowser
 {
   public class Toxikk : GameExtension
   {
+    private const string ScoreLimit = "p268435704";
+    private const string TimeLimit = "p268435705";
+    private const string IsOfficial = "s15";
+
     private const int SecondsToWaitForMainWindowAfterLaunch = 45;
     private Keys consoleKey;
     private ServerRow serverForPlayerInfos;
@@ -37,10 +41,11 @@ namespace ServerBrowser
       view.Columns["ServerInfo.Extra.Keywords"].Visible = false;
 
       idx = view.Columns["ServerInfo.Ping"].VisibleIndex;
-      AddColumn(view, "p268435708", "Skill", "Skill Limit", 35, idx, UnboundColumnType.Integer);
-      AddColumn(view, "p268435704", "SL", "Score Limit", 30, ++idx, UnboundColumnType.Integer);
-      AddColumn(view, "p268435705", "TL", "Time Limit", 30, ++idx, UnboundColumnType.Integer);
-      AddColumn(view, "s15", "Ofcl", "Official", 35, ++idx, UnboundColumnType.Boolean);
+      AddColumn(view, "_skillclass", "Skill", "Skill Class: Min-Max", 45, idx, UnboundColumnType.Integer);
+      AddColumn(view, "_best", "Best", "Best player's Skill Class", 45, ++idx, UnboundColumnType.Integer);
+      AddColumn(view, ScoreLimit, "GS", "Goal Score", 30, ++idx, UnboundColumnType.Integer);
+      AddColumn(view, TimeLimit, "TL", "Time Limit", 30, ++idx, UnboundColumnType.Integer);
+      AddColumn(view, IsOfficial, "Ofcl", "Official Server managed by REAKKTOR", 35, ++idx, UnboundColumnType.Boolean);
     }
     #endregion
 
@@ -49,15 +54,34 @@ namespace ServerBrowser
     {
       switch (fieldName)
       {
-        case "p268435708":
-          return row.Rules == null ? null : row.GetRule("p268435708") + "-" + row.GetRule("p268435709");
-        case "s15":
+        case "_skillclass":
+          return row.GetRule(ToxikkSkillInfo.MinSkillClass) + "-" + row.GetRule(ToxikkSkillInfo.MaxSkillClass);
+          //return new ToxikkSkillInfo(row, this);
+        case "_best":
+          return Math.Round(this.GetBestPlayerSC(row), MidpointRounding.AwayFromZero);
+        case IsOfficial:
           return row.GetRule(fieldName) == "1";
         case "_gametype":
           var gt = row.ServerInfo.Description;
           return gt == null ? null : gt.Contains("BloodLust") ? "BL" : gt.Contains("TeamGame") ? "SA" : gt.Contains("Cell") ? "CC" : gt;
       }
       return base.GetServerCellValue(row, fieldName);
+    }
+    #endregion
+
+    #region GetBestPlayerSC()
+    private decimal GetBestPlayerSC(ServerRow row)
+    {
+      if (row.Players == null || row.Rules == null)
+        return 0;
+      decimal maxSc = 0;
+      foreach (var player in row.Players)
+      {
+        var sc = this.GetPlayerCellValue(row, player, "SC");
+        if (sc is decimal)
+          maxSc = Math.Max(maxSc, (decimal)sc);
+      }
+      return maxSc;
     }
     #endregion
 
@@ -251,6 +275,7 @@ namespace ServerBrowser
     #endregion
   }
 
+  #region class ToxikkPlayerInfo
   class ToxikkPlayerInfo
   {
     public string SteamId;
@@ -258,5 +283,70 @@ namespace ServerBrowser
     public int Rank;
     public string Team;
   }
+  #endregion
 
+  #region class ToxikkSkillInfo
+  class ToxikkSkillInfo : IComparable
+  {
+    internal const string MinSkillClass = "p268435708";
+    internal const string MaxSkillClass = "p268435709";
+
+    private readonly ServerRow row;
+    private readonly Toxikk extension;
+
+    public decimal HighestPlayerSkill { get; private set; }
+    public int Min { get; private set; }
+    public int Max { get; private set; }
+
+    public ToxikkSkillInfo(ServerRow row, Toxikk extension)
+    {
+      this.row = row;
+      this.extension = extension;
+      this.Update();
+    }
+
+    public void Update()
+    {
+      this.HighestPlayerSkill = 0;
+      this.Min = 0;
+      this.Max = 0;
+
+      int num;
+      if (int.TryParse(row.GetRule(MinSkillClass), out num))
+        this.Min = num;
+      if (int.TryParse(row.GetRule(MaxSkillClass), out num))
+        this.Max = num;
+
+      if (row.Rules == null || row.Players == null)
+        return;
+
+      decimal maxSc = 0;
+      foreach (var player in row.Players)
+      {
+        var sc = this.extension.GetPlayerCellValue(row, player, "SC");
+        if (sc is decimal)
+          maxSc = Math.Max(maxSc, (decimal) sc);
+      }
+      this.HighestPlayerSkill = maxSc;
+    }
+
+    public int CompareTo(object b)
+    {
+      ToxikkSkillInfo other = (ToxikkSkillInfo)b;
+      if (this.HighestPlayerSkill < other.HighestPlayerSkill) return -1;
+      if (this.HighestPlayerSkill > other.HighestPlayerSkill) return +1;
+      if (this.Min < other.Min) return -1;
+      if (this.Min > other.Min) return +1;
+      if (this.Max < other.Max) return -1;
+      if (this.Max > other.Max) return +1;
+      return 0;
+    }
+
+    public override string ToString()
+    {
+      var str = this.HighestPlayerSkill == 0 ? "" : Math.Round(this.HighestPlayerSkill, MidpointRounding.AwayFromZero) + "/";
+      return str + this.Min + "-" + this.Max;
+    }
+  }
+#endregion
 }
