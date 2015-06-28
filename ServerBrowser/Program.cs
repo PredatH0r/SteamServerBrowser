@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Threading;
 using System.Windows.Forms;
 using DevExpress.LookAndFeel;
@@ -11,6 +12,12 @@ namespace ServerBrowser
     [STAThread]
     static void Main()
     {
+#if false
+      var culture = new CultureInfo("en");
+      Application.CurrentCulture = culture;
+      Thread.CurrentThread.CurrentUICulture = culture;
+      Thread.CurrentThread.CurrentCulture = culture;
+#endif
       InitExceptionHandling();
       Application.EnableVisualStyles();
       Application.SetCompatibleTextRenderingDefault(false);

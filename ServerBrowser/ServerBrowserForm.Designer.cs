@@ -96,8 +96,8 @@ namespace ServerBrowser
       this.panelTopFill = new DevExpress.XtraEditors.PanelControl();
       this.panelControls = new DevExpress.XtraEditors.PanelControl();
       this.panelOptions = new DevExpress.XtraEditors.PanelControl();
+      this.linkFilter1 = new DevExpress.XtraEditors.HyperlinkLabelControl();
       this.cbAdvancedOptions = new DevExpress.XtraEditors.CheckButton();
-      this.labelControl2 = new DevExpress.XtraEditors.LabelControl();
       this.panelGame = new DevExpress.XtraEditors.PanelControl();
       this.labelControl5 = new DevExpress.XtraEditors.LabelControl();
       this.labelControl4 = new DevExpress.XtraEditors.LabelControl();
@@ -109,6 +109,7 @@ namespace ServerBrowser
       this.labelControl6 = new DevExpress.XtraEditors.LabelControl();
       this.timerUpdateServerList = new System.Windows.Forms.Timer(this.components);
       this.panelAdvancedOptions = new DevExpress.XtraEditors.PanelControl();
+      this.linkFilter2 = new DevExpress.XtraEditors.HyperlinkLabelControl();
       this.spinRefreshInterval = new DevExpress.XtraEditors.SpinEdit();
       this.cbAlert = new DevExpress.XtraEditors.CheckEdit();
       this.cbShowGamePort = new DevExpress.XtraEditors.CheckEdit();
@@ -846,8 +847,8 @@ namespace ServerBrowser
       // panelOptions
       // 
       this.panelOptions.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.NoBorder;
+      this.panelOptions.Controls.Add(this.linkFilter1);
       this.panelOptions.Controls.Add(this.cbAdvancedOptions);
-      this.panelOptions.Controls.Add(this.labelControl2);
       this.panelOptions.Controls.Add(this.labelControl1);
       this.panelOptions.Controls.Add(this.btnQueryMaster);
       this.panelOptions.Controls.Add(this.comboRegion);
@@ -858,6 +859,17 @@ namespace ServerBrowser
       this.panelOptions.Size = new System.Drawing.Size(969, 58);
       this.panelOptions.TabIndex = 26;
       // 
+      // linkFilter1
+      // 
+      this.linkFilter1.Cursor = System.Windows.Forms.Cursors.Hand;
+      this.linkFilter1.Location = new System.Drawing.Point(30, 32);
+      this.linkFilter1.Name = "linkFilter1";
+      this.linkFilter1.Size = new System.Drawing.Size(454, 13);
+      this.linkFilter1.TabIndex = 33;
+      this.linkFilter1.Text = "HINT: Use the top row of the table for simple filters or the <href>filter editor<" +
+    "/href> for more complex filters.";
+      this.linkFilter1.HyperlinkClick += new DevExpress.Utils.HyperlinkClickEventHandler(this.linkFilter_HyperlinkClick);
+      // 
       // cbAdvancedOptions
       // 
       this.cbAdvancedOptions.Location = new System.Drawing.Point(502, 2);
@@ -866,14 +878,6 @@ namespace ServerBrowser
       this.cbAdvancedOptions.TabIndex = 25;
       this.cbAdvancedOptions.Text = "Show Options";
       this.cbAdvancedOptions.CheckedChanged += new System.EventHandler(this.cbAdvancedOptions_CheckedChanged);
-      // 
-      // labelControl2
-      // 
-      this.labelControl2.Location = new System.Drawing.Point(30, 32);
-      this.labelControl2.Name = "labelControl2";
-      this.labelControl2.Size = new System.Drawing.Size(282, 13);
-      this.labelControl2.TabIndex = 23;
-      this.labelControl2.Text = "HINT: Use the top row of the table to specify filter criteria.";
       // 
       // panelGame
       // 
@@ -978,6 +982,7 @@ namespace ServerBrowser
       // 
       // panelAdvancedOptions
       // 
+      this.panelAdvancedOptions.Controls.Add(this.linkFilter2);
       this.panelAdvancedOptions.Controls.Add(this.spinRefreshInterval);
       this.panelAdvancedOptions.Controls.Add(this.cbRefreshSelectedServer);
       this.panelAdvancedOptions.Controls.Add(this.labelControl3);
@@ -996,6 +1001,16 @@ namespace ServerBrowser
       this.panelAdvancedOptions.Size = new System.Drawing.Size(1465, 90);
       this.panelAdvancedOptions.TabIndex = 30;
       this.panelAdvancedOptions.Visible = false;
+      // 
+      // linkFilter2
+      // 
+      this.linkFilter2.Cursor = System.Windows.Forms.Cursors.Hand;
+      this.linkFilter2.Location = new System.Drawing.Point(668, 60);
+      this.linkFilter2.Name = "linkFilter2";
+      this.linkFilter2.Size = new System.Drawing.Size(27, 13);
+      this.linkFilter2.TabIndex = 32;
+      this.linkFilter2.Text = "filters";
+      this.linkFilter2.HyperlinkClick += new DevExpress.Utils.HyperlinkClickEventHandler(this.linkFilter_HyperlinkClick);
       // 
       // spinRefreshInterval
       // 
@@ -1028,8 +1043,8 @@ namespace ServerBrowser
       this.cbAlert.MenuManager = this.barManager1;
       this.cbAlert.Name = "cbAlert";
       this.cbAlert.Properties.AutoWidth = true;
-      this.cbAlert.Properties.Caption = "Show alert and play sound when servers pass the filter criteria";
-      this.cbAlert.Size = new System.Drawing.Size(322, 19);
+      this.cbAlert.Properties.Caption = "Show alert and play sound when servers pass the";
+      this.cbAlert.Size = new System.Drawing.Size(261, 19);
       this.cbAlert.TabIndex = 2;
       this.cbAlert.CheckedChanged += new System.EventHandler(this.cbAlert_CheckedChanged);
       // 
@@ -1261,7 +1276,6 @@ namespace ServerBrowser
     private PanelControl panelControls;
     private PanelControl panelOptions;
     private LabelControl labelControl3;
-    private LabelControl labelControl2;
     private DevExpress.XtraBars.Docking.DockPanel panelServerList;
     private DevExpress.XtraBars.Docking.ControlContainer controlContainer1;
     private DevExpress.XtraBars.Docking.DockPanel panelContainer1;
@@ -1309,6 +1323,8 @@ namespace ServerBrowser
     private SpinEdit spinRefreshInterval;
     private System.Windows.Forms.Timer timerRefreshServers;
     private DevExpress.XtraBars.Alerter.AlertControl alertControl1;
+    private HyperlinkLabelControl linkFilter2;
+    private HyperlinkLabelControl linkFilter1;
 
 
 

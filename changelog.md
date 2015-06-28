@@ -1,3 +1,10 @@
+1.7
+---
+- added auto-refresh interval
+- updating server list no longer clears the whole table
+- added feature to set an alert when servers are found (after a refresh) which match the filter criteria (e.g. game type = CTF and human players >= 3)
+- TOXIKK: showing best player's Skill Class in a "Best" column
+
 1.6.4
 ---
 - added context menu to server list to allow update, connect, connect as spec, copy address to clipboard

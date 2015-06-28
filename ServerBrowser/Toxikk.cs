@@ -58,7 +58,7 @@ namespace ServerBrowser
           return row.GetRule(ToxikkSkillInfo.MinSkillClass) + "-" + row.GetRule(ToxikkSkillInfo.MaxSkillClass);
           //return new ToxikkSkillInfo(row, this);
         case "_best":
-          return Math.Round(this.GetBestPlayerSC(row), MidpointRounding.AwayFromZero);
+          return Math.Round(this.GetBestPlayerSC(row), 1, MidpointRounding.AwayFromZero);
         case IsOfficial:
           return row.GetRule(fieldName) == "1";
         case "_gametype":
@@ -208,7 +208,7 @@ namespace ServerBrowser
       if (fieldName == "Team")
         return info.Team;
       if (fieldName == "SC")
-        return info.SkillClass;
+        return Math.Round(info.SkillClass, 1, MidpointRounding.AwayFromZero);
       if (fieldName == "Rank")
         return info.Rank;
       return null;
@@ -234,7 +234,7 @@ namespace ServerBrowser
     private void UpdatePlayerInfos(ServerRow server)
     {
       // no need for update if it's the same server and update timestamp
-      if (server == this.serverForPlayerInfos && server.RequestId == this.serverRequestId)
+      if (server == this.serverForPlayerInfos && server.RequestId == this.serverRequestId && playerInfos.Count > 0)
         return;
 
       this.serverForPlayerInfos = server;
