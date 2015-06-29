@@ -35,9 +35,8 @@ namespace ServerBrowser
     };
     #endregion
 
-    private const string Version = "1.7";
+    private const string Version = "1.7.1";
     private string brandingUrl;
-    //private List<ServerRow> servers;
     private ServerRow lastSelectedServer;
     private volatile Game steamAppId;
     private readonly Dictionary<Game, GameExtension> extenders = new Dictionary<Game, GameExtension>();
@@ -80,8 +79,8 @@ namespace ServerBrowser
 
       this.queryLogic = new ServerQueryLogic();
       this.queryLogic.UpdateStatus += (s, e) => this.BeginInvoke((Action)(() => { this.txtStatus.Text = e.Text; }));
-      this.queryLogic.UpdateServerListComplete += (s,e) => this.BeginInvoke((Action)(() => { OnUpdateServerListComplete(e.Rows); }));
-      this.queryLogic.UpdateSingleServerComplete += (s, e) => this.BeginInvoke((Action) (() => { OnUpdateSingleServerComplete(e); }));    
+      this.queryLogic.ReloadServerListComplete += (s,e) => this.BeginInvoke((Action)(() => { queryLogic_ReloadServerListComplete(e.Rows); }));
+      this.queryLogic.RefreshSingleServerComplete += (s, e) => this.BeginInvoke((Action) (() => { queryLogic_RefreshSingleServerComplete(e); }));    
     }
     #endregion
 
@@ -103,7 +102,7 @@ namespace ServerBrowser
       this.miConnect.ItemAppearance.Normal.Font = new Font(this.miConnect.ItemAppearance.Normal.Font, FontStyle.Bold);
       this.linkFilter2.Left = this.cbAlert.Right;
       --this.ignoreUiEvents;
-      this.UpdateServerList();
+      this.ReloadServerList();
     }
     #endregion
 
@@ -340,8 +339,8 @@ namespace ServerBrowser
     }
     #endregion
 
-    #region UpdateServerList()
-    private void UpdateServerList()
+    #region ReloadServerList()
+    private void ReloadServerList()
     {
       if (this.ignoreUiEvents > 0)
         return;
@@ -352,7 +351,20 @@ namespace ServerBrowser
 
       var region = (QueryMaster.Region)steamRegions[this.comboRegion.SelectedIndex * 2 + 1];
       var getRules = this.gameExtension == null || this.gameExtension.SupportsRulesQuery;
-      queryLogic.UpdateServerList(this.MasterServerEndpoint, MaxResults, this.SteamAppID, region, getRules);
+      queryLogic.ReloadServerList(this.MasterServerEndpoint, MaxResults, this.SteamAppID, region, getRules);
+    }
+    #endregion
+
+    #region UpdateGridDataSources()
+    private void UpdateGridDataSources()
+    {
+      var row = (ServerRow)this.gvServers.GetFocusedRow();
+      this.gcDetails.DataSource = EnumerateProps(
+        row.ServerInfo,
+        row.ServerInfo == null ? null : row.ServerInfo.Extra,
+        row.ServerInfo == null ? null : row.ServerInfo.ShipInfo);
+      this.gcPlayers.DataSource = row.Players;
+      this.gcRules.DataSource = row.Rules;
     }
     #endregion
 
@@ -375,15 +387,12 @@ namespace ServerBrowser
     }
     #endregion
 
-    #region UpdateGridDataSources()
-    private void UpdateGridDataSources(ServerRow row)
+    #region GetServerAddress()
+    private string GetServerAddress(ServerRow row)
     {
-      this.gcDetails.DataSource = EnumerateProps(
-        row.ServerInfo, 
-        row.ServerInfo == null ? null : row.ServerInfo.Extra, 
-        row.ServerInfo == null ? null : row.ServerInfo.ShipInfo);
-      this.gcPlayers.DataSource = row.Players;
-      this.gcRules.DataSource = row.Rules;
+      return this.showGamePortInAddress && row.ServerInfo != null && row.ServerInfo.Extra != null
+        ? row.EndPoint.Address + ":" + row.ServerInfo.Extra.Port
+        : row.EndPoint.ToString();
     }
     #endregion
 
@@ -407,17 +416,10 @@ namespace ServerBrowser
     }
     #endregion
 
-    #region GetServerAddress()
-    private string GetServerAddress(ServerRow row)
-    {
-      return this.showGamePortInAddress && row.ServerInfo != null && row.ServerInfo.Extra != null
-        ? row.EndPoint.Address + ":" + row.ServerInfo.Extra.Port
-        : row.EndPoint.ToString();
-    }
-    #endregion
+    // general components
 
-    #region OnUpdateServerListComplete()
-    private void OnUpdateServerListComplete(List<ServerRow> rows)
+    #region queryLogic_ReloadServerListComplete()
+    private void queryLogic_ReloadServerListComplete(List<ServerRow> rows)
     {
       this.txtStatus.Text = "Update of " + rows.Count + " servers complete";
 
@@ -430,14 +432,13 @@ namespace ServerBrowser
     }
     #endregion
 
-    #region OnUpdateSingleServerComplete()
-    private void OnUpdateSingleServerComplete(ServerEventArgs e)
+    #region queryLogic_RefreshSingleServerComplete()
+    private void queryLogic_RefreshSingleServerComplete(ServerEventArgs e)
     {
       if (this.gvServers.GetRow(this.gvServers.FocusedRowHandle) == e.Server)
-        this.UpdateGridDataSources(e.Server);
+        this.UpdateGridDataSources();
     }
     #endregion
-
 
     #region LookAndFeel_StyleChanged
     private void LookAndFeel_StyleChanged(object sender, EventArgs eventArgs)
@@ -448,6 +449,23 @@ namespace ServerBrowser
       this.linkFilter2.Appearance.LinkColor = this.linkFilter2.Appearance.PressedColor = color;
     }
     #endregion
+
+    #region dockManager1_StartDocking
+    private void dockManager1_StartDocking(object sender, DockPanelCancelEventArgs e)
+    {
+      if (e.Panel == this.panelServerList)
+        e.Cancel = true;
+    }
+    #endregion
+
+    #region alertControl1_AlertClick
+    private void alertControl1_AlertClick(object sender, DevExpress.XtraBars.Alerter.AlertClickEventArgs e)
+    {
+      this.BringToFront();
+    }
+    #endregion
+
+    // option elements
 
     #region picLogo_Click
     private void picLogo_Click(object sender, EventArgs e)
@@ -469,7 +487,7 @@ namespace ServerBrowser
       if (idx < 0)
         return;
       this.SteamAppID = this.gameIdForComboBoxIndex[idx];
-      this.UpdateServerList();
+      this.ReloadServerList();
     }
     #endregion
 
@@ -493,7 +511,7 @@ namespace ServerBrowser
       {
         // update server list for selected favorite
         this.SteamAppID = (Game)radio.Tag;
-        this.UpdateServerList();
+        this.ReloadServerList();
       }
     }
     #endregion
@@ -501,7 +519,7 @@ namespace ServerBrowser
     #region comboRegion_SelectedIndexChanged
     private void comboRegion_SelectedIndexChanged(object sender, EventArgs e)
     {
-      this.UpdateServerList();
+      this.ReloadServerList();
     }
     #endregion
 
@@ -516,7 +534,7 @@ namespace ServerBrowser
         this.SteamAppID = (Game) id;
       }
 
-      UpdateServerList();
+      ReloadServerList();
     }
     #endregion
 
@@ -542,11 +560,120 @@ namespace ServerBrowser
     }
     #endregion
 
+    #region btnAddGameServer_Click
+    private void btnAddGameServer_Click(object sender, EventArgs e)
+    {
+      try
+      {
+        string[] parts = this.txtServerQuery.Text.Split(':');
+
+        var addr = Dns.GetHostAddresses(parts[0]);
+        if (addr.Length == 0) return;
+        var endpoint = new IPEndPoint(addr[0], parts.Length > 1 ? int.Parse(parts[1]) : 25785);
+        ServerRow serverRow = null;
+        foreach (var row in this.servers)
+        {
+          if (row.EndPoint.Equals(endpoint))
+          {
+            serverRow = row;
+            break;
+          }
+        }
+
+        if (serverRow == null)
+        {
+          this.gvServers.BeginDataUpdate();
+          serverRow = new ServerRow(endpoint);
+          this.servers.Add(serverRow);
+          this.gvServers.EndDataUpdate();
+          this.gvServers.FocusedRowHandle = this.gvServers.GetRowHandle(this.servers.Count - 1);
+        }
+        this.queryLogic.RefreshSingleServer(serverRow);
+      }
+      catch
+      {
+      }
+    }
+    #endregion
+
     #region cbShowGamePort_CheckedChanged
     private void cbShowGamePort_CheckedChanged(object sender, EventArgs e)
     {
       this.showGamePortInAddress = this.cbShowGamePort.Checked;
       Properties.Settings.Default.ShowGamePortInAddress = this.showGamePortInAddress;
+    }
+    #endregion
+
+    #region cbShowPlayerCountDetailColumns_CheckedChanged
+    private void cbShowPlayerCountDetailColumns_CheckedChanged(object sender, EventArgs e)
+    {
+      var visible = this.cbShowPlayerCountDetailColumns.Checked;
+      Properties.Settings.Default.ShowDetailColumns = visible;
+      int idx = visible ? this.colPlayerCount.VisibleIndex : -1;
+      int delta = visible ? 1 : 0;
+      this.colHumanPlayers.VisibleIndex = idx += delta;
+      this.colBots.VisibleIndex = idx += delta;
+      this.colTotalPlayers.VisibleIndex = idx += delta;
+      this.colMaxPlayers.VisibleIndex = idx + delta;
+    }
+    #endregion
+
+    #region cbAlert_CheckedChanged
+    private void cbAlert_CheckedChanged(object sender, EventArgs e)
+    {
+      if (!this.cbAlert.Checked || !string.IsNullOrEmpty(this.gvServers.ActiveFilterString))
+        return;
+      this.gvServers.ActiveFilterString = "[ServerInfo.Players]>=1";
+    }
+    #endregion
+
+    #region spinRefreshInterval_EditValueChanged
+    private void spinRefreshInterval_EditValueChanged(object sender, EventArgs e)
+    {
+      this.timerReloadServers.Stop();
+      this.timerReloadServers.Interval = Convert.ToInt32(this.spinRefreshInterval.EditValue) * 60000;
+      this.timerReloadServers.Start();
+    }
+    #endregion
+
+    // Servers grid
+
+    #region timerReloadServers_Tick
+    private void timerReloadServers_Tick(object sender, EventArgs e)
+    {
+      this.ReloadServerList();
+    }
+    #endregion
+
+    #region timerUpdateServerList_Tick
+    private void timerUpdateServerList_Tick(object sender, EventArgs e)
+    {
+      if (!this.queryLogic.GetAndResetDataModified())
+        return;
+
+      this.servers = this.queryLogic.Servers;
+      ++ignoreUiEvents;
+      this.gvServers.BeginDataUpdate();
+      this.gcServers.DataSource = servers;
+      this.gvServers.EndDataUpdate();
+      --ignoreUiEvents;
+
+      if (this.lastSelectedServer != null)
+      {
+        int i = 0;
+        foreach (var server in servers)
+        {
+          if (server.EndPoint.Equals(this.lastSelectedServer.EndPoint))
+          {
+            gvServers.FocusedRowHandle = gvServers.GetRowHandle(i);
+            gvServers.MakeRowVisible(gvServers.FocusedRowHandle);
+            break;
+          }
+          ++i;
+        }
+      }
+
+      this.UpdateGridDataSources();
     }
     #endregion
 
@@ -567,14 +694,14 @@ namespace ServerBrowser
     {
       try
       {
-        var row = (ServerRow)this.gvServers.GetRow(this.gvServers.FocusedRowHandle);
+        var row = (ServerRow)this.gvServers.GetFocusedRow();
         if (row == null || row == this.lastSelectedServer) // prevent consecutive updates due to row-reordering
           return;
 
         if (this.ignoreUiEvents == 0)
           this.lastSelectedServer = row;
 
-        this.UpdateGridDataSources(row);
+        this.UpdateGridDataSources();
 
         if (!this.cbRefreshSelectedServer.Checked)
           return;
@@ -583,12 +710,19 @@ namespace ServerBrowser
           return;
 
         Application.DoEvents();
-        this.queryLogic.UpdateSingleServer(row);
+        this.queryLogic.RefreshSingleServer(row);
       }
       catch (Exception ex)
       {
         this.txtStatus.Text = ex.Message;
       }
+    }
+    #endregion
+
+    #region gvServers_ColumnFilterChanged
+    private void gvServers_ColumnFilterChanged(object sender, EventArgs e)
+    {
+      this.UpdateGridDataSources();
     }
     #endregion
 
@@ -623,87 +757,10 @@ namespace ServerBrowser
     }
     #endregion
 
-    #region dockManager1_StartDocking
-    private void dockManager1_StartDocking(object sender, DockPanelCancelEventArgs e)
-    {
-      if (e.Panel == this.panelServerList)
-        e.Cancel = true;
-    }
-    #endregion
-
-    #region timerUpdateServerList_Tick
-    private void timerUpdateServerList_Tick(object sender, EventArgs e)
-    {
-      if (!this.queryLogic.GetAndResetUpdateNeededFlag())
-        return;
-      this.servers = this.queryLogic.Servers;
-      ++ignoreUiEvents;
-      this.gvServers.BeginDataUpdate();
-      this.gcServers.DataSource = servers;
-      this.gvServers.EndDataUpdate();
-      --ignoreUiEvents;
-
-      if (this.lastSelectedServer != null)
-      {
-        int i = 0;
-        foreach (var server in servers)
-        {
-          if (server.EndPoint.Equals(this.lastSelectedServer.EndPoint))
-          {
-            gvServers.FocusedRowHandle = gvServers.GetRowHandle(i);
-            gvServers.MakeRowVisible(gvServers.FocusedRowHandle);
-            break;
-          }
-          ++i;
-        }
-      }
-
-      var curServer = this.gvServers.GetFocusedRow() as ServerRow;
-      if (curServer != null)
-        this.UpdateGridDataSources(curServer);
-    }
-    #endregion
-
-    #region btnServerQuery_Click
-    private void btnServerQuery_Click(object sender, EventArgs e)
-    {
-      try
-      {
-        string[] parts = this.txtServerQuery.Text.Split(':');
-
-        var addr = Dns.GetHostAddresses(parts[0]);
-        if (addr.Length == 0) return;
-        var endpoint = new IPEndPoint(addr[0], parts.Length > 1 ? int.Parse(parts[1]) : 25785);
-        ServerRow serverRow = null;
-        foreach (var row in this.servers)
-        {
-          if (row.EndPoint.Equals(endpoint))
-          {
-            serverRow = row;
-            break;
-          }
-        }
-
-        if (serverRow == null)
-        {
-          this.gvServers.BeginDataUpdate();
-          serverRow = new ServerRow(endpoint);
-          this.servers.Add(serverRow);
-          this.gvServers.EndDataUpdate();
-          this.gvServers.FocusedRowHandle = this.gvServers.GetRowHandle(this.servers.Count - 1);
-        }
-        this.queryLogic.UpdateSingleServer(serverRow);
-      }
-      catch
-      {
-      }
-    }
-    #endregion
-
     #region miUpdateServerInfo_ItemClick
     private void miUpdateServerInfo_ItemClick(object sender, ItemClickEventArgs e)
     {
-      this.queryLogic.UpdateSingleServer((ServerRow)this.gvServers.GetFocusedRow());
+      this.queryLogic.RefreshSingleServer((ServerRow)this.gvServers.GetFocusedRow());
     }
     #endregion
 
@@ -729,44 +786,7 @@ namespace ServerBrowser
     }
     #endregion
 
-    #region gvPlayers_MouseDown
-    private void gvPlayers_MouseDown(object sender, MouseEventArgs e)
-    {
-      var hit = this.gvPlayers.CalcHitInfo(e.Location);
-      if (hit.InDataRow && e.Button == MouseButtons.Right)
-      {
-        this.gcPlayers.Focus();
-        this.gvPlayers.FocusedRowHandle = hit.RowHandle;
-        var server = (ServerRow) this.gvServers.GetFocusedRow();
-        var player = (Player) this.gvPlayers.GetFocusedRow();
-        var items = this.gameExtension.GetPlayerContextMenu(server, player);
-        if (items == null || items.Count == 0)
-          return;
-        
-        // clear old menu items
-        var oldItemList = new List<BarItem>();
-        foreach(BarItemLink oldLink in this.menuPlayers.ItemLinks)
-          oldItemList.Add(oldLink.Item);
-        foreach (var oldItem in oldItemList)
-        {
-          this.barManager1.Items.Remove(oldItem);
-          oldItem.Dispose();
-        }
-        this.menuPlayers.ClearLinks();
-        
-        // add new menu items
-        foreach (var item in items)
-        {
-          var menuItem = new BarButtonItem(this.barManager1, item.Text);
-          var safeItemRef = item;
-          menuItem.ItemClick += (o, args) => safeItemRef.Handler();
-          this.menuPlayers.AddItem(menuItem);          
-        }
-
-        this.menuPlayers.ShowPopup(this.gcPlayers.PointToScreen(e.Location));
-      }
-    }
-    #endregion
+    // Players grid
 
     #region gvPlayers_CustomUnboundColumnData
     private void gvPlayers_CustomUnboundColumnData(object sender, DevExpress.XtraGrid.Views.Base.CustomColumnDataEventArgs e)
@@ -778,50 +798,44 @@ namespace ServerBrowser
     }
     #endregion
 
-    #region cbShowPlayerCountDetailColumns_CheckedChanged
-    private void cbShowPlayerCountDetailColumns_CheckedChanged(object sender, EventArgs e)
+    #region gvPlayers_MouseDown
+    private void gvPlayers_MouseDown(object sender, MouseEventArgs e)
     {
-      var visible = this.cbShowPlayerCountDetailColumns.Checked;
-      Properties.Settings.Default.ShowDetailColumns = visible;
-      int idx = visible ? this.colPlayerCount.VisibleIndex : -1;
-      int delta = visible ? 1 : 0;
-      this.colHumanPlayers.VisibleIndex = idx += delta;
-      this.colBots.VisibleIndex = idx += delta;
-      this.colTotalPlayers.VisibleIndex = idx += delta;
-      this.colMaxPlayers.VisibleIndex = idx + delta;
+      var hit = this.gvPlayers.CalcHitInfo(e.Location);
+      if (hit.InDataRow && e.Button == MouseButtons.Right)
+      {
+        this.gcPlayers.Focus();
+        this.gvPlayers.FocusedRowHandle = hit.RowHandle;
+        var server = (ServerRow)this.gvServers.GetFocusedRow();
+        var player = (Player)this.gvPlayers.GetFocusedRow();
+        var items = this.gameExtension.GetPlayerContextMenu(server, player);
+        if (items == null || items.Count == 0)
+          return;
+
+        // clear old menu items
+        var oldItemList = new List<BarItem>();
+        foreach (BarItemLink oldLink in this.menuPlayers.ItemLinks)
+          oldItemList.Add(oldLink.Item);
+        foreach (var oldItem in oldItemList)
+        {
+          this.barManager1.Items.Remove(oldItem);
+          oldItem.Dispose();
+        }
+        this.menuPlayers.ClearLinks();
+
+        // add new menu items
+        foreach (var item in items)
+        {
+          var menuItem = new BarButtonItem(this.barManager1, item.Text);
+          var safeItemRef = item;
+          menuItem.ItemClick += (o, args) => safeItemRef.Handler();
+          this.menuPlayers.AddItem(menuItem);
+        }
+
+        this.menuPlayers.ShowPopup(this.gcPlayers.PointToScreen(e.Location));
+      }
     }
     #endregion
 
-    #region cbAlert_CheckedChanged
-    private void cbAlert_CheckedChanged(object sender, EventArgs e)
-    {
-      if (!this.cbAlert.Checked || !string.IsNullOrEmpty(this.gvServers.ActiveFilterString))
-        return;
-      this.gvServers.ActiveFilterString = "[ServerInfo.Players]>=1";
-    }
-    #endregion
-
-    #region spinRefreshInterval_EditValueChanged
-    private void spinRefreshInterval_EditValueChanged(object sender, EventArgs e)
-    {
-      this.timerRefreshServers.Stop();
-      this.timerRefreshServers.Interval = Convert.ToInt32(this.spinRefreshInterval.EditValue)*60000;
-      this.timerRefreshServers.Start();
-    }
-    #endregion
-
-    #region alertControl1_AlertClick
-    private void alertControl1_AlertClick(object sender, DevExpress.XtraBars.Alerter.AlertClickEventArgs e)
-    {
-      this.BringToFront();
-    }
-    #endregion
-
-    #region timerRefreshServers_Tick
-    private void timerRefreshServers_Tick(object sender, EventArgs e)
-    {
-      this.UpdateServerList();
-    }
-    #endregion
   }
 }

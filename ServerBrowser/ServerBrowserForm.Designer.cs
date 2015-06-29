@@ -104,7 +104,7 @@ namespace ServerBrowser
       this.comboGames = new DevExpress.XtraEditors.ComboBoxEdit();
       this.picLogo = new DevExpress.XtraEditors.PictureEdit();
       this.labelControl3 = new DevExpress.XtraEditors.LabelControl();
-      this.btnServerQuery = new DevExpress.XtraEditors.SimpleButton();
+      this.btnAddGameServer = new DevExpress.XtraEditors.SimpleButton();
       this.txtServerQuery = new DevExpress.XtraEditors.TextEdit();
       this.labelControl6 = new DevExpress.XtraEditors.LabelControl();
       this.timerUpdateServerList = new System.Windows.Forms.Timer(this.components);
@@ -122,7 +122,7 @@ namespace ServerBrowser
       this.menuServers = new DevExpress.XtraBars.PopupMenu(this.components);
       this.menuPlayers = new DevExpress.XtraBars.PopupMenu(this.components);
       this.panelAlarm = new DevExpress.XtraEditors.PanelControl();
-      this.timerRefreshServers = new System.Windows.Forms.Timer(this.components);
+      this.timerReloadServers = new System.Windows.Forms.Timer(this.components);
       this.alertControl1 = new DevExpress.XtraBars.Alerter.AlertControl(this.components);
       ((System.ComponentModel.ISupportInitialize)(this.gcDetails)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.gvDetails)).BeginInit();
@@ -377,6 +377,7 @@ namespace ServerBrowser
       this.gvServers.SortInfo.AddRange(new DevExpress.XtraGrid.Columns.GridColumnSortInfo[] {
             new DevExpress.XtraGrid.Columns.GridColumnSortInfo(this.colPlayerCount, DevExpress.Data.ColumnSortOrder.Descending)});
       this.gvServers.FocusedRowChanged += new DevExpress.XtraGrid.Views.Base.FocusedRowChangedEventHandler(this.gvServers_FocusedRowChanged);
+      this.gvServers.ColumnFilterChanged += new System.EventHandler(this.gvServers_ColumnFilterChanged);
       this.gvServers.CustomUnboundColumnData += new DevExpress.XtraGrid.Views.Base.CustomColumnDataEventHandler(this.gvServers_CustomUnboundColumnData);
       this.gvServers.MouseDown += new System.Windows.Forms.MouseEventHandler(this.gvServers_MouseDown);
       this.gvServers.DoubleClick += new System.EventHandler(this.gvServers_DoubleClick);
@@ -949,14 +950,14 @@ namespace ServerBrowser
       this.labelControl3.Text = "NOTE: Auto-update will reorder the selected row, if a value in a sorted column ch" +
     "anges";
       // 
-      // btnServerQuery
+      // btnAddGameServer
       // 
-      this.btnServerQuery.Location = new System.Drawing.Point(303, 48);
-      this.btnServerQuery.Name = "btnServerQuery";
-      this.btnServerQuery.Size = new System.Drawing.Size(47, 25);
-      this.btnServerQuery.TabIndex = 27;
-      this.btnServerQuery.Text = "Add";
-      this.btnServerQuery.Click += new System.EventHandler(this.btnServerQuery_Click);
+      this.btnAddGameServer.Location = new System.Drawing.Point(303, 48);
+      this.btnAddGameServer.Name = "btnAddGameServer";
+      this.btnAddGameServer.Size = new System.Drawing.Size(47, 25);
+      this.btnAddGameServer.TabIndex = 27;
+      this.btnAddGameServer.Text = "Add";
+      this.btnAddGameServer.Click += new System.EventHandler(this.btnAddGameServer_Click);
       // 
       // txtServerQuery
       // 
@@ -992,7 +993,7 @@ namespace ServerBrowser
       this.panelAdvancedOptions.Controls.Add(this.comboMasterServer);
       this.panelAdvancedOptions.Controls.Add(this.labelControl7);
       this.panelAdvancedOptions.Controls.Add(this.cbShowPlayerCountDetailColumns);
-      this.panelAdvancedOptions.Controls.Add(this.btnServerQuery);
+      this.panelAdvancedOptions.Controls.Add(this.btnAddGameServer);
       this.panelAdvancedOptions.Controls.Add(this.txtServerQuery);
       this.panelAdvancedOptions.Controls.Add(this.labelControl6);
       this.panelAdvancedOptions.Dock = System.Windows.Forms.DockStyle.Top;
@@ -1007,9 +1008,9 @@ namespace ServerBrowser
       this.linkFilter2.Cursor = System.Windows.Forms.Cursors.Hand;
       this.linkFilter2.Location = new System.Drawing.Point(668, 60);
       this.linkFilter2.Name = "linkFilter2";
-      this.linkFilter2.Size = new System.Drawing.Size(27, 13);
+      this.linkFilter2.Size = new System.Drawing.Size(22, 13);
       this.linkFilter2.TabIndex = 32;
-      this.linkFilter2.Text = "filters";
+      this.linkFilter2.Text = "filter";
       this.linkFilter2.HyperlinkClick += new DevExpress.Utils.HyperlinkClickEventHandler(this.linkFilter_HyperlinkClick);
       // 
       // spinRefreshInterval
@@ -1141,9 +1142,9 @@ namespace ServerBrowser
       this.panelAlarm.TabIndex = 40;
       this.panelAlarm.Visible = false;
       // 
-      // timerRefreshServers
+      // timerReloadServers
       // 
-      this.timerRefreshServers.Tick += new System.EventHandler(this.timerRefreshServers_Tick);
+      this.timerReloadServers.Tick += new System.EventHandler(this.timerReloadServers_Tick);
       // 
       // alertControl1
       // 
@@ -1291,7 +1292,7 @@ namespace ServerBrowser
     private LabelControl labelControl4;
     private LabelControl labelControl5;
     private System.Windows.Forms.Timer timerUpdateServerList;
-    private SimpleButton btnServerQuery;
+    private SimpleButton btnAddGameServer;
     private TextEdit txtServerQuery;
     private LabelControl labelControl6;
     private PanelControl panelAdvancedOptions;
@@ -1321,7 +1322,7 @@ namespace ServerBrowser
     private CheckEdit cbAlert;
     private CheckEdit cbShowPlayerCountDetailColumns;
     private SpinEdit spinRefreshInterval;
-    private System.Windows.Forms.Timer timerRefreshServers;
+    private System.Windows.Forms.Timer timerReloadServers;
     private DevExpress.XtraBars.Alerter.AlertControl alertControl1;
     private HyperlinkLabelControl linkFilter2;
     private HyperlinkLabelControl linkFilter1;

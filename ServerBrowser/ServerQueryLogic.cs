@@ -7,30 +7,6 @@ using QueryMaster;
 
 namespace ServerBrowser
 {
-  #region class UpdateRequest
-  class UpdateRequest
-  {
-    public readonly int Id;
-    public readonly int MaxResults;
-    public readonly bool QueryServerRules;
-
-    public UpdateRequest(int id, int maxResults, bool queryServerRules)
-    {
-      this.Id = id;
-      this.MaxResults = maxResults;
-      this.QueryServerRules = queryServerRules;
-    }
-
-    public CountdownEvent PendingTasks;
-    public int TaskCount;
-    public int TasksWithRetries;
-
-    public readonly List<ServerRow> servers = new List<ServerRow>();
-    public int serverListUpdateNeeded; // bool, but there is no Interlocked.Exchange(bool)
-    public volatile bool IsCancelled;
-  }
-  #endregion
-
   #region class TextEventArgs
   public class TextEventArgs : EventArgs
   {
@@ -43,12 +19,12 @@ namespace ServerBrowser
   }
   #endregion
 
-  #region class UpdateCompleteEventArgs
-  public class UpdateCompleteEventArgs : EventArgs
+  #region class ServerListEventArgs
+  public class ServerListEventArgs : EventArgs
   {
     public List<ServerRow> Rows { get; private set; }
 
-    public UpdateCompleteEventArgs(List<ServerRow> rows)
+    public ServerListEventArgs(List<ServerRow> rows)
     {
       this.Rows = rows;
     }
@@ -69,45 +45,63 @@ namespace ServerBrowser
 
   public class ServerQueryLogic
   {
-    private volatile int prevRequestId; // logical clock to drop obsolete replies, e.g. when the user selected a different game in the meantime
-    private volatile UpdateRequest currentRequest = new UpdateRequest(0, 0, false);
-    private volatile List<ServerRow> allServers;
-    private bool sendFirstUdpPacketTwice;
-    public event EventHandler<TextEventArgs> UpdateStatus;
-    public event EventHandler<UpdateCompleteEventArgs> UpdateServerListComplete;
-    public event EventHandler<ServerEventArgs> UpdateSingleServerComplete;
-
-    #region IsUpdating
-    public bool IsUpdating
+    #region class UpdateRequest
+    private class UpdateRequest
     {
-      get { return this.currentRequest.PendingTasks != null && !this.currentRequest.PendingTasks.IsSet; }
+      public readonly long Timestamp;
+      public readonly int MaxResults;
+      public readonly bool QueryServerRules;
+      public readonly List<ServerRow> Servers = new List<ServerRow>();
+
+      public UpdateRequest(int maxResults, bool queryServerRules)
+      {
+        this.Timestamp = DateTime.Now.Ticks;
+        this.MaxResults = maxResults;
+        this.QueryServerRules = queryServerRules;
+      }
+
+      public CountdownEvent PendingTasks;
+      public int TaskCount;
+      public int TasksWithRetries;
+
+      public int DataModified; // bool, but there is no Interlocked.Exchange(bool)
+      public volatile bool IsCancelled;
     }
     #endregion
 
-    #region GetAndResetUpdateNeededFlag()
-    public bool GetAndResetUpdateNeededFlag()
+    private volatile UpdateRequest currentRequest;
+    private volatile List<ServerRow> allServers;
+    private bool sendFirstUdpPacketTwice;
+
+    public event EventHandler<TextEventArgs> UpdateStatus;
+    public event EventHandler<ServerListEventArgs> ReloadServerListComplete;
+    public event EventHandler<ServerEventArgs> RefreshSingleServerComplete;
+
+    #region ctor()
+    public ServerQueryLogic()
     {
-      return Interlocked.Exchange(ref this.currentRequest.serverListUpdateNeeded, 0) != 0;
+      // fake a completed request
+      this.currentRequest = new UpdateRequest(0, false);
+      this.currentRequest.PendingTasks = new CountdownEvent(1);
+      this.currentRequest.PendingTasks.Signal();
     }
     #endregion
 
     #region Servers
-    public List<ServerRow> Servers  { get { return this.allServers; } }
+    public List<ServerRow> Servers { get { return this.allServers; } }
     #endregion
 
-
-    #region UpdateServerList()
-    public void UpdateServerList(IPEndPoint masterServerEndPoint, int maxResults, Game steamAppId, Region region, bool queryServerRules)
+    #region IsUpdating
+    public bool IsUpdating
     {
-      var request = new UpdateRequest(++prevRequestId, maxResults, queryServerRules);
+      get { return this.currentRequest.PendingTasks == null || !this.currentRequest.PendingTasks.IsSet; }
+    }
+    #endregion
 
-      MasterServer master = new MasterServer(masterServerEndPoint);
-      master.GetAddressesLimit = maxResults;
-      IpFilter filter = new IpFilter();
-      filter.App = steamAppId;     
-
-      master.GetAddresses(region, endpoints => OnMasterServerReceive(endpoints, request), filter);
-      this.currentRequest = request;
+    #region GetAndResetDataModified()
+    public bool GetAndResetDataModified()
+    {
+      return Interlocked.Exchange(ref this.currentRequest.DataModified, 0) != 0;
     }
     #endregion
 
@@ -118,11 +112,28 @@ namespace ServerBrowser
     }
     #endregion
 
-    #region OnMasterServerReceive()
-    private void OnMasterServerReceive(ReadOnlyCollection<IPEndPoint> endPoints, UpdateRequest request)
+    // reload server list
+
+    #region ReloadServerList()
+    public void ReloadServerList(IPEndPoint masterServerEndPoint, int maxResults, Game steamAppId, Region region, bool queryServerRules)
     {
-      // ignore results from older queries
-      if (request.Id != this.currentRequest.Id)
+      this.currentRequest.IsCancelled = true;
+
+      MasterServer master = new MasterServer(masterServerEndPoint);
+      master.GetAddressesLimit = maxResults;
+      IpFilter filter = new IpFilter();
+      filter.App = steamAppId;
+
+      var request = new UpdateRequest(maxResults, queryServerRules); // use local var for thread safety
+      this.currentRequest = request;
+      master.GetAddresses(region, endpoints => OnMasterServerReceive(request, endpoints), filter);
+    }
+    #endregion
+
+    #region OnMasterServerReceive()
+    private void OnMasterServerReceive(UpdateRequest request, ReadOnlyCollection<IPEndPoint> endPoints)
+    {
+      if (request.IsCancelled)
         return;
 
       string statusText;
@@ -137,21 +148,21 @@ namespace ServerBrowser
             return;
           if (ep.Address.Equals(IPAddress.Any))
           {
-            statusText = "Master server returned " + request.servers.Count + " servers";
+            statusText = "Master server returned " + request.Servers.Count + " servers";
             this.AllServersReceived(request);
           }
-          else if (request.servers.Count >= request.MaxResults)
+          else if (request.Servers.Count >= request.MaxResults)
           {
             statusText = "Server list limited to " + request.MaxResults + " entries";
             this.AllServersReceived(request);
             break;
           }
           else
-            request.servers.Add(new ServerRow(ep));
+            request.Servers.Add(new ServerRow(ep));
         }
       }
 
-      request.serverListUpdateNeeded = 1;
+      request.DataModified = 1;
       if (this.UpdateStatus != null)
         this.UpdateStatus(this, new TextEventArgs(statusText));
     }
@@ -160,21 +171,22 @@ namespace ServerBrowser
     #region AllServersReceived()
     private void AllServersReceived(UpdateRequest request)
     {
-      var rows = request.servers;
+      var rows = request.Servers;
 
-      // migrate old ServerRow into new list
-      var oldServers = new Dictionary<IPEndPoint, ServerRow>();
+      // reuse old ServerRow objects for new list to preserve last known data until the update completes
       if (this.allServers != null)
       {
+        var oldServers = new Dictionary<IPEndPoint, ServerRow>();
         foreach (var server in this.allServers)
           oldServers[server.EndPoint] = server;
+        for (int i = 0, c = rows.Count; i < c; i++)
+        {
+          ServerRow oldServer;
+          if (oldServers.TryGetValue(rows[i].EndPoint, out oldServer))
+            rows[i] = oldServer;
+        }
       }
-      for (int i=0, c=rows.Count; i<c; i++)
-      {
-        ServerRow oldServer;
-        if (oldServers.TryGetValue(rows[i].EndPoint, out oldServer))
-          rows[i] = oldServer;
-      }
+
       this.allServers = rows;
 
       request.TaskCount = rows.Count;
@@ -185,56 +197,53 @@ namespace ServerBrowser
         request.PendingTasks = new CountdownEvent(rows.Count);
         foreach (var row in rows)
         {
-          if (request.Id != this.currentRequest.Id)
+          if (request.IsCancelled)
             return;
           var safeRow = row;
-          ThreadPool.QueueUserWorkItem(context => UpdateServerDetails(safeRow, request));
+          ThreadPool.QueueUserWorkItem(context => UpdateServerAndDetails(request, safeRow, false));
           Thread.Sleep(5); // launching all threads at once results in totally wrong ping values
         }
         request.PendingTasks.Wait();
 
-        if (request.Id != this.currentRequest.Id)
+        if (request.IsCancelled)
           return;
         
-        this.UpdateServerListFinished(request);
+        this.ReloadServerListFinished(request);
       });
     }
     #endregion
 
-    #region UpdateServerListFinished()
-    private void UpdateServerListFinished(UpdateRequest request)
+    #region ReloadServerListFinished()
+    private void ReloadServerListFinished(UpdateRequest request)
     {
       if (request.TasksWithRetries > request.TaskCount / 3)
         this.sendFirstUdpPacketTwice = true;
 
-      if (this.UpdateServerListComplete != null)
-        this.UpdateServerListComplete(this, new UpdateCompleteEventArgs(request.servers));      
+      if (this.ReloadServerListComplete != null)
+        this.ReloadServerListComplete(this, new ServerListEventArgs(request.Servers));      
     }
     #endregion
 
+    // refresh single server
 
-    #region UpdateSingleServer()
-    public void UpdateSingleServer(ServerRow row)
+    #region RefreshSingleServer()
+    public void RefreshSingleServer(ServerRow row)
     {
       row.Status = "updating...";
-      this.currentRequest = new UpdateRequest(++this.prevRequestId, 1, this.currentRequest.QueryServerRules);
+      this.currentRequest = new UpdateRequest(1, this.currentRequest.QueryServerRules);
       this.currentRequest.PendingTasks = new CountdownEvent(1);
-      ThreadPool.QueueUserWorkItem(dummy =>
-        this.UpdateServerDetails(row, this.currentRequest, () =>
-        {
-          if (this.UpdateSingleServerComplete != null)
-            this.UpdateSingleServerComplete(this, new ServerEventArgs(row));
-        }));
+      ThreadPool.QueueUserWorkItem(dummy => this.UpdateServerAndDetails(this.currentRequest, row, true));
     }
     #endregion
 
+    // shared update code
 
-    #region UpdateServerDetails()
-    private void UpdateServerDetails(ServerRow row, UpdateRequest request, Action callback = null)
+    #region UpdateServerAndDetails()
+    private void UpdateServerAndDetails(UpdateRequest request, ServerRow row, bool fireRefreshSingleServerComplete)
     {
       try
       {
-        if (request.Id != this.currentRequest.Id) // drop obsolete requests
+        if (request.IsCancelled)
           return;
 
         string status;
@@ -244,27 +253,26 @@ namespace ServerBrowser
           server.SendFirstPacketTwice = this.sendFirstUdpPacketTwice;
           server.Retries = 3;
           status = "timeout";
-          if (this.UpdateServerInfo(row, server, request))
+          if (this.UpdateServerInfo(request, row, server))
           {
-            this.UpdatePlayers(row, server, request);
-            this.UpdateRules(row, server, request);
+            this.UpdatePlayers(request, row, server);
+            this.UpdateRules(request, row, server);
             status = "ok";
           }
+          row.RequestTimestamp = request.Timestamp;
         }
 
-        if (request.Id != this.currentRequest.Id) // status might have changed
+        if (request.IsCancelled) // status might have changed
           return;
 
         if (row.Retries > 0)
           status += " (" + row.Retries + ")";
         row.Status = status;
         row.Update();
+        request.DataModified = 1;
 
-        if (request.IsCancelled)
-          return;
-        request.serverListUpdateNeeded = 1;
-        if (callback != null)
-          callback();
+        if (fireRefreshSingleServerComplete && this.RefreshSingleServerComplete != null)
+          this.RefreshSingleServerComplete(this, new ServerEventArgs(row));          
       }
       finally
       {
@@ -274,12 +282,11 @@ namespace ServerBrowser
     #endregion
 
     #region UpdateServerInfo()
-    private bool UpdateServerInfo(ServerRow row, Server server, UpdateRequest request)
+    private bool UpdateServerInfo(UpdateRequest request, ServerRow row, Server server)
     {
-      bool ok= UpdateDetail(row, server, request, retryHandler =>
+      bool ok = ExecuteUpdate(request, row, server, retryCallback =>
       {
-        row.ServerInfo = server.GetInfo(retryHandler);
-        row.RequestId = request.Id;
+        row.ServerInfo = server.GetInfo(retryCallback);
       });
       if (!ok)
         row.ServerInfo = null;
@@ -288,11 +295,11 @@ namespace ServerBrowser
     #endregion
 
     #region UpdatePlayers()
-    private void UpdatePlayers(ServerRow row, Server server, UpdateRequest request)
+    private void UpdatePlayers(UpdateRequest request, ServerRow row, Server server)
     {
-      bool ok = UpdateDetail(row, server, request, retryHandler =>
+      bool ok = ExecuteUpdate(request, row, server, retryCallback =>
       {
-        var players = server.GetPlayers(retryHandler);
+        var players = server.GetPlayers(retryCallback);
         row.Players = players == null ? null : new List<Player>(players);
       });
       if (!ok)
@@ -301,37 +308,40 @@ namespace ServerBrowser
     #endregion
 
     #region UpdateRules()
-    private void UpdateRules(ServerRow row, Server server, UpdateRequest request)
+    private void UpdateRules(UpdateRequest request, ServerRow row, Server server)
     {
       if (!request.QueryServerRules)
         return;
-      bool ok = UpdateDetail(row, server, request, retryHandler =>
+      bool ok = ExecuteUpdate(request, row, server, retryCallback =>
       {
-        row.Rules = new List<Rule>(server.GetRules(retryHandler));
+        row.Rules = new List<Rule>(server.GetRules(retryCallback));
       });
       if (!ok)
         row.Rules = null;
     }
     #endregion
 
-    #region UpdateDetail()
-    private bool UpdateDetail(ServerRow row, Server server, UpdateRequest request, Action<Action<int>> updater)
+    #region ExecuteUpdate()
+    /// <summary>
+    /// Template method for common code needed in UpdateServerInfo, UpdatePlayers and UpdateRules
+    /// </summary>
+    private bool ExecuteUpdate(UpdateRequest request, ServerRow row, Server server, Action<Action<int>> updater)
     {
-      if (request.Id != this.currentRequest.Id)
+      if (request.IsCancelled)
         return false;
 
       try
       {
         row.Status = "updating " + row.Retries;
-        request.serverListUpdateNeeded = 1;
+        request.DataModified = 1;
         updater(retry =>
         {
-          if (request.Id != currentRequest.Id)
+          if (request.IsCancelled)
             throw new OperationCanceledException();
           if (row.Retries == 0)
             Interlocked.Increment(ref request.TasksWithRetries);
           row.Status = "updating " + (++row.Retries + 1);
-          request.serverListUpdateNeeded = 1;
+          request.DataModified = 1;
         });
         return true;
       }

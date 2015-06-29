@@ -19,7 +19,7 @@ namespace ServerBrowser
     private const int SecondsToWaitForMainWindowAfterLaunch = 45;
     private Keys consoleKey;
     private ServerRow serverForPlayerInfos;
-    private int serverRequestId; // logical timestamp to detect whether data in playerInfos needs to be updated
+    private long dataTimestamp;
     private readonly Dictionary<string,ToxikkPlayerInfo> playerInfos = new Dictionary<string, ToxikkPlayerInfo>();
 
 
@@ -234,11 +234,11 @@ namespace ServerBrowser
     private void UpdatePlayerInfos(ServerRow server)
     {
       // no need for update if it's the same server and update timestamp
-      if (server == this.serverForPlayerInfos && server.RequestId == this.serverRequestId && playerInfos.Count > 0)
+      if (server == this.serverForPlayerInfos && server.RequestTimestamp == this.dataTimestamp && playerInfos.Count > 0)
         return;
 
       this.serverForPlayerInfos = server;
-      this.serverRequestId = server.RequestId;
+      this.dataTimestamp = server.RequestTimestamp;
       this.playerInfos.Clear();
 
       var strNames = (server.GetRule("p1073741832") ?? "") + (server.GetRule("p1073741833") ?? "") + (server.GetRule("p1073741834") ?? "");

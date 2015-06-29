@@ -12,7 +12,7 @@ namespace ServerBrowser
     [STAThread]
     static void Main()
     {
-#if true
+#if false
       var culture = new CultureInfo("en");
       Application.CurrentCulture = culture;
       Thread.CurrentThread.CurrentUICulture = culture;

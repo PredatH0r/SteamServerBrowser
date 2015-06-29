@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Net;
 using QueryMaster;
@@ -11,7 +10,7 @@ namespace ServerBrowser
     private readonly Dictionary<string, object> extenderFieldCache = new Dictionary<string, object>();
 
     public IPEndPoint EndPoint { get; private set; }
-    public int RequestId { get; set; }
+    public long RequestTimestamp { get; set; }
     public ServerInfo ServerInfo { get; set; }
     public PlayerCountInfo PlayerCount { get; private set; }
     internal int Retries { get; set; }

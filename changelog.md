@@ -1,3 +1,9 @@
+1.7.1
+---
+- code refacturing and cleanup
+- automatically send initial UDP query packets twice when an unusual high percentage of retries was necessary in the previous refresh
+- TOXIKK: fixed race condition that could cause blank Team, Rank and SC information in "Players" view
+
 1.7
 ---
 - added auto-refresh interval

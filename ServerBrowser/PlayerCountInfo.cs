@@ -44,7 +44,7 @@ namespace ServerBrowser
 
     public override string ToString()
     {
-      return this.RealPlayers + (this.Bots > 0 ? "+" + this.Bots : "") + " / " + this.MaxPlayers;
+      return row.ServerInfo == null ? "" : this.RealPlayers + (this.Bots > 0 ? "+" + this.Bots : "") + " / " + this.MaxPlayers;
     }
   }
 }
