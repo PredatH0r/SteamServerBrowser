@@ -99,9 +99,8 @@ namespace ServerBrowser
       return null;
     }
 
-    public virtual List<PlayerContextMenuItem> GetPlayerContextMenu(ServerRow server, Player player)
+    public virtual void CustomizePlayerContextMenu(ServerRow server, Player player, List<PlayerContextMenuItem> menu)
     {
-      return null;
     }
   }
 
@@ -109,11 +108,13 @@ namespace ServerBrowser
   {
     public readonly string Text;
     public readonly Action Handler;
+    public readonly bool IsDefaultAction;
 
-    public PlayerContextMenuItem(string text, Action handler)
+    public PlayerContextMenuItem(string text, Action handler, bool isDefaultAction = false)
     {
       this.Text = text;
       this.Handler = handler;
+      this.IsDefaultAction = isDefaultAction;
     }
   }
 }

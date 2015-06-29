@@ -1,8 +1,10 @@
-1.7.1
+1.8
 ---
-- code refacturing and cleanup
+- added "Download Bonus Skins" link to get a bunch of additional skins
 - automatically send initial UDP query packets twice when an unusual high percentage of retries was necessary in the previous refresh
+- TOXIKK: added player list context menu commands: "Open Steam Chat", "Show Steam Profile", "Copy-Name" and "Copy Steam-ID"
 - TOXIKK: fixed race condition that could cause blank Team, Rank and SC information in "Players" view
+- code refacturing and cleanup
 
 1.7
 ---

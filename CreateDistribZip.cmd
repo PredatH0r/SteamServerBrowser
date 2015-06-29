@@ -12,10 +12,12 @@ copy ServerBrowser.exe* "%target%"
 copy QueryMaster.dll "%target%"
 copy Ionic.BZip2.dll "%target%"
 copy DevExpress*.dll "%target%"
+del "%target%\*BonusSkins*"
 cd %cwd%
-copy readme.txt "%target%"
+copy *.md "%target%"
 
-"c:\program files\7-Zip\7z.exe" a -tzip %target%.zip SteamServerBrowser_%curdate%
+del "%target%.zip"
+"c:\program files\7-Zip\7z.exe" a -tzip "%target%.zip" SteamServerBrowser_%curdate%
 
 cd %cwd%
 pause

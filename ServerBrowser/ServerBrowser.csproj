@@ -206,18 +206,10 @@
     <EmbeddedResource Include="rocket.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="DLL\DevExpress.BonusSkins.v14.2.dll" />
-    <None Include="DLL\DevExpress.Data.v14.2.dll" />
-    <None Include="DLL\DevExpress.Printing.v14.2.Core.dll" />
-    <None Include="DLL\DevExpress.Utils.v14.2.dll" />
-    <None Include="DLL\DevExpress.XtraBars.v14.2.dll" />
-    <None Include="DLL\DevExpress.XtraEditors.v14.2.dll" />
-    <None Include="DLL\DevExpress.XtraGrid.v14.2.dll" />
-    <None Include="DLL\DevExpress.XtraLayout.v14.2.dll" />
-    <None Include="DLL\DevExpress.XtraPrinting.v14.2.dll" />
+    <None Include="phgptv.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="phgptv.ico" />
+    <Folder Include="DLL\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

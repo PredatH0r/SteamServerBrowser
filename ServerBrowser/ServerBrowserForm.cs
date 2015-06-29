@@ -75,7 +75,6 @@ namespace ServerBrowser
       this.Controls.Add(this.panelServerList);
 
       UserLookAndFeel.Default.StyleChanged += LookAndFeel_StyleChanged;
-      LookAndFeel_StyleChanged(null, null);
 
       base.Text += " " + Version;
 
@@ -97,12 +96,9 @@ namespace ServerBrowser
       this.FillSteamServerRegions();
       this.InitGameInfoExtenders();
       this.InitBranding();
-      if (this.btnSkin.Visible)
-        this.LoadBonusSkins();
+      this.LoadBonusSkins();
       this.InitAppSettings();
-
-      this.miConnect.ItemAppearance.Normal.Font = new Font(this.miConnect.ItemAppearance.Normal.Font, FontStyle.Bold);
-      this.linkFilter2.Left = this.cbAlert.Right;
+      LookAndFeel_StyleChanged(null, null);
       --this.ignoreUiEvents;
       this.ReloadServerList();
     }
@@ -195,9 +191,9 @@ namespace ServerBrowser
     /// </summary>
     private bool LoadBonusSkins()
     {
+      var dllPath = this.BonusSkinDllPath;
       try
       {
-        var dllPath = this.BonusSkinDllPath;
         if (!File.Exists(dllPath))
           return false;
         var ass = Assembly.LoadFrom(dllPath);
@@ -208,13 +204,18 @@ namespace ServerBrowser
         if (method != null)
           method.Invoke(null, null);
 
-        this.linkDownloadSkins.Visible = false;
+        this.SetBonusSkinLinkState(false);
         return true;
       }
       catch
       {
         // it's a pity, but life goes on
-        this.linkDownloadSkins.Visible = true;
+        try
+        {
+          File.Delete(dllPath);
+          this.SetBonusSkinLinkState(true);
+        }
+        catch { }
         return false;
       }
     }
@@ -228,6 +229,20 @@ namespace ServerBrowser
         const string dllName = "DevExpress.BonusSkins." + DevExpressVersion + ".dll";
         return Path.GetDirectoryName(Application.ExecutablePath) + "\\" + dllName;        
       }
+    }
+    #endregion
+
+    #region SetBonusSkinLinkState()
+    private void SetBonusSkinLinkState(bool visible)
+    {
+      if (visible)
+      {
+        this.linkDownloadSkins.Text = "Download <href>Bonus Skins</href>";
+        this.linkDownloadSkins.Visible = true;
+        this.linkDownloadSkins.Enabled = true;
+      }
+      else
+        this.linkDownloadSkins.Visible = false;
     }
     #endregion
 
@@ -433,6 +448,20 @@ namespace ServerBrowser
     }
     #endregion
 
+    #region GetPlayerListContextMenuItems()
+    private List<PlayerContextMenuItem> GetPlayerListContextMenuItems()
+    {
+      var server = (ServerRow)this.gvServers.GetFocusedRow();
+      var player = (Player)this.gvPlayers.GetFocusedRow();
+
+      var menu = new List<PlayerContextMenuItem>();
+      menu.Add(new PlayerContextMenuItem("Copy Name to Clipboard", () => { Clipboard.SetText(player.Name); }));
+      this.gameExtension.CustomizePlayerContextMenu(server, player, menu);
+      return menu;
+    }
+    #endregion
+
+
     // general components
 
     #region queryLogic_ReloadServerListComplete()
@@ -461,9 +490,17 @@ namespace ServerBrowser
     private void LookAndFeel_StyleChanged(object sender, EventArgs eventArgs)
     {
       var skin = DevExpress.Skins.CommonSkins.GetSkin(UserLookAndFeel.Default);
-      var color = skin.Colors["ControlText"];
+      DevExpress.Skins.SkinElement label = skin[DevExpress.Skins.CommonSkins.SkinLabel];
+      var color = label.Color.ForeColor;      
+      color = skin.TranslateColor(color);
+      if (color == Color.Transparent)
+        color = this.panelOptions.ForeColor;
       this.linkFilter1.Appearance.LinkColor = this.linkFilter1.Appearance.PressedColor = color;
       this.linkFilter2.Appearance.LinkColor = this.linkFilter2.Appearance.PressedColor = color;
+      this.linkDownloadSkins.Appearance.LinkColor = this.linkDownloadSkins.Appearance.PressedColor = color;
+
+      this.linkFilter2.Left = this.cbAlert.Right;
+      this.miConnect.ItemAppearance.Normal.Font = new Font(this.miConnect.ItemAppearance.Normal.Font, FontStyle.Bold);
     }
     #endregion
 
@@ -656,19 +693,26 @@ namespace ServerBrowser
     #region linkDownloadSkins_HyperlinkClick
     private void linkDownloadSkins_HyperlinkClick(object sender, HyperlinkClickEventArgs e)
     {
-      this.linkDownloadSkins.Visible = false;
+      this.linkDownloadSkins.Text = "<href></href>Downloading Bonus Skins...";
+      this.linkDownloadSkins.Enabled = false;
 
       var client = new WebClient();
       client.Proxy = null;
       client.DownloadFileCompleted += delegate(object o, AsyncCompletedEventArgs args)
       {
         ((WebClient)o).Dispose();
+        if (args.Error != null)
+        {
+          XtraMessageBox.Show(this, "Failed to download skin pack:\n" + args.Error, "Skin Pack", MessageBoxButtons.OK, MessageBoxIcon.Error);
+          this.SetBonusSkinLinkState(true);
+          return;
+        }
         if (this.LoadBonusSkins())
           this.btnSkin_Click(null, null);
       };
 
       var dllPath = this.BonusSkinDllPath;
-      client.DownloadFileAsync(new Uri("https://github.com/PredatH0r/SteamServerBrowser/tree/master/ServerBrowser/DLL/" + Path.GetFileName(dllPath)), dllPath);      
+      client.DownloadFileAsync(new Uri("https://github.com/PredatH0r/SteamServerBrowser/raw/master/ServerBrowser/DLL/" + Path.GetFileName(dllPath)), dllPath);      
     }
     #endregion
 
@@ -842,11 +886,6 @@ namespace ServerBrowser
       {
         this.gcPlayers.Focus();
         this.gvPlayers.FocusedRowHandle = hit.RowHandle;
-        var server = (ServerRow)this.gvServers.GetFocusedRow();
-        var player = (Player)this.gvPlayers.GetFocusedRow();
-        var items = this.gameExtension.GetPlayerContextMenu(server, player);
-        if (items == null || items.Count == 0)
-          return;
 
         // clear old menu items
         var oldItemList = new List<BarItem>();
@@ -860,15 +899,33 @@ namespace ServerBrowser
         this.menuPlayers.ClearLinks();
 
         // add new menu items
+        var items = GetPlayerListContextMenuItems();
         foreach (var item in items)
         {
           var menuItem = new BarButtonItem(this.barManager1, item.Text);
+          if (item.IsDefaultAction)
+            menuItem.Appearance.Font = new Font(menuItem.Appearance.GetFont(), FontStyle.Bold);
           var safeItemRef = item;
           menuItem.ItemClick += (o, args) => safeItemRef.Handler();
           this.menuPlayers.AddItem(menuItem);
         }
 
         this.menuPlayers.ShowPopup(this.gcPlayers.PointToScreen(e.Location));
+      }
+    }
+    #endregion
+
+    #region gvPlayers_DoubleClick
+    private void gvPlayers_DoubleClick(object sender, EventArgs e)
+    {
+      var menu = this.GetPlayerListContextMenuItems();
+      foreach (var item in menu)
+      {
+        if (item.IsDefaultAction)
+        {
+          item.Handler();
+          return;
+        }
       }
     }
     #endregion

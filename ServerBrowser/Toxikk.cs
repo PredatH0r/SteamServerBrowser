@@ -215,18 +215,18 @@ namespace ServerBrowser
     }
     #endregion
 
-    #region GetPlayerContextMenu()
-    public override List<PlayerContextMenuItem> GetPlayerContextMenu(ServerRow server, Player player)
+    #region CustomizePlayerContextMenu()
+    public override void CustomizePlayerContextMenu(ServerRow server, Player player, List<PlayerContextMenuItem> menu)
     {
       this.UpdatePlayerInfos(server);
       ToxikkPlayerInfo info;
       if (!this.playerInfos.TryGetValue(player.Name, out info))
-        return null;
-      var menuItem = new PlayerContextMenuItem("Add to Steam Friends", () =>
-      {
-        Process.Start("steam://friends/add/" + info.SteamId);
-      });
-      return new List<PlayerContextMenuItem> { menuItem };
+        return;
+
+      menu.Insert(0, new PlayerContextMenuItem("Open Steam Chat", () => { Process.Start("steam://friends/message/" + info.SteamId); }, true));
+      menu.Insert(1, new PlayerContextMenuItem("Show Steam Profile", () => { Process.Start("http://steamcommunity.com/profiles/" + info.SteamId + "/"); }));
+      menu.Insert(2, new PlayerContextMenuItem("Add to Steam Friends", () => { Process.Start("steam://friends/add/" + info.SteamId); }));
+      menu.Add(new PlayerContextMenuItem("Copy Steam-ID to Clipboard", () => { Clipboard.SetText(info.SteamId); }));
     }
     #endregion
 

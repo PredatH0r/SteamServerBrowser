@@ -109,6 +109,7 @@ namespace ServerBrowser
       this.labelControl6 = new DevExpress.XtraEditors.LabelControl();
       this.timerUpdateServerList = new System.Windows.Forms.Timer(this.components);
       this.panelAdvancedOptions = new DevExpress.XtraEditors.PanelControl();
+      this.linkDownloadSkins = new DevExpress.XtraEditors.HyperlinkLabelControl();
       this.linkFilter2 = new DevExpress.XtraEditors.HyperlinkLabelControl();
       this.spinRefreshInterval = new DevExpress.XtraEditors.SpinEdit();
       this.cbAlert = new DevExpress.XtraEditors.CheckEdit();
@@ -123,7 +124,6 @@ namespace ServerBrowser
       this.menuPlayers = new DevExpress.XtraBars.PopupMenu(this.components);
       this.timerReloadServers = new System.Windows.Forms.Timer(this.components);
       this.alertControl1 = new DevExpress.XtraBars.Alerter.AlertControl(this.components);
-      this.linkDownloadSkins = new DevExpress.XtraEditors.HyperlinkLabelControl();
       ((System.ComponentModel.ISupportInitialize)(this.gcDetails)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.gvDetails)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.comboRegion.Properties)).BeginInit();
@@ -300,6 +300,7 @@ namespace ServerBrowser
       this.gvPlayers.OptionsView.ShowIndicator = false;
       this.gvPlayers.CustomUnboundColumnData += new DevExpress.XtraGrid.Views.Base.CustomColumnDataEventHandler(this.gvPlayers_CustomUnboundColumnData);
       this.gvPlayers.MouseDown += new System.Windows.Forms.MouseEventHandler(this.gvPlayers_MouseDown);
+      this.gvPlayers.DoubleClick += new System.EventHandler(this.gvPlayers_DoubleClick);
       // 
       // colName1
       // 
@@ -1003,6 +1004,16 @@ namespace ServerBrowser
       this.panelAdvancedOptions.TabIndex = 30;
       this.panelAdvancedOptions.Visible = false;
       // 
+      // linkDownloadSkins
+      // 
+      this.linkDownloadSkins.Cursor = System.Windows.Forms.Cursors.Hand;
+      this.linkDownloadSkins.Location = new System.Drawing.Point(1016, 37);
+      this.linkDownloadSkins.Name = "linkDownloadSkins";
+      this.linkDownloadSkins.Size = new System.Drawing.Size(106, 13);
+      this.linkDownloadSkins.TabIndex = 33;
+      this.linkDownloadSkins.Text = "Download Bonus Skins";
+      this.linkDownloadSkins.HyperlinkClick += new DevExpress.Utils.HyperlinkClickEventHandler(this.linkDownloadSkins_HyperlinkClick);
+      // 
       // linkFilter2
       // 
       this.linkFilter2.Cursor = System.Windows.Forms.Cursors.Hand;
@@ -1142,16 +1153,6 @@ namespace ServerBrowser
       this.alertControl1.AutoHeight = true;
       this.alertControl1.FormMaxCount = 1;
       this.alertControl1.AlertClick += new DevExpress.XtraBars.Alerter.AlertClickEventHandler(this.alertControl1_AlertClick);
-      // 
-      // linkDownloadSkins
-      // 
-      this.linkDownloadSkins.Cursor = System.Windows.Forms.Cursors.Hand;
-      this.linkDownloadSkins.Location = new System.Drawing.Point(1016, 35);
-      this.linkDownloadSkins.Name = "linkDownloadSkins";
-      this.linkDownloadSkins.Size = new System.Drawing.Size(93, 13);
-      this.linkDownloadSkins.TabIndex = 33;
-      this.linkDownloadSkins.Text = "Download skin pack";
-      this.linkDownloadSkins.HyperlinkClick += new DevExpress.Utils.HyperlinkClickEventHandler(this.linkDownloadSkins_HyperlinkClick);
       // 
       // ServerBrowserForm
       // 
