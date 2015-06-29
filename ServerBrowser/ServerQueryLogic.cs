@@ -10,15 +10,24 @@ namespace ServerBrowser
   #region class UpdateRequest
   class UpdateRequest
   {
-    public UpdateRequest(int id)
+    public readonly int Id;
+    public readonly int MaxResults;
+    public readonly bool QueryServerRules;
+
+    public UpdateRequest(int id, int maxResults, bool queryServerRules)
     {
       this.Id = id;
+      this.MaxResults = maxResults;
+      this.QueryServerRules = queryServerRules;
     }
 
-    public readonly int Id;
     public CountdownEvent PendingTasks;
     public int TaskCount;
     public int TasksWithRetries;
+
+    public readonly List<ServerRow> servers = new List<ServerRow>();
+    public int serverListUpdateNeeded; // bool, but there is no Interlocked.Exchange(bool)
+    public volatile bool IsCancelled;
   }
   #endregion
 
@@ -61,14 +70,9 @@ namespace ServerBrowser
   public class ServerQueryLogic
   {
     private volatile int prevRequestId; // logical clock to drop obsolete replies, e.g. when the user selected a different game in the meantime
-    private volatile UpdateRequest currentRequest = new UpdateRequest(0);
-    private volatile bool shutdown;
+    private volatile UpdateRequest currentRequest = new UpdateRequest(0, 0, false);
     private volatile List<ServerRow> allServers;
-    private List<ServerRow> servers;
-    private int maxResults;
-    private bool queryServerRules;
     private bool sendFirstUdpPacketTwice;
-    private int serverListUpdateNeeded; // bool, but there is no Interlocked.Exchange(bool)
     public event EventHandler<TextEventArgs> UpdateStatus;
     public event EventHandler<UpdateCompleteEventArgs> UpdateServerListComplete;
     public event EventHandler<ServerEventArgs> UpdateSingleServerComplete;
@@ -83,7 +87,7 @@ namespace ServerBrowser
     #region GetAndResetUpdateNeededFlag()
     public bool GetAndResetUpdateNeededFlag()
     {
-      return Interlocked.Exchange(ref serverListUpdateNeeded, 0) != 0;
+      return Interlocked.Exchange(ref this.currentRequest.serverListUpdateNeeded, 0) != 0;
     }
     #endregion
 
@@ -93,22 +97,16 @@ namespace ServerBrowser
 
 
     #region UpdateServerList()
-    // ReSharper disable ParameterHidesMember
     public void UpdateServerList(IPEndPoint masterServerEndPoint, int maxResults, Game steamAppId, Region region, bool queryServerRules)
-      // ReSharper restore ParameterHidesMember
     {
-      this.maxResults = maxResults;
-      this.queryServerRules = queryServerRules;
-      var request = new UpdateRequest(++prevRequestId);
-      var rows = new List<ServerRow>(); // local reference to guarantee thread safety
-      this.servers = rows;
+      var request = new UpdateRequest(++prevRequestId, maxResults, queryServerRules);
 
       MasterServer master = new MasterServer(masterServerEndPoint);
       master.GetAddressesLimit = maxResults;
       IpFilter filter = new IpFilter();
       filter.App = steamAppId;     
 
-      master.GetAddresses(region, endpoints => OnMasterServerReceive(endpoints, request, rows), filter);
+      master.GetAddresses(region, endpoints => OnMasterServerReceive(endpoints, request), filter);
       this.currentRequest = request;
     }
     #endregion
@@ -116,12 +114,12 @@ namespace ServerBrowser
     #region Cancel()
     public void Cancel()
     {
-      this.shutdown = true;
+      this.currentRequest.IsCancelled = true;
     }
     #endregion
 
     #region OnMasterServerReceive()
-    private void OnMasterServerReceive(ReadOnlyCollection<IPEndPoint> endPoints, UpdateRequest request, List<ServerRow> rows)
+    private void OnMasterServerReceive(ReadOnlyCollection<IPEndPoint> endPoints, UpdateRequest request)
     {
       // ignore results from older queries
       if (request.Id != this.currentRequest.Id)
@@ -135,33 +133,35 @@ namespace ServerBrowser
         statusText = "Requesting next batch of server list...";
         foreach (var ep in endPoints)
         {
-          if (this.shutdown)
+          if (request.IsCancelled)
             return;
           if (ep.Address.Equals(IPAddress.Any))
           {
-            statusText = "Master server returned " + this.servers.Count + " servers";
-            this.AllServersReceived(request, rows);
+            statusText = "Master server returned " + request.servers.Count + " servers";
+            this.AllServersReceived(request);
           }
-          else if (servers.Count >= maxResults)
+          else if (request.servers.Count >= request.MaxResults)
           {
-            statusText = "Server list limited to " + maxResults + " entries";
-            this.AllServersReceived(request, rows);
+            statusText = "Server list limited to " + request.MaxResults + " entries";
+            this.AllServersReceived(request);
             break;
           }
           else
-            rows.Add(new ServerRow(ep));
+            request.servers.Add(new ServerRow(ep));
         }
       }
 
-      this.serverListUpdateNeeded = 1;
+      request.serverListUpdateNeeded = 1;
       if (this.UpdateStatus != null)
         this.UpdateStatus(this, new TextEventArgs(statusText));
     }
     #endregion
 
     #region AllServersReceived()
-    private void AllServersReceived(UpdateRequest request, List<ServerRow> rows)
+    private void AllServersReceived(UpdateRequest request)
     {
+      var rows = request.servers;
+
       // migrate old ServerRow into new list
       var oldServers = new Dictionary<IPEndPoint, ServerRow>();
       if (this.allServers != null)
@@ -196,19 +196,19 @@ namespace ServerBrowser
         if (request.Id != this.currentRequest.Id)
           return;
         
-        this.UpdateServerListFinished(request, rows);
+        this.UpdateServerListFinished(request);
       });
     }
     #endregion
 
     #region UpdateServerListFinished()
-    private void UpdateServerListFinished(UpdateRequest request, List<ServerRow> rows)
+    private void UpdateServerListFinished(UpdateRequest request)
     {
       if (request.TasksWithRetries > request.TaskCount / 3)
         this.sendFirstUdpPacketTwice = true;
 
       if (this.UpdateServerListComplete != null)
-        this.UpdateServerListComplete(this, new UpdateCompleteEventArgs(rows));      
+        this.UpdateServerListComplete(this, new UpdateCompleteEventArgs(request.servers));      
     }
     #endregion
 
@@ -217,7 +217,7 @@ namespace ServerBrowser
     public void UpdateSingleServer(ServerRow row)
     {
       row.Status = "updating...";
-      this.currentRequest = new UpdateRequest(++this.prevRequestId);
+      this.currentRequest = new UpdateRequest(++this.prevRequestId, 1, this.currentRequest.QueryServerRules);
       this.currentRequest.PendingTasks = new CountdownEvent(1);
       ThreadPool.QueueUserWorkItem(dummy =>
         this.UpdateServerDetails(row, this.currentRequest, () =>
@@ -260,9 +260,9 @@ namespace ServerBrowser
         row.Status = status;
         row.Update();
 
-        if (this.shutdown)
+        if (request.IsCancelled)
           return;
-        this.serverListUpdateNeeded = 1;
+        request.serverListUpdateNeeded = 1;
         if (callback != null)
           callback();
       }
@@ -303,7 +303,7 @@ namespace ServerBrowser
     #region UpdateRules()
     private void UpdateRules(ServerRow row, Server server, UpdateRequest request)
     {
-      if (!this.queryServerRules)
+      if (!request.QueryServerRules)
         return;
       bool ok = UpdateDetail(row, server, request, retryHandler =>
       {
@@ -323,7 +323,7 @@ namespace ServerBrowser
       try
       {
         row.Status = "updating " + row.Retries;
-        this.serverListUpdateNeeded = 1;
+        request.serverListUpdateNeeded = 1;
         updater(retry =>
         {
           if (request.Id != currentRequest.Id)
@@ -331,7 +331,7 @@ namespace ServerBrowser
           if (row.Retries == 0)
             Interlocked.Increment(ref request.TasksWithRetries);
           row.Status = "updating " + (++row.Retries + 1);
-          this.serverListUpdateNeeded = 1;
+          request.serverListUpdateNeeded = 1;
         });
         return true;
       }
