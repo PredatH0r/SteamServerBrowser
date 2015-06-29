@@ -54,6 +54,12 @@ namespace QueryMaster
     public int Retries { get; set; }
 
     /// <summary>
+    /// On some systems the first outgoing UDP packet per socket gets dropped.
+    /// Enabling this workaround will send the first outgoing UDP packet twice.
+    /// </summary>
+    public bool SendFirstPacketTwice { set { socket.SendFirstPacketTwice = value; } }
+
+    /// <summary>
     ///   Returns true if server replies only to half life protocol messages.
     /// </summary>
     public bool IsObsolete { get; private set; }

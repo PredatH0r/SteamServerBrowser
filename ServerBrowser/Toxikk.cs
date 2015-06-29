@@ -42,7 +42,7 @@ namespace ServerBrowser
 
       idx = view.Columns["ServerInfo.Ping"].VisibleIndex;
       AddColumn(view, "_skillclass", "Skill", "Skill Class: Min-Max", 45, idx, UnboundColumnType.Integer);
-      AddColumn(view, "_best", "Best", "Best player's Skill Class", 45, ++idx, UnboundColumnType.Integer);
+      AddColumn(view, "_best", "Best", "Best player's Skill Class", 40, ++idx, UnboundColumnType.Integer);
       AddColumn(view, ScoreLimit, "GS", "Goal Score", 30, ++idx, UnboundColumnType.Integer);
       AddColumn(view, TimeLimit, "TL", "Time Limit", 30, ++idx, UnboundColumnType.Integer);
       AddColumn(view, IsOfficial, "Ofcl", "Official Server managed by REAKKTOR", 35, ++idx, UnboundColumnType.Boolean);

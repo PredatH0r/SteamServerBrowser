@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.IO;
 using Ionic.BZip2;
 using System.Net;
@@ -14,6 +13,8 @@ namespace QueryMaster
         private const int SinglePacket = -1;
         private const int MultiPacket = -2;
         private EngineType Type;
+        private bool isFirstPacket = true;
+
         internal UdpQuery(IPEndPoint address, int sendTimeOut, int receiveTimeOut)
             : base(SocketType.Udp)
         {
@@ -22,10 +23,17 @@ namespace QueryMaster
             socket.ReceiveTimeout = receiveTimeOut;
         }
 
+        public bool SendFirstPacketTwice { get; set; }
+
         internal byte[] GetResponse(byte[] msg, EngineType type)
         {
             Type = type;
             byte[] recvData;
+            if (this.isFirstPacket && this.SendFirstPacketTwice)
+            {
+                this.isFirstPacket = false;
+                SendData(msg);
+            }
             SendData(msg);
             recvData = ReceiveData();
             try

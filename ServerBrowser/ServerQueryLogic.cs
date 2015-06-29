@@ -17,6 +17,8 @@ namespace ServerBrowser
 
     public readonly int Id;
     public CountdownEvent PendingTasks;
+    public int TaskCount;
+    public int TasksWithRetries;
   }
   #endregion
 
@@ -65,7 +67,8 @@ namespace ServerBrowser
     private List<ServerRow> servers;
     private int maxResults;
     private bool queryServerRules;
-    private int serverListUpdateNeeded;
+    private bool sendFirstUdpPacketTwice;
+    private int serverListUpdateNeeded; // bool, but there is no Interlocked.Exchange(bool)
     public event EventHandler<TextEventArgs> UpdateStatus;
     public event EventHandler<UpdateCompleteEventArgs> UpdateServerListComplete;
     public event EventHandler<ServerEventArgs> UpdateSingleServerComplete;
@@ -87,6 +90,7 @@ namespace ServerBrowser
     #region Servers
     public List<ServerRow> Servers  { get { return this.allServers; } }
     #endregion
+
 
     #region UpdateServerList()
     // ReSharper disable ParameterHidesMember
@@ -158,6 +162,7 @@ namespace ServerBrowser
     #region AllServersReceived()
     private void AllServersReceived(UpdateRequest request, List<ServerRow> rows)
     {
+      // migrate old ServerRow into new list
       var oldServers = new Dictionary<IPEndPoint, ServerRow>();
       if (this.allServers != null)
       {
@@ -171,6 +176,8 @@ namespace ServerBrowser
           rows[i] = oldServer;
       }
       this.allServers = rows;
+
+      request.TaskCount = rows.Count;
 
       // use a background thread so that the caller doesn't have to wait for the accumulated Thread.Sleep()
       ThreadPool.QueueUserWorkItem(dummy =>
@@ -189,9 +196,19 @@ namespace ServerBrowser
         if (request.Id != this.currentRequest.Id)
           return;
         
-        if (this.UpdateServerListComplete != null)
-          this.UpdateServerListComplete(this, new UpdateCompleteEventArgs(rows));
+        this.UpdateServerListFinished(request, rows);
       });
+    }
+    #endregion
+
+    #region UpdateServerListFinished()
+    private void UpdateServerListFinished(UpdateRequest request, List<ServerRow> rows)
+    {
+      if (request.TasksWithRetries > request.TaskCount / 3)
+        this.sendFirstUdpPacketTwice = true;
+
+      if (this.UpdateServerListComplete != null)
+        this.UpdateServerListComplete(this, new UpdateCompleteEventArgs(rows));      
     }
     #endregion
 
@@ -211,6 +228,7 @@ namespace ServerBrowser
     }
     #endregion
 
+
     #region UpdateServerDetails()
     private void UpdateServerDetails(ServerRow row, UpdateRequest request, Action callback = null)
     {
@@ -223,6 +241,7 @@ namespace ServerBrowser
         using (Server server = ServerQuery.GetServerInstance(EngineType.Source, row.EndPoint, false, 500, 500))
         {
           row.Retries = 0;
+          server.SendFirstPacketTwice = this.sendFirstUdpPacketTwice;
           server.Retries = 3;
           status = "timeout";
           if (this.UpdateServerInfo(row, server, request))
@@ -309,6 +328,8 @@ namespace ServerBrowser
         {
           if (request.Id != currentRequest.Id)
             throw new OperationCanceledException();
+          if (row.Retries == 0)
+            Interlocked.Increment(ref request.TasksWithRetries);
           row.Status = "updating " + (++row.Retries + 1);
           this.serverListUpdateNeeded = 1;
         });
