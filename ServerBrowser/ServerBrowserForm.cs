@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -36,6 +37,7 @@ namespace ServerBrowser
     #endregion
 
     private const string Version = "1.7.1";
+    private const string DevExpressVersion = "v15.1";
     private string brandingUrl;
     private ServerRow lastSelectedServer;
     private volatile Game steamAppId;
@@ -191,25 +193,40 @@ namespace ServerBrowser
     /// <summary>
     /// Load the BonusSkin DLL dynamically so that the application can be executed without it being present
     /// </summary>
-    private void LoadBonusSkins()
+    private bool LoadBonusSkins()
     {
       try
       {
-        var dir = Path.GetDirectoryName(Application.ExecutablePath) ?? ".\\";
-        var files = Directory.GetFiles(dir, "DevExpress.*BonusSkin*.dll");
-        if (files.Length == 0)
-          return;
-        var ass = Assembly.LoadFrom(files[0]);
+        var dllPath = this.BonusSkinDllPath;
+        if (!File.Exists(dllPath))
+          return false;
+        var ass = Assembly.LoadFrom(dllPath);
         var type = ass.GetType("DevExpress.UserSkins.BonusSkins");
         if (type == null)
-          return;
+          return false;
         var method = type.GetMethod("Register", BindingFlags.Static | BindingFlags.Public);
         if (method != null)
           method.Invoke(null, null);
+
+        this.linkDownloadSkins.Visible = false;
+        return true;
       }
       catch
       {
         // it's a pity, but life goes on
+        this.linkDownloadSkins.Visible = true;
+        return false;
+      }
+    }
+    #endregion
+
+    #region BonusSkinDllPath
+    private string BonusSkinDllPath
+    {
+      get
+      {
+        const string dllName = "DevExpress.BonusSkins." + DevExpressVersion + ".dll";
+        return Path.GetDirectoryName(Application.ExecutablePath) + "\\" + dllName;        
       }
     }
     #endregion
@@ -545,14 +562,6 @@ namespace ServerBrowser
     }
     #endregion
 
-    #region btnSkin_Click
-    private void btnSkin_Click(object sender, EventArgs e)
-    {
-      using (var dlg = new SkinPicker())
-        dlg.ShowDialog(this);
-    }
-    #endregion
-
     #region cbAdvancedOptions_CheckedChanged
     private void cbAdvancedOptions_CheckedChanged(object sender, EventArgs e)
     {
@@ -633,6 +642,33 @@ namespace ServerBrowser
       this.timerReloadServers.Stop();
       this.timerReloadServers.Interval = Convert.ToInt32(this.spinRefreshInterval.EditValue) * 60000;
       this.timerReloadServers.Start();
+    }
+    #endregion
+
+    #region btnSkin_Click
+    private void btnSkin_Click(object sender, EventArgs e)
+    {
+      using (var dlg = new SkinPicker())
+        dlg.ShowDialog(this);
+    }
+    #endregion
+
+    #region linkDownloadSkins_HyperlinkClick
+    private void linkDownloadSkins_HyperlinkClick(object sender, HyperlinkClickEventArgs e)
+    {
+      this.linkDownloadSkins.Visible = false;
+
+      var client = new WebClient();
+      client.Proxy = null;
+      client.DownloadFileCompleted += delegate(object o, AsyncCompletedEventArgs args)
+      {
+        ((WebClient)o).Dispose();
+        if (this.LoadBonusSkins())
+          this.btnSkin_Click(null, null);
+      };
+
+      var dllPath = this.BonusSkinDllPath;
+      client.DownloadFileAsync(new Uri("https://github.com/PredatH0r/SteamServerBrowser/tree/master/ServerBrowser/DLL/" + Path.GetFileName(dllPath)), dllPath);      
     }
     #endregion
 
@@ -836,6 +872,5 @@ namespace ServerBrowser
       }
     }
     #endregion
-
   }
 }
