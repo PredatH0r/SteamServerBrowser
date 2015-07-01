@@ -40,7 +40,6 @@ namespace ServerBrowser
     private const string Version = "1.8.2";
     private const string DevExpressVersion = "v15.1";
     private string brandingUrl;
-    private ServerRow lastSelectedServer;
     private volatile Game steamAppId;
     private readonly Dictionary<Game, GameExtension> extenders = new Dictionary<Game, GameExtension>();
     private GameExtension gameExtension;
@@ -52,6 +51,8 @@ namespace ServerBrowser
     private bool showGamePortInAddress;
     private readonly ServerQueryLogic queryLogic;
     private List<ServerRow> servers;
+    private ServerRow lastSelectedServer;
+    private ServerRow currentServer;
 
     #region ctor()
     public ServerBrowserForm()
@@ -317,6 +318,7 @@ namespace ServerBrowser
         this.gcPlayers.DataSource = null;
         this.gcRules.DataSource = null;
         this.lastSelectedServer = null;
+        this.currentServer = null;
 
         this.steamAppId = value;
         this.InitGameExtension();
@@ -413,6 +415,7 @@ namespace ServerBrowser
     private void UpdateGridDataSources()
     {
       var row = (ServerRow)this.gvServers.GetFocusedRow();
+      this.currentServer = row;
 
       this.gvDetails.BeginDataUpdate();
       if (row == null)
@@ -712,8 +715,12 @@ namespace ServerBrowser
     private void spinRefreshInterval_EditValueChanged(object sender, EventArgs e)
     {
       this.timerReloadServers.Stop();
-      this.timerReloadServers.Interval = Convert.ToInt32(this.spinRefreshInterval.EditValue) * 60000;
-      this.timerReloadServers.Start();
+      int mins = Convert.ToInt32(this.spinRefreshInterval.EditValue);
+      if (mins > 0)
+      {
+        this.timerReloadServers.Interval = mins * 60000;
+        this.timerReloadServers.Start();
+      }
     }
     #endregion
 
@@ -771,7 +778,6 @@ namespace ServerBrowser
       this.gvServers.BeginDataUpdate();
       this.gcServers.DataSource = servers;
       this.gvServers.EndDataUpdate();
-      --ignoreUiEvents;
 
       if (this.lastSelectedServer != null)
       {
@@ -787,6 +793,10 @@ namespace ServerBrowser
           ++i;
         }
       }
+      else if (this.gvServers.FocusedRowHandle > 0)
+        this.gvServers.FocusedRowHandle = 0;
+
+      --ignoreUiEvents;
 
       var row = (ServerRow)this.gvServers.GetFocusedRow();
       if (row != null && row.GetAndResetIsModified())
@@ -811,17 +821,15 @@ namespace ServerBrowser
     {
       try
       {
-        var row = (ServerRow)this.gvServers.GetFocusedRow();          
-        this.UpdateGridDataSources();
+        if (this.ignoreUiEvents > 0) return;
 
-        if (this.ignoreUiEvents == 0)
-          this.lastSelectedServer = row;
+        var row = (ServerRow)this.gvServers.GetFocusedRow();
+        this.lastSelectedServer = row;
+        if (row != this.currentServer)
+          this.UpdateGridDataSources();
 
-        if (row != null && this.cbRefreshSelectedServer.Checked && !this.queryLogic.IsUpdating && this.ignoreUiEvents == 0)
-        {
-          Application.DoEvents();
+        if (row != null && this.cbRefreshSelectedServer.Checked && !this.queryLogic.IsUpdating)
           this.queryLogic.RefreshSingleServer(row);
-        }
       }
       catch (Exception ex)
       {

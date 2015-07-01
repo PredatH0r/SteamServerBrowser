@@ -1,4 +1,11 @@
-1.8
+1.8.2
+---
+- fix: remove game specific columns in Players list when switching games
+- fix: detailed human/bots/total/max player counts were always visible after switching games (even if not selected)
+- fix: race conditions between data model update and UI update
+- fix: disabling auto-update by setting interval to 0
+
+1.8.1
 ---
 - added "Download Bonus Skins" link to get a bunch of additional skins
 - automatically send initial UDP query packets twice when an unusual high percentage of retries was necessary in the previous refresh
