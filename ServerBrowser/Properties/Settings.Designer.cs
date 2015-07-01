@@ -145,7 +145,7 @@ namespace ServerBrowser.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
         public int RefreshInterval {
             get {
                 return ((int)(this["RefreshInterval"]));
@@ -164,6 +164,18 @@ namespace ServerBrowser.Properties {
             }
             set {
                 this["ShowDetailColumns"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ShowOptions {
+            get {
+                return ((bool)(this["ShowOptions"]));
+            }
+            set {
+                this["ShowOptions"] = value;
             }
         }
     }

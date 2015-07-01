@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Net;
+using System.Threading;
 using QueryMaster;
 
 namespace ServerBrowser
@@ -19,6 +20,7 @@ namespace ServerBrowser
     public List<Player> Players { get; set; }
     public List<Rule> Rules { get; set; }
     public int? TotalPlayers { get { return ServerInfo == null ? (int?)null : ServerInfo.Players + ServerInfo.Bots; } }
+    private int isModified;
 
     public ServerRow(IPEndPoint ep)
     {
@@ -54,6 +56,13 @@ namespace ServerBrowser
         foreach (var rule in this.Rules)
           rulesFieldCache[rule.Name] = rule.Value;
       }
+      this.isModified = 1;
+    }
+
+    public bool GetAndResetIsModified()
+    {
+      var mod = Interlocked.Exchange(ref this.isModified, 0);
+      return mod != 0;
     }
   }
 }

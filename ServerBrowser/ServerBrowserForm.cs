@@ -14,6 +14,7 @@ using DevExpress.XtraBars;
 using DevExpress.XtraBars.Docking;
 using DevExpress.XtraEditors;
 using DevExpress.XtraGrid.Columns;
+using DevExpress.XtraGrid.Views.Grid;
 using QueryMaster;
 
 namespace ServerBrowser
@@ -36,7 +37,7 @@ namespace ServerBrowser
     };
     #endregion
 
-    private const string Version = "1.7.1";
+    private const string Version = "1.8.2";
     private const string DevExpressVersion = "v15.1";
     private string brandingUrl;
     private ServerRow lastSelectedServer;
@@ -105,16 +106,17 @@ namespace ServerBrowser
     #endregion
 
     #region OnClosed()
-    protected override void OnClosed(EventArgs e)
+    protected override void OnFormClosing(FormClosingEventArgs e)
     {
       Properties.Settings.Default.InitialGameID = (int) this.SteamAppID;
       Properties.Settings.Default.MasterServer = this.comboMasterServer.Text;
       Properties.Settings.Default.ShowDetailColumns = this.cbShowPlayerCountDetailColumns.Checked;
       Properties.Settings.Default.RefreshInterval = Convert.ToInt32(this.spinRefreshInterval.EditValue);
+      Properties.Settings.Default.ShowOptions = this.cbAdvancedOptions.Checked;
       Properties.Settings.Default.Save();
 
       this.queryLogic.Cancel();
-      base.OnClosed(e);
+      base.OnFormClosing(e);
     }
     #endregion
 
@@ -261,6 +263,7 @@ namespace ServerBrowser
       this.cbShowGamePort.Checked = this.showGamePortInAddress;
       this.cbShowPlayerCountDetailColumns.Checked = Properties.Settings.Default.ShowDetailColumns;
       this.spinRefreshInterval.EditValue = (decimal)Properties.Settings.Default.RefreshInterval;
+      this.cbAdvancedOptions.Checked = Properties.Settings.Default.ShowOptions;
     }
     #endregion
 
@@ -308,6 +311,13 @@ namespace ServerBrowser
       {
         if (value == this.steamAppId)
           return;
+
+        this.gcServers.DataSource = null;
+        this.gcDetails.DataSource = null;
+        this.gcPlayers.DataSource = null;
+        this.gcRules.DataSource = null;
+        this.lastSelectedServer = null;
+
         this.steamAppId = value;
         this.InitGameExtension();
         
@@ -351,23 +361,35 @@ namespace ServerBrowser
     #region InitGameExtension()
     private void InitGameExtension()
     {
+      if (!extenders.TryGetValue(this.SteamAppID, out this.gameExtension))
+        this.gameExtension = new GameExtension();
+
       this.gvServers.BeginUpdate();
-      var cols = new List<GridColumn>(this.gvServers.Columns);
+      this.ResetGridColumns(this.gvServers);
+      this.cbShowPlayerCountDetailColumns_CheckedChanged(null, null);
+      this.gameExtension.CustomizeServerGridColumns(gvServers);
+      this.gvServers.EndUpdate();
+
+      this.gvPlayers.BeginUpdate();
+      this.ResetGridColumns(this.gvPlayers);
+      this.gameExtension.CustomizePlayerGridColumns(gvPlayers);
+      this.gvPlayers.EndUpdate();
+
+      this.miConnectSpectator.Visibility = this.gameExtension.SupportsConnectAsSpectator ? BarItemVisibility.Always : BarItemVisibility.Never;
+    }
+    #endregion
+
+    #region ResetGridColumns()
+    private void ResetGridColumns(GridView gview)
+    {
+      var cols = new List<GridColumn>(gview.Columns);
       foreach (var col in cols)
       {
         if (col.Tag != null)
-          this.gvServers.Columns.Remove(col);
+          gview.Columns.Remove(col);
         else
           col.Visible = true;
       }
-
-      if (!extenders.TryGetValue(this.SteamAppID, out this.gameExtension))
-        this.gameExtension = new GameExtension();
-      this.gameExtension.CustomizeServerGridColumns(gvServers);
-      this.gameExtension.CustomizePlayerGridColumns(gvPlayers);
-      this.gvServers.EndUpdate();
-
-      this.miConnectSpectator.Visibility = this.gameExtension.SupportsConnectAsSpectator ? BarItemVisibility.Always : BarItemVisibility.Never;
     }
     #endregion
 
@@ -391,12 +413,26 @@ namespace ServerBrowser
     private void UpdateGridDataSources()
     {
       var row = (ServerRow)this.gvServers.GetFocusedRow();
-      this.gcDetails.DataSource = EnumerateProps(
-        row.ServerInfo,
-        row.ServerInfo == null ? null : row.ServerInfo.Extra,
-        row.ServerInfo == null ? null : row.ServerInfo.ShipInfo);
-      this.gcPlayers.DataSource = row.Players;
-      this.gcRules.DataSource = row.Rules;
+
+      this.gvDetails.BeginDataUpdate();
+      if (row == null)
+        this.gcDetails.DataSource = null;
+      else
+      {
+        this.gcDetails.DataSource = EnumerateProps(
+          row.ServerInfo,
+          row.ServerInfo == null ? null : row.ServerInfo.Extra,
+          row.ServerInfo == null ? null : row.ServerInfo.ShipInfo);
+      }
+      this.gvDetails.EndDataUpdate();
+
+      this.gvPlayers.BeginDataUpdate();
+      this.gcPlayers.DataSource = row == null ? null : row.Players;
+      this.gvPlayers.EndDataUpdate();
+
+      this.gvRules.BeginDataUpdate();
+      this.gcRules.DataSource = row == null ? null : row.Rules;
+      this.gvRules.EndDataUpdate();
     }
     #endregion
 
@@ -481,7 +517,7 @@ namespace ServerBrowser
     #region queryLogic_RefreshSingleServerComplete()
     private void queryLogic_RefreshSingleServerComplete(ServerEventArgs e)
     {
-      if (this.gvServers.GetRow(this.gvServers.FocusedRowHandle) == e.Server)
+      if (this.gvServers.GetFocusedRow() == e.Server)
         this.UpdateGridDataSources();
     }
     #endregion
@@ -654,7 +690,6 @@ namespace ServerBrowser
     private void cbShowPlayerCountDetailColumns_CheckedChanged(object sender, EventArgs e)
     {
       var visible = this.cbShowPlayerCountDetailColumns.Checked;
-      Properties.Settings.Default.ShowDetailColumns = visible;
       int idx = visible ? this.colPlayerCount.VisibleIndex : -1;
       int delta = visible ? 1 : 0;
       this.colHumanPlayers.VisibleIndex = idx += delta;
@@ -753,7 +788,9 @@ namespace ServerBrowser
         }
       }
 
-      this.UpdateGridDataSources();
+      var row = (ServerRow)this.gvServers.GetFocusedRow();
+      if (row != null && row.GetAndResetIsModified())
+        this.UpdateGridDataSources();
     }
     #endregion
 
@@ -774,23 +811,17 @@ namespace ServerBrowser
     {
       try
       {
-        var row = (ServerRow)this.gvServers.GetFocusedRow();
-        if (row == null || row == this.lastSelectedServer) // prevent consecutive updates due to row-reordering
-          return;
+        var row = (ServerRow)this.gvServers.GetFocusedRow();          
+        this.UpdateGridDataSources();
 
         if (this.ignoreUiEvents == 0)
           this.lastSelectedServer = row;
 
-        this.UpdateGridDataSources();
-
-        if (!this.cbRefreshSelectedServer.Checked)
-          return;
-
-        if (this.queryLogic.IsUpdating)
-          return;
-
-        Application.DoEvents();
-        this.queryLogic.RefreshSingleServer(row);
+        if (row != null && this.cbRefreshSelectedServer.Checked && !this.queryLogic.IsUpdating && this.ignoreUiEvents == 0)
+        {
+          Application.DoEvents();
+          this.queryLogic.RefreshSingleServer(row);
+        }
       }
       catch (Exception ex)
       {
@@ -874,7 +905,8 @@ namespace ServerBrowser
       if (!e.IsGetData) return;
       var server = (ServerRow)this.gvServers.GetFocusedRow();
       var player = (Player) e.Row;
-      e.Value = this.gameExtension.GetPlayerCellValue(server, player, e.Column.FieldName);
+      if (server != null && player != null)
+        e.Value = this.gameExtension.GetPlayerCellValue(server, player, e.Column.FieldName);
     }
     #endregion
 
