@@ -106,13 +106,14 @@ namespace ServerBrowser
     }
     #endregion
 
-    #region OnClosed()
+    #region OnFormClosing()
     protected override void OnFormClosing(FormClosingEventArgs e)
     {
       Properties.Settings.Default.InitialGameID = (int) this.SteamAppID;
       Properties.Settings.Default.MasterServer = this.comboMasterServer.Text;
       Properties.Settings.Default.ShowDetailColumns = this.cbShowPlayerCountDetailColumns.Checked;
       Properties.Settings.Default.RefreshInterval = Convert.ToInt32(this.spinRefreshInterval.EditValue);
+      Properties.Settings.Default.RefreshSelected = this.cbRefreshSelectedServer.Checked;
       Properties.Settings.Default.ShowOptions = this.cbAdvancedOptions.Checked;
       Properties.Settings.Default.Save();
 
@@ -265,6 +266,7 @@ namespace ServerBrowser
       this.cbShowPlayerCountDetailColumns.Checked = Properties.Settings.Default.ShowDetailColumns;
       this.spinRefreshInterval.EditValue = (decimal)Properties.Settings.Default.RefreshInterval;
       this.cbAdvancedOptions.Checked = Properties.Settings.Default.ShowOptions;
+      this.cbRefreshSelectedServer.Checked = Properties.Settings.Default.RefreshSelected;
     }
     #endregion
 

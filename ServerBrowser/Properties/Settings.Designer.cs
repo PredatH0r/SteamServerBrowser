@@ -178,5 +178,17 @@ namespace ServerBrowser.Properties {
                 this["ShowOptions"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool RefreshSelected {
+            get {
+                return ((bool)(this["RefreshSelected"]));
+            }
+            set {
+                this["RefreshSelected"] = value;
+            }
+        }
     }
 }
