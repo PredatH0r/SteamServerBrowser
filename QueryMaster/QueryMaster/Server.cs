@@ -181,7 +181,7 @@ namespace QueryMaster
         if ((edf & 0x40) > 0)
           info.SpecInfo = new SourceTVInfo {Port = parser.ReadShort(), Name = parser.ReadString()};
         info.Keywords = (edf & 0x20) > 0 ? parser.ReadString() : string.Empty;
-        info.GameId = (edf & 0x10) > 0 ? parser.ReadLong() : 0;
+        info.GameId = (edf & 0x01) > 0 ? parser.ReadLong() : 0;
         server.Extra = info;
       }
       server.Address = socket.Address.Address + ":" + socket.Address.Port;

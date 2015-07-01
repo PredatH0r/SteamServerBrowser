@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Text;
 
 namespace ServerBrowser
 {
@@ -23,11 +24,15 @@ namespace ServerBrowser
 
     public void Update()
     {
-      if (row.ServerInfo == null)
-        return;
-      Bots = row.ServerInfo.Bots;
-      MaxPlayers = row.ServerInfo.MaxPlayers;
-      RealPlayers = row.Players == null ? row.ServerInfo.Players : row.Players.Count(p => !string.IsNullOrEmpty(p.Name));
+      if (row.ServerInfo != null)
+      {
+        Bots = row.ServerInfo.Bots;
+        MaxPlayers = row.ServerInfo.MaxPlayers;
+        RealPlayers = row.ServerInfo.Players;
+      }
+
+      if (row.Players != null)
+        RealPlayers = row.Players.Count(p => !string.IsNullOrEmpty(p.Name));
     }
 
     public int CompareTo(object b)
@@ -44,7 +49,15 @@ namespace ServerBrowser
 
     public override string ToString()
     {
-      return row.ServerInfo == null ? "" : this.RealPlayers + (this.Bots > 0 ? "+" + this.Bots : "") + " / " + this.MaxPlayers;
+      if (row.ServerInfo == null && row.Players == null)
+        return "";
+      var sb = new StringBuilder();
+      sb.Append(this.RealPlayers);
+      if (this.Bots > 0)
+        sb.Append('+').Append(this.Bots);
+      if (this.MaxPlayers > 0)
+        sb.Append(" / ").Append(this.MaxPlayers);
+      return sb.ToString();
     }
   }
 }
