@@ -26,8 +26,9 @@ namespace ServerBrowser
     public Toxikk()
     {
       consoleKey = (Keys)Properties.Settings.Default.ToxikkConsoleKey;
-      this.SupportsRulesQuery = true;
-      this.SupportsConnectAsSpectator = true;
+      this.supportsPlayersQuery = true;
+      this.supportsRulesQuery = true;
+      this.supportsConnectAsSpectator = true;
     }
 
     #region CustomizeServerGridColumns()

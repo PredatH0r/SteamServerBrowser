@@ -49,26 +49,33 @@ namespace ServerBrowser
     private class UpdateRequest
     {
       public readonly long Timestamp;
+      public readonly Game AppId;
       public readonly int MaxResults;
-      public readonly bool QueryServerRules;
+      public readonly int Timeout;
+      public readonly GameExtension GameExtension;
       public readonly List<ServerRow> Servers = new List<ServerRow>();
 
-      public UpdateRequest(int maxResults, bool queryServerRules)
+      public UpdateRequest(Game appId, int maxResults, int timeout, GameExtension gameExtension)
       {
         this.Timestamp = DateTime.Now.Ticks;
+        this.AppId = appId;
         this.MaxResults = maxResults;
-        this.QueryServerRules = queryServerRules;
+        this.Timeout = timeout;
+        this.GameExtension = gameExtension;
       }
 
+      public int receivedServerCount;
       public CountdownEvent PendingTasks;
       public int TaskCount;
       public int TasksWithRetries;
+      public int TasksWithTimeout;
 
       public int DataModified; // bool, but there is no Interlocked.Exchange(bool)
       public volatile bool IsCancelled;
     }
     #endregion
 
+    private readonly GameExtensionPool gameExtensions;
     private volatile UpdateRequest currentRequest;
     private volatile List<ServerRow> allServers;
     private bool sendFirstUdpPacketTwice;
@@ -78,10 +85,12 @@ namespace ServerBrowser
     public event EventHandler<ServerEventArgs> RefreshSingleServerComplete;
 
     #region ctor()
-    public ServerQueryLogic()
+    public ServerQueryLogic(GameExtensionPool gameExtensions)
     {
+      this.gameExtensions = gameExtensions;
+
       // fake a completed request
-      this.currentRequest = new UpdateRequest(0, false);
+      this.currentRequest = new UpdateRequest(0, 0, 500, gameExtensions.Get(0));
       this.currentRequest.PendingTasks = new CountdownEvent(1);
       this.currentRequest.PendingTasks.Signal();
     }
@@ -115,18 +124,14 @@ namespace ServerBrowser
     // reload server list
 
     #region ReloadServerList()
-    public void ReloadServerList(IPEndPoint masterServerEndPoint, int maxResults, Game steamAppId, Region region, bool queryServerRules)
+    public void ReloadServerList(IServerSource serverSource, int timeout, int maxResults, Region region, IpFilter filter)
     {
       this.currentRequest.IsCancelled = true;
 
-      MasterServer master = new MasterServer(masterServerEndPoint);
-      master.GetAddressesLimit = maxResults;
-      IpFilter filter = new IpFilter();
-      filter.App = steamAppId;
-
-      var request = new UpdateRequest(maxResults, queryServerRules); // use local var for thread safety
+      var extension = this.gameExtensions.Get(filter.App);
+      var request = new UpdateRequest(filter.App, maxResults, timeout, extension); // use local var for thread safety
       this.currentRequest = request;
-      master.GetAddresses(region, endpoints => OnMasterServerReceive(request, endpoints), filter);
+      serverSource.GetAddresses(region, filter, maxResults, endpoints => OnMasterServerReceive(request, endpoints));
     }
     #endregion
 
@@ -151,14 +156,15 @@ namespace ServerBrowser
             statusText = "Master server returned " + request.Servers.Count + " servers";
             this.AllServersReceived(request);
           }
-          else if (request.Servers.Count >= request.MaxResults)
+          else if (request.receivedServerCount >= request.MaxResults)
           {
             statusText = "Server list limited to " + request.MaxResults + " entries";
             this.AllServersReceived(request);
             break;
           }
-          else
+          else if (request.GameExtension.AcceptGameServer(ep))
             request.Servers.Add(new ServerRow(ep));
+          ++request.receivedServerCount;
         }
       }
 
@@ -216,7 +222,9 @@ namespace ServerBrowser
     #region ReloadServerListFinished()
     private void ReloadServerListFinished(UpdateRequest request)
     {
-      if (request.TasksWithRetries > request.TaskCount / 3)
+      if (request.TasksWithTimeout > request.TaskCount/4)
+        this.sendFirstUdpPacketTwice = false;
+      else if (request.TasksWithRetries > request.TaskCount / 3)
         this.sendFirstUdpPacketTwice = true;
 
       if (this.ReloadServerListComplete != null)
@@ -230,7 +238,7 @@ namespace ServerBrowser
     public void RefreshSingleServer(ServerRow row)
     {
       row.Status = "updating...";
-      this.currentRequest = new UpdateRequest(1, this.currentRequest.QueryServerRules);
+      this.currentRequest = new UpdateRequest(this.currentRequest.AppId, 1, this.currentRequest.Timeout, this.currentRequest.GameExtension);
       this.currentRequest.PendingTasks = new CountdownEvent(1);
       ThreadPool.QueueUserWorkItem(dummy => this.UpdateServerAndDetails(this.currentRequest, row, true));
     }
@@ -247,7 +255,7 @@ namespace ServerBrowser
           return;
 
         string status;
-        using (Server server = ServerQuery.GetServerInstance(EngineType.Source, row.EndPoint, false, 500, 500))
+        using (Server server = ServerQuery.GetServerInstance(EngineType.Source, row.EndPoint, false, request.Timeout, request.Timeout))
         {
           row.Retries = 0;
           server.SendFirstPacketTwice = this.sendFirstUdpPacketTwice;
@@ -276,7 +284,8 @@ namespace ServerBrowser
       }
       finally
       {
-        request.PendingTasks.Signal();
+        if (!request.PendingTasks.IsSet)
+          request.PendingTasks.Signal();
       }
     }
     #endregion
@@ -287,6 +296,12 @@ namespace ServerBrowser
       bool ok = ExecuteUpdate(request, row, server, retryCallback =>
       {
         row.ServerInfo = server.GetInfo(retryCallback);
+        var gameId = row.ServerInfo.Extra != null ? row.ServerInfo.Extra.GameId : 0;
+        if (gameId == 0) gameId = row.ServerInfo.Id;
+        if (gameId == 0) gameId = (int)request.AppId;
+        var extension = this.gameExtensions.Get((Game)gameId);
+        row.QueryPlayers = extension.SupportsPlayersQuery(row);
+        row.QueryRules = extension.SupportsRulesQuery(row);
       });
       if (!ok)
         row.ServerInfo = null;
@@ -297,27 +312,35 @@ namespace ServerBrowser
     #region UpdatePlayers()
     private void UpdatePlayers(UpdateRequest request, ServerRow row, Server server)
     {
+      if (!row.QueryPlayers)
+        return;
       bool ok = ExecuteUpdate(request, row, server, retryCallback =>
       {
         var players = server.GetPlayers(retryCallback);
         row.Players = players == null ? null : new List<Player>(players);
       });
       if (!ok)
+      {
         row.Players = null;
+        row.QueryPlayers = false;
+      }
     }
     #endregion
 
     #region UpdateRules()
     private void UpdateRules(UpdateRequest request, ServerRow row, Server server)
     {
-      if (!request.QueryServerRules)
+      if (!row.QueryRules)
         return;
       bool ok = ExecuteUpdate(request, row, server, retryCallback =>
       {
         row.Rules = new List<Rule>(server.GetRules(retryCallback));
       });
       if (!ok)
+      {
         row.Rules = null;
+        row.QueryRules = false;
+      }
     }
     #endregion
 
@@ -347,6 +370,7 @@ namespace ServerBrowser
       }
       catch (TimeoutException)
       {
+        Interlocked.Increment(ref request.TasksWithTimeout);
         return false;
       }
       catch

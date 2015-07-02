@@ -1,3 +1,9 @@
+1.9
+---
+- added support for CS:GO community servers
+- code refactoring to enable lists with different games mixed together
+- code refactoring to allow server lists from various sources (URLs, files, master server, ...)
+
 1.8.2
 ---
 - fix: remove game specific columns in Players list when switching games

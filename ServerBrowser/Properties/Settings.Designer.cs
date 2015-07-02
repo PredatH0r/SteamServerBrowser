@@ -190,5 +190,42 @@ namespace ServerBrowser.Properties {
                 this["RefreshSelected"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("hl2master.steampowered.com:27011,hl1master.steampowered.com:27011,masterserver.cs" +
+            "s.setti.info:27011")]
+        public string MasterServerList {
+            get {
+                return ((string)(this["MasterServerList"]));
+            }
+            set {
+                this["MasterServerList"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool GetEmptyServers {
+            get {
+                return ((bool)(this["GetEmptyServers"]));
+            }
+            set {
+                this["GetEmptyServers"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool GetFullServers {
+            get {
+                return ((bool)(this["GetFullServers"]));
+            }
+            set {
+                this["GetFullServers"] = value;
+            }
+        }
     }
 }

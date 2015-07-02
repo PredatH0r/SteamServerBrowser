@@ -37,11 +37,11 @@ namespace ServerBrowser
     };
     #endregion
 
-    private const string Version = "1.8.2";
+    private const string Version = "1.9";
     private const string DevExpressVersion = "v15.1";
     private string brandingUrl;
     private volatile Game steamAppId;
-    private readonly Dictionary<Game, GameExtension> extenders = new Dictionary<Game, GameExtension>();
+    private readonly GameExtensionPool extenders = new GameExtensionPool();
     private GameExtension gameExtension;
     private int ignoreUiEvents;
     private readonly CheckEdit[] favGameRadioButtons;
@@ -80,11 +80,24 @@ namespace ServerBrowser
 
       base.Text += " " + Version;
 
-      this.queryLogic = new ServerQueryLogic();
+      this.InitGameInfoExtenders();
+      this.queryLogic = new ServerQueryLogic(this.extenders);
       this.queryLogic.UpdateStatus += (s, e) => this.BeginInvoke((Action)(() => { this.txtStatus.Text = e.Text; }));
       this.queryLogic.ReloadServerListComplete += (s,e) => this.BeginInvoke((Action)(() => { queryLogic_ReloadServerListComplete(e.Rows); }));
       this.queryLogic.RefreshSingleServerComplete += (s, e) => this.BeginInvoke((Action) (() => { queryLogic_RefreshSingleServerComplete(e); }));    
     }
+    #endregion
+
+    #region InitGameInfoExtenders()
+
+    private void InitGameInfoExtenders()
+    {
+      extenders.Add(Game.Toxikk, new Toxikk());
+      extenders.Add(Game.Reflex, new Reflex());
+      extenders.Add(Game.QuakeLive_Testing, new QuakeLive());
+      extenders.Add(Game.CounterStrike_Global_Offensive, new CounterStrikeGO());
+    }
+
     #endregion
 
     #region OnLoad()
@@ -115,6 +128,8 @@ namespace ServerBrowser
       Properties.Settings.Default.RefreshInterval = Convert.ToInt32(this.spinRefreshInterval.EditValue);
       Properties.Settings.Default.RefreshSelected = this.cbRefreshSelectedServer.Checked;
       Properties.Settings.Default.ShowOptions = this.cbAdvancedOptions.Checked;
+      Properties.Settings.Default.GetEmptyServers = this.cbGetEmpty.Checked;
+      Properties.Settings.Default.GetFullServers = this.cbGetFull.Checked;
       Properties.Settings.Default.Save();
 
       this.queryLogic.Cancel();
@@ -145,17 +160,6 @@ namespace ServerBrowser
       this.comboRegion.SelectedIndex = 0;
       this.comboRegion.Properties.DropDownRows = steamRegions.Length / 2;
     }
-    #endregion
-
-    #region InitGameInfoExtenders()
-
-    private void InitGameInfoExtenders()
-    {
-      extenders.Add(Game.Toxikk, new Toxikk());
-      extenders.Add(Game.Reflex, new Reflex());
-      extenders.Add(Game.QuakeLive_Testing, new QuakeLive());
-    }
-
     #endregion
 
     #region InitBranding()
@@ -256,11 +260,17 @@ namespace ServerBrowser
       InitFavGameRadioButtons();
       this.SteamAppID = (Game)Properties.Settings.Default.InitialGameID;
 
+      // fill master server combobox
+      var masterServers = Properties.Settings.Default.MasterServerList.Split(',');
+      foreach (var master in masterServers)
+        this.comboMasterServer.Properties.Items.Add(master);
       var info = Properties.Settings.Default.MasterServer;
       if (string.IsNullOrEmpty(info))
         info = "hl2master.steampowered.com:27011";
       this.comboMasterServer.Text = info;
 
+      this.cbGetEmpty.Checked = Properties.Settings.Default.GetEmptyServers;
+      this.cbGetFull.Checked = Properties.Settings.Default.GetFullServers;
       this.showGamePortInAddress = Properties.Settings.Default.ShowGamePortInAddress;
       this.cbShowGamePort.Checked = this.showGamePortInAddress;
       this.cbShowPlayerCountDetailColumns.Checked = Properties.Settings.Default.ShowDetailColumns;
@@ -328,7 +338,8 @@ namespace ServerBrowser
         // show/hide the Rules panel but don't bring it to the front
         var parentPanel = this.panelRules.SavedParent;
         var curTopmost = parentPanel == null ? -1 : parentPanel.ActiveChildIndex;
-        this.panelRules.Visibility = this.gameExtension.SupportsRulesQuery ? DockVisibility.Visible : DockVisibility.Hidden;
+        this.panelPlayers.Visibility = this.gameExtension.SupportsPlayersQuery(null) ? DockVisibility.Visible : DockVisibility.Hidden;
+        this.panelRules.Visibility = this.gameExtension.SupportsRulesQuery(null) ? DockVisibility.Visible : DockVisibility.Hidden;
         parentPanel = this.panelRules.ParentPanel;
         if (parentPanel != null && curTopmost >= 0)
           parentPanel.ActiveChildIndex = curTopmost;
@@ -365,8 +376,7 @@ namespace ServerBrowser
     #region InitGameExtension()
     private void InitGameExtension()
     {
-      if (!extenders.TryGetValue(this.SteamAppID, out this.gameExtension))
-        this.gameExtension = new GameExtension();
+      this.gameExtension = this.extenders.Get(this.SteamAppID);
 
       this.gvServers.BeginUpdate();
       this.ResetGridColumns(this.gvServers);
@@ -378,8 +388,6 @@ namespace ServerBrowser
       this.ResetGridColumns(this.gvPlayers);
       this.gameExtension.CustomizePlayerGridColumns(gvPlayers);
       this.gvPlayers.EndUpdate();
-
-      this.miConnectSpectator.Visibility = this.gameExtension.SupportsConnectAsSpectator ? BarItemVisibility.Always : BarItemVisibility.Never;
     }
     #endregion
 
@@ -402,14 +410,23 @@ namespace ServerBrowser
     {
       if (this.ignoreUiEvents > 0)
         return;
-      if (this.SteamAppID == 0) // this would result in a truncated list of all games
+
+      var appId = this.SteamAppID;
+      if (appId == 0) // this would result in a truncated list of all games
         return;
 
       this.txtStatus.Text = "Requesting server list from master server...";
 
       var region = (QueryMaster.Region)steamRegions[this.comboRegion.SelectedIndex * 2 + 1];
-      var getRules = this.gameExtension == null || this.gameExtension.SupportsRulesQuery;
-      queryLogic.ReloadServerList(this.MasterServerEndpoint, MaxResults, this.SteamAppID, region, getRules);
+
+      IpFilter filter = new IpFilter();
+      filter.App = appId;
+      filter.IsNotEmpty = !this.cbGetEmpty.Checked;
+      filter.IsNotFull = !this.cbGetFull.Checked;
+      this.gameExtension.CustomizeServerFilter(filter);
+      var source = new MasterServerClient(this.MasterServerEndpoint);
+      //var source = new ServerListFromUrl(new Uri(Environment.CurrentDirectory + "\\serverlist.txt"));
+      queryLogic.ReloadServerList(source, 500, MaxResults, region, filter);
     }
     #endregion
 
@@ -438,6 +455,8 @@ namespace ServerBrowser
       this.gvRules.BeginDataUpdate();
       this.gcRules.DataSource = row == null ? null : row.Rules;
       this.gvRules.EndDataUpdate();
+
+      this.UpdateServerContextMenu();
     }
     #endregion
 
@@ -466,6 +485,14 @@ namespace ServerBrowser
       return this.showGamePortInAddress && row.ServerInfo != null && row.ServerInfo.Extra != null
         ? row.EndPoint.Address + ":" + row.ServerInfo.Extra.Port
         : row.EndPoint.ToString();
+    }
+    #endregion
+
+    #region UpdateServerContextMenu()
+    private void UpdateServerContextMenu()
+    {
+      var canSpec = this.currentServer != null && this.gameExtension.SupportsConnectAsSpectator(this.currentServer);
+      this.miConnectSpectator.Visibility = canSpec ? BarItemVisibility.Always : BarItemVisibility.Never;
     }
     #endregion
 
@@ -775,34 +802,42 @@ namespace ServerBrowser
       if (!this.queryLogic.GetAndResetDataModified())
         return;
 
-      this.servers = this.queryLogic.Servers;
-      ++ignoreUiEvents;
-      this.gvServers.BeginDataUpdate();
-      this.gcServers.DataSource = servers;
-      this.gvServers.EndDataUpdate();
-
-      if (this.lastSelectedServer != null)
+      this.timerUpdateServerList.Stop();
+      try
       {
-        int i = 0;
-        foreach (var server in servers)
+        this.servers = this.queryLogic.Servers;
+        ++ignoreUiEvents;
+        this.gvServers.BeginDataUpdate();
+        this.gcServers.DataSource = servers;
+        this.gvServers.EndDataUpdate();
+
+        if (this.lastSelectedServer != null)
         {
-          if (server.EndPoint.Equals(this.lastSelectedServer.EndPoint))
+          int i = 0;
+          foreach (var server in servers)
           {
-            gvServers.FocusedRowHandle = gvServers.GetRowHandle(i);
-            gvServers.MakeRowVisible(gvServers.FocusedRowHandle);
-            break;
+            if (server.EndPoint.Equals(this.lastSelectedServer.EndPoint))
+            {
+              gvServers.FocusedRowHandle = gvServers.GetRowHandle(i);
+              gvServers.MakeRowVisible(gvServers.FocusedRowHandle);
+              break;
+            }
+            ++i;
           }
-          ++i;
         }
+        else if (this.gvServers.FocusedRowHandle > 0)
+          this.gvServers.FocusedRowHandle = 0;
+
+        --ignoreUiEvents;
+
+        var row = (ServerRow) this.gvServers.GetFocusedRow();
+        if (row != null && row.GetAndResetIsModified())
+          this.UpdateGridDataSources();
       }
-      else if (this.gvServers.FocusedRowHandle > 0)
-        this.gvServers.FocusedRowHandle = 0;
-
-      --ignoreUiEvents;
-
-      var row = (ServerRow)this.gvServers.GetFocusedRow();
-      if (row != null && row.GetAndResetIsModified())
-        this.UpdateGridDataSources();
+      finally
+      {
+        this.timerUpdateServerList.Start();
+      }
     }
     #endregion
 

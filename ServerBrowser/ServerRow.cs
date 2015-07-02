@@ -20,7 +20,10 @@ namespace ServerBrowser
     public List<Player> Players { get; set; }
     public List<Rule> Rules { get; set; }
     public int? TotalPlayers { get { return ServerInfo == null ? (int?)null : ServerInfo.Players + ServerInfo.Bots; } }
+    
     private int isModified;
+    internal bool QueryPlayers { get; set; }
+    internal bool QueryRules { get; set; }
 
     public ServerRow(IPEndPoint ep)
     {

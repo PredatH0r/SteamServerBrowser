@@ -24,7 +24,9 @@ namespace ServerBrowser
 
     public void Update()
     {
-      if (row.ServerInfo != null)
+      if (row.ServerInfo == null)
+        RealPlayers = Bots = MaxPlayers = 0;
+      else
       {
         Bots = row.ServerInfo.Bots;
         MaxPlayers = row.ServerInfo.MaxPlayers;

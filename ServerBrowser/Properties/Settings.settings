@@ -44,5 +44,14 @@
     <Setting Name="RefreshSelected" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
+    <Setting Name="MasterServerList" Type="System.String" Scope="User">
+      <Value Profile="(Default)">hl2master.steampowered.com:27011,hl1master.steampowered.com:27011,masterserver.css.setti.info:27011</Value>
+    </Setting>
+    <Setting Name="GetEmptyServers" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="GetFullServers" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

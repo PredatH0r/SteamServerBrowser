@@ -103,6 +103,7 @@
     <Reference Include="UIAutomationClient" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Games\CounterStrikeGO.cs" />
     <Compile Include="KeyBindForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -115,8 +116,8 @@
     <Compile Include="PasswordForm.Designer.cs">
       <DependentUpon>PasswordForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Reflex.cs" />
-    <Compile Include="GameExtension.cs" />
+    <Compile Include="Games\Reflex.cs" />
+    <Compile Include="Games\GameExtension.cs" />
     <Compile Include="PlayerCountInfo.cs" />
     <Compile Include="ServerBrowserForm.cs">
       <SubType>Form</SubType>
@@ -126,8 +127,11 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServerSources\IServerSource.cs" />
+    <Compile Include="ServerSources\MasterServerClient.cs" />
     <Compile Include="ServerQueryLogic.cs" />
     <Compile Include="ServerRow.cs" />
+    <Compile Include="ServerSources\ServerListFromUrl.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="SkinPicker.cs">
       <SubType>Form</SubType>
@@ -135,8 +139,9 @@
     <Compile Include="SkinPicker.Designer.cs">
       <DependentUpon>SkinPicker.cs</DependentUpon>
     </Compile>
-    <Compile Include="QuakeLive.cs" />
-    <Compile Include="Toxikk.cs" />
+    <Compile Include="Games\QuakeLive.cs" />
+    <Compile Include="Games\Toxikk.cs" />
+    <Compile Include="Ip4Utils.cs" />
     <Compile Include="Win32.cs" />
     <EmbeddedResource Include="KeyBindForm.resx">
       <DependentUpon>KeyBindForm.cs</DependentUpon>
