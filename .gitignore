@@ -11,3 +11,5 @@ ServerBrowser/obj/*
 SteamServerBrowser_*/*
 SteamServerBrowser_*.zip
 Sourceforge/*
+*.bak
+Thumbs.db

@@ -37,7 +37,7 @@ namespace ServerBrowser
     };
     #endregion
 
-    private const string Version = "1.9";
+    private const string Version = "1.10";
     private const string DevExpressVersion = "v15.1";
     private string brandingUrl;
     private volatile Game steamAppId;
@@ -48,7 +48,7 @@ namespace ServerBrowser
     private readonly List<Game> gameIdForComboBoxIndex = new List<Game>();
     private const int MaxResults = 500;
     private readonly PasswordForm passwordForm = new PasswordForm();
-    private bool showGamePortInAddress;
+    private int showAddressMode;
     private readonly ServerQueryLogic queryLogic;
     private List<ServerRow> servers;
     private ServerRow lastSelectedServer;
@@ -124,12 +124,14 @@ namespace ServerBrowser
     {
       Properties.Settings.Default.InitialGameID = (int) this.SteamAppID;
       Properties.Settings.Default.MasterServer = this.comboMasterServer.Text;
-      Properties.Settings.Default.ShowDetailColumns = this.cbShowPlayerCountDetailColumns.Checked;
       Properties.Settings.Default.RefreshInterval = Convert.ToInt32(this.spinRefreshInterval.EditValue);
       Properties.Settings.Default.RefreshSelected = this.cbRefreshSelectedServer.Checked;
       Properties.Settings.Default.ShowOptions = this.cbAdvancedOptions.Checked;
       Properties.Settings.Default.GetEmptyServers = this.cbGetEmpty.Checked;
       Properties.Settings.Default.GetFullServers = this.cbGetFull.Checked;
+      Properties.Settings.Default.ShowAddressMode = this.showAddressMode;
+      Properties.Settings.Default.TagsInclude = this.txtTagInclude.Text;
+      Properties.Settings.Default.TagsExclude = this.txtTagExclude.Text;
       Properties.Settings.Default.Save();
 
       this.queryLogic.Cancel();
@@ -180,7 +182,6 @@ namespace ServerBrowser
         this.picLogo.Width = img.Width * topHeight / img.Height;
         this.picLogo.Visible = true;
 
-        this.panelGame.Visible = false;
         Properties.Settings.Default.InitialGameID = (int)Game.Reflex;
 
         UserLookAndFeel.Default.SkinName = "Visual Studio 2013 Dark";
@@ -271,12 +272,14 @@ namespace ServerBrowser
 
       this.cbGetEmpty.Checked = Properties.Settings.Default.GetEmptyServers;
       this.cbGetFull.Checked = Properties.Settings.Default.GetFullServers;
-      this.showGamePortInAddress = Properties.Settings.Default.ShowGamePortInAddress;
-      this.cbShowGamePort.Checked = this.showGamePortInAddress;
-      this.cbShowPlayerCountDetailColumns.Checked = Properties.Settings.Default.ShowDetailColumns;
+      this.rbAddressHidden.Checked = Properties.Settings.Default.ShowAddressMode == 0;
+      this.rbAddressQueryPort.Checked = Properties.Settings.Default.ShowAddressMode == 1;
+      this.rbAddressGamePort.Checked = Properties.Settings.Default.ShowAddressMode == 2;
       this.spinRefreshInterval.EditValue = (decimal)Properties.Settings.Default.RefreshInterval;
       this.cbAdvancedOptions.Checked = Properties.Settings.Default.ShowOptions;
       this.cbRefreshSelectedServer.Checked = Properties.Settings.Default.RefreshSelected;
+      this.txtTagInclude.Text = Properties.Settings.Default.TagsInclude;
+      this.txtTagExclude.Text = Properties.Settings.Default.TagsExclude;
     }
     #endregion
 
@@ -303,8 +306,6 @@ namespace ServerBrowser
           radio.Tag = (Game)0;
         }
       }
-      if (prevRadio != null && this.panelGame.Width < prevRadio.Right)
-        this.panelGame.Width = prevRadio.Right;
     }
 
     #endregion
@@ -380,7 +381,6 @@ namespace ServerBrowser
 
       this.gvServers.BeginUpdate();
       this.ResetGridColumns(this.gvServers);
-      this.cbShowPlayerCountDetailColumns_CheckedChanged(null, null);
       this.gameExtension.CustomizeServerGridColumns(gvServers);
       this.gvServers.EndUpdate();
 
@@ -399,8 +399,10 @@ namespace ServerBrowser
       {
         if (col.Tag != null)
           gview.Columns.Remove(col);
+        else if (col == colHumanPlayers || col == colBots || col == colTotalPlayers || col == colMaxPlayers)
+          col.Visible = false;
         else
-          col.Visible = true;
+          col.Visible = col != this.colEndPoint || !this.rbAddressHidden.Checked;
       }
     }
     #endregion
@@ -423,10 +425,25 @@ namespace ServerBrowser
       filter.App = appId;
       filter.IsNotEmpty = !this.cbGetEmpty.Checked;
       filter.IsNotFull = !this.cbGetFull.Checked;
+      filter.GameDirectory = this.txtMod.Text;
+      filter.Map = this.txtMap.Text;
+      filter.Sv_Tags = this.ParseTags(this.txtTagInclude.Text);
+      if (this.txtTagExclude.Text != "")
+      {
+        filter.Nor = new IpFilter();
+        filter.Nor.Sv_Tags = this.ParseTags(this.txtTagExclude.Text);
+      }
       this.gameExtension.CustomizeServerFilter(filter);
       var source = new MasterServerClient(this.MasterServerEndpoint);
       //var source = new ServerListFromUrl(new Uri(Environment.CurrentDirectory + "\\serverlist.txt"));
       queryLogic.ReloadServerList(source, 500, MaxResults, region, filter);
+    }
+    #endregion
+
+    #region ParseTags()
+    private string ParseTags(string text)
+    {
+      return text.Replace("\\", "");
     }
     #endregion
 
@@ -482,7 +499,7 @@ namespace ServerBrowser
     #region GetServerAddress()
     private string GetServerAddress(ServerRow row)
     {
-      return this.showGamePortInAddress && row.ServerInfo != null && row.ServerInfo.Extra != null
+      return this.showAddressMode == 2 && row.ServerInfo != null && row.ServerInfo.Extra != null
         ? row.EndPoint.Address + ":" + row.ServerInfo.Extra.Port
         : row.EndPoint.ToString();
     }
@@ -491,7 +508,7 @@ namespace ServerBrowser
     #region UpdateServerContextMenu()
     private void UpdateServerContextMenu()
     {
-      var canSpec = this.currentServer != null && this.gameExtension.SupportsConnectAsSpectator(this.currentServer);
+      var canSpec = this.currentServer != null && this.currentServer.GameExtension.SupportsConnectAsSpectator(this.currentServer);
       this.miConnectSpectator.Visibility = canSpec ? BarItemVisibility.Always : BarItemVisibility.Never;
     }
     #endregion
@@ -511,7 +528,7 @@ namespace ServerBrowser
       }
 
       this.Cursor = Cursors.WaitCursor;
-      this.gameExtension.Connect(row, password, spectate);
+      row.GameExtension.Connect(row, password, spectate);
       this.Cursor = Cursors.Default;
     }
     #endregion
@@ -524,7 +541,7 @@ namespace ServerBrowser
 
       var menu = new List<PlayerContextMenuItem>();
       menu.Add(new PlayerContextMenuItem("Copy Name to Clipboard", () => { Clipboard.SetText(player.Name); }));
-      this.gameExtension.CustomizePlayerContextMenu(server, player, menu);
+      server.GameExtension.CustomizePlayerContextMenu(server, player, menu);
       return menu;
     }
     #endregion
@@ -540,8 +557,10 @@ namespace ServerBrowser
       this.timerUpdateServerList_Tick(null, null);
       if (this.gvServers.RowCount > 0 && this.cbAlert.Checked)
       {
+        this.cbAlert.Checked = false;
         SystemSounds.Asterisk.Play();
-        this.alertControl1.Show(this, "Steam Server Browser", "Found " + this.gvServers.RowCount + " server(s) matching your criteria.");
+        this.alertControl1.Show(this, "Steam Server Browser", "Found " + this.gvServers.RowCount + " server(s) matching your criteria.", 
+          this.sharedImageCollection1.ImageSource.Images[2]);
       }
     }
     #endregion
@@ -564,10 +583,8 @@ namespace ServerBrowser
       if (color == Color.Transparent)
         color = this.panelOptions.ForeColor;
       this.linkFilter1.Appearance.LinkColor = this.linkFilter1.Appearance.PressedColor = color;
-      this.linkFilter2.Appearance.LinkColor = this.linkFilter2.Appearance.PressedColor = color;
       this.linkDownloadSkins.Appearance.LinkColor = this.linkDownloadSkins.Appearance.PressedColor = color;
 
-      this.linkFilter2.Left = this.cbAlert.Right;
       this.miConnect.ItemAppearance.Normal.Font = new Font(this.miConnect.ItemAppearance.Normal.Font, FontStyle.Bold);
     }
     #endregion
@@ -667,6 +684,13 @@ namespace ServerBrowser
     }
     #endregion
 
+    #region txtTag_ButtonClick
+    private void txtTag_ButtonClick(object sender, DevExpress.XtraEditors.Controls.ButtonPressedEventArgs e)
+    {
+      ((TextEdit)sender).Text = "";
+    }
+    #endregion
+
     #region cbAdvancedOptions_CheckedChanged
     private void cbAdvancedOptions_CheckedChanged(object sender, EventArgs e)
     {
@@ -674,12 +698,12 @@ namespace ServerBrowser
     }
     #endregion
 
-    #region btnAddGameServer_Click
-    private void btnAddGameServer_Click(object sender, EventArgs e)
+    #region txtGameServer_ButtonClick
+    private void txtGameServer_ButtonClick(object sender, DevExpress.XtraEditors.Controls.ButtonPressedEventArgs e)
     {
       try
       {
-        string[] parts = this.txtServerQuery.Text.Split(':');
+        string[] parts = this.txtGameServer.Text.Split(':');
 
         var addr = Dns.GetHostAddresses(parts[0]);
         if (addr.Length == 0) return;
@@ -697,7 +721,7 @@ namespace ServerBrowser
         if (serverRow == null)
         {
           this.gvServers.BeginDataUpdate();
-          serverRow = new ServerRow(endpoint);
+          serverRow = new ServerRow(endpoint, this.extenders.Get(0));
           this.servers.Add(serverRow);
           this.gvServers.EndDataUpdate();
           this.gvServers.FocusedRowHandle = this.gvServers.GetRowHandle(this.servers.Count - 1);
@@ -710,30 +734,31 @@ namespace ServerBrowser
     }
     #endregion
 
-    #region cbShowGamePort_CheckedChanged
-    private void cbShowGamePort_CheckedChanged(object sender, EventArgs e)
+    #region txtGameServer_KeyDown
+    private void txtGameServer_KeyDown(object sender, KeyEventArgs e)
     {
-      this.showGamePortInAddress = this.cbShowGamePort.Checked;
-      Properties.Settings.Default.ShowGamePortInAddress = this.showGamePortInAddress;
+      if (e.KeyData == Keys.Enter || e.KeyData == Keys.Return)
+        this.txtGameServer_ButtonClick(null, null);
     }
     #endregion
 
-    #region cbShowPlayerCountDetailColumns_CheckedChanged
-    private void cbShowPlayerCountDetailColumns_CheckedChanged(object sender, EventArgs e)
+    #region cbShowGamePort_CheckedChanged
+    private void rbAddress_CheckedChanged(object sender, EventArgs e)
     {
-      var visible = this.cbShowPlayerCountDetailColumns.Checked;
-      int idx = visible ? this.colPlayerCount.VisibleIndex : -1;
-      int delta = visible ? 1 : 0;
-      this.colHumanPlayers.VisibleIndex = idx += delta;
-      this.colBots.VisibleIndex = idx += delta;
-      this.colTotalPlayers.VisibleIndex = idx += delta;
-      this.colMaxPlayers.VisibleIndex = idx + delta;
+      this.colEndPoint.Visible = !this.rbAddressHidden.Checked;
+      this.showAddressMode = this.rbAddressQueryPort.Checked ? 1 : this.rbAddressGamePort.Checked ? 2 : 0;
+      if (this.colEndPoint.Visible)
+      {
+        this.gvServers.BeginUpdate();
+        this.gvServers.EndUpdate();
+      }
     }
     #endregion
 
     #region cbAlert_CheckedChanged
     private void cbAlert_CheckedChanged(object sender, EventArgs e)
     {
+      this.cbAlert.ImageIndex = this.cbAlert.Checked ? 2 : 5;
       if (!this.cbAlert.Checked || !string.IsNullOrEmpty(this.gvServers.ActiveFilterString))
         return;
       this.gvServers.ActiveFilterString = "[ServerInfo.Players]>=1";
@@ -848,8 +873,10 @@ namespace ServerBrowser
       var row = (ServerRow) e.Row;
       if (e.Column == this.colEndPoint)
         e.Value = GetServerAddress(row);
+      else if (e.Column == this.colName)
+        e.Value = row.ServerInfo == null ? (showAddressMode == 0 ? GetServerAddress(row) : null) : row.ServerInfo.Name;
       else
-        e.Value = row.GetExtenderCellValue(this.gameExtension, e.Column.FieldName);
+        e.Value = row.GetExtenderCellValue(e.Column.FieldName);
     }
     #endregion
 
@@ -951,7 +978,7 @@ namespace ServerBrowser
       var server = (ServerRow)this.gvServers.GetFocusedRow();
       var player = (Player) e.Row;
       if (server != null && player != null)
-        e.Value = this.gameExtension.GetPlayerCellValue(server, player, e.Column.FieldName);
+        e.Value = server.GameExtension.GetPlayerCellValue(server, player, e.Column.FieldName);
     }
     #endregion
 

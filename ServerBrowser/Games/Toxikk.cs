@@ -245,7 +245,7 @@ namespace ServerBrowser
       var strNames = (server.GetRule("p1073741832") ?? "") + (server.GetRule("p1073741833") ?? "") + (server.GetRule("p1073741834") ?? "");
       if (string.IsNullOrEmpty(strNames))
         return;
-      var gameType = (string)server.GetExtenderCellValue(this, "_gametype");
+      var gameType = (string)server.GetExtenderCellValue("_gametype");
       bool isTeamGame = gameType != "BL";
       var strSteamIds = (server.GetRule("p1073741829") ?? "") + (server.GetRule("p1073741830") ?? "") + (server.GetRule("p1073741831") ?? "");
       var strSkill = server.GetRule("p1073741837") ?? "";

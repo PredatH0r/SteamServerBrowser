@@ -24,11 +24,13 @@ namespace ServerBrowser
     private int isModified;
     internal bool QueryPlayers { get; set; }
     internal bool QueryRules { get; set; }
+    internal GameExtension GameExtension { get; set; }
 
-    public ServerRow(IPEndPoint ep)
+    public ServerRow(IPEndPoint ep, GameExtension extension)
     {
       this.EndPoint = ep;
       this.PlayerCount = new PlayerCountInfo(this);
+      this.GameExtension = extension;
     }
 
     public string GetRule(string field)
@@ -38,13 +40,13 @@ namespace ServerBrowser
       return value;
     }
 
-    public object GetExtenderCellValue(GameExtension extension, string field)
+    public object GetExtenderCellValue(string field)
     {
       if (this.ServerInfo == null)
         return null;
       object value;
       if (!this.extenderFieldCache.TryGetValue(field, out value))
-        this.extenderFieldCache[field] = value = extension.GetServerCellValue(this, field);
+        this.extenderFieldCache[field] = value = this.GameExtension.GetServerCellValue(this, field);
       return value;
     }
 

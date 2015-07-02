@@ -49,7 +49,7 @@ namespace ServerBrowser.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("75")]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
         public int LogoHeight {
             get {
                 return ((int)(this["LogoHeight"]));
@@ -133,18 +133,6 @@ namespace ServerBrowser.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool ShowGamePortInAddress {
-            get {
-                return ((bool)(this["ShowGamePortInAddress"]));
-            }
-            set {
-                this["ShowGamePortInAddress"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("1")]
         public int RefreshInterval {
             get {
@@ -152,18 +140,6 @@ namespace ServerBrowser.Properties {
             }
             set {
                 this["RefreshInterval"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool ShowDetailColumns {
-            get {
-                return ((bool)(this["ShowDetailColumns"]));
-            }
-            set {
-                this["ShowDetailColumns"] = value;
             }
         }
         
@@ -225,6 +201,42 @@ namespace ServerBrowser.Properties {
             }
             set {
                 this["GetFullServers"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int ShowAddressMode {
+            get {
+                return ((int)(this["ShowAddressMode"]));
+            }
+            set {
+                this["ShowAddressMode"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TagsInclude {
+            get {
+                return ((string)(this["TagsInclude"]));
+            }
+            set {
+                this["TagsInclude"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TagsExclude {
+            get {
+                return ((string)(this["TagsExclude"]));
+            }
+            set {
+                this["TagsExclude"] = value;
             }
         }
     }

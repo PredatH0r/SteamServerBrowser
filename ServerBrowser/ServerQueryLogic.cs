@@ -163,7 +163,7 @@ namespace ServerBrowser
             break;
           }
           else if (request.GameExtension.AcceptGameServer(ep))
-            request.Servers.Add(new ServerRow(ep));
+            request.Servers.Add(new ServerRow(ep, request.GameExtension));
           ++request.receivedServerCount;
         }
       }
@@ -300,6 +300,7 @@ namespace ServerBrowser
         if (gameId == 0) gameId = row.ServerInfo.Id;
         if (gameId == 0) gameId = (int)request.AppId;
         var extension = this.gameExtensions.Get((Game)gameId);
+        row.GameExtension = extension;
         row.QueryPlayers = extension.SupportsPlayersQuery(row);
         row.QueryRules = extension.SupportsRulesQuery(row);
       });
