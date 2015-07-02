@@ -49,7 +49,7 @@ namespace QueryMaster
             return endPoints.AsReadOnly();
 
         }
-        internal static string ProcessFilter(IpFilter filter)
+        internal static string ProcessFilter(IpFilter filter, bool inNorNand = false)
         {
             StringBuilder filterStr = new StringBuilder();
             if (filter.App != 0)
@@ -90,20 +90,21 @@ namespace QueryMaster
                 filterStr.Append(@"\gameaddr\").Append(filter.GameAddr);
 
             if (filter.Nor != null)
-                filterStr.Append(@"\nor\").Append(SubFilter(filter.Nor));
+                filterStr.Append(SubFilter(filter.Nor, "nor", inNorNand));
             if (filter.Nand != null)
-                filterStr.Append(@"\nand\").Append(SubFilter(filter.Nand));
+                filterStr.Append(SubFilter(filter.Nand, "nand", inNorNand));
             filterStr.Append('\0');
             return filterStr.ToString();
         }
 
-        private static string SubFilter(IpFilter filter)
+        private static string SubFilter(IpFilter filter, string verb, bool inCascade)
         {
-            var text = ProcessFilter(filter);
+            var text = ProcessFilter(filter, true);
             int count = 0;
             foreach (var ch in text)
               count += ch == '\\' ? 1 : 0;
-            return (count / 2) + text.TrimEnd('\0');
+            string prefix = inCascade ? "" : "\\" + verb + "\\" + (count/2);
+            return  prefix + text.TrimEnd('\0');
         }
     }
 }
