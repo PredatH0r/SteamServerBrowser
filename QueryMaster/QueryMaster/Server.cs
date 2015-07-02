@@ -279,8 +279,8 @@ namespace QueryMaster
         if (parser.ReadByte() != (byte) ResponseMsgHeader.A2S_PLAYER)
           throw new InvalidHeaderException("A2S_PLAYER message header is not valid");
         int playerCount = parser.ReadByte();
-        var players = new List<Player>(playerCount);
-        for (var i = 0; i < playerCount; i++)
+        var players = new List<Player>();
+        for (var i = 0; i < playerCount && parser.HasMore; i++)
         {
           parser.ReadByte(); //index,always equal to 0
           players.Add(new Player
@@ -290,6 +290,7 @@ namespace QueryMaster
             Time = TimeSpan.FromSeconds(parser.ReadFloat())
           });
         }
+        playerCount = players.Count; // some servers report more players than it really returns
         if (playerCount == 1 && players[0].Name == "Max Players")
           return null;
         return players.AsReadOnly();

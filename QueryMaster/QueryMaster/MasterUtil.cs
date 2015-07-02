@@ -82,8 +82,28 @@ namespace QueryMaster
                 filterStr.Append(@"\gamedata\" + filter.GameData);
             if (!string.IsNullOrEmpty(filter.GameDataOr))
                 filterStr.Append(@"\gamedataor\" + filter.GameDataOr);
+            if (!string.IsNullOrEmpty(filter.HostnameMatch))
+              filterStr.Append(@"\name_match\" + filter.HostnameMatch);
+            if (filter.CollapseAddrHash)
+                filterStr.Append(@"\collapse_addr_hash\1");
+            if (!string.IsNullOrEmpty(filter.GameAddr))
+                filterStr.Append(@"\gameaddr\").Append(filter.GameAddr);
+
+            if (filter.Nor != null)
+                filterStr.Append(@"\nor\").Append(SubFilter(filter.Nor));
+            if (filter.Nand != null)
+                filterStr.Append(@"\nand\").Append(SubFilter(filter.Nand));
             filterStr.Append('\0');
             return filterStr.ToString();
+        }
+
+        private static string SubFilter(IpFilter filter)
+        {
+            var text = ProcessFilter(filter);
+            int count = 0;
+            foreach (var ch in text)
+              count += ch == '\\' ? 1 : 0;
+            return (count / 2) + text.TrimEnd('\0');
         }
     }
 }

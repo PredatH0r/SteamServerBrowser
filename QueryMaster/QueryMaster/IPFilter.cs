@@ -70,6 +70,12 @@ namespace QueryMaster
         /// Servers with any of the given tag(s) in their 'hidden' tags (L4D2) 
         /// </summary>
         public string GameDataOr { get; set; }
+        public bool CollapseAddrHash { get; set; }
+        public string HostnameMatch { get; set; }
+        public string GameAddr { get; set; }
+
+        public IpFilter Nor { get; set; }
+        public IpFilter Nand { get; set; }
 
     }
 }

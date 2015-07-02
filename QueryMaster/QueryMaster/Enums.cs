@@ -140,7 +140,7 @@ namespace QueryMaster
         /// <summary>
         /// Counter-Strike: Global Offensive
         /// </summary>
-        CounterStrike_Global_Offensive = 1800,
+        CounterStrike_Global_Offensive = 730,
         /// <summary>
         /// SiN Episodes: Emergence
         /// </summary>
