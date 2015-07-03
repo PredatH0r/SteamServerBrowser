@@ -66,14 +66,17 @@ namespace ServerBrowser
       this.colStatus = new DevExpress.XtraGrid.Columns.GridColumn();
       this.dockManager1 = new DevExpress.XtraBars.Docking.DockManager(this.components);
       this.barManager1 = new DevExpress.XtraBars.BarManager(this.components);
+      this.barMenu = new DevExpress.XtraBars.Bar();
+      this.miReloadServers = new DevExpress.XtraBars.BarButtonItem();
       this.barDockControlTop = new DevExpress.XtraBars.BarDockControl();
       this.barDockControlBottom = new DevExpress.XtraBars.BarDockControl();
       this.barDockControlLeft = new DevExpress.XtraBars.BarDockControl();
       this.barDockControlRight = new DevExpress.XtraBars.BarDockControl();
+      this.sharedImageCollection1 = new DevExpress.Utils.SharedImageCollection(this.components);
+      this.miUpdateServerInfo = new DevExpress.XtraBars.BarButtonItem();
       this.miConnect = new DevExpress.XtraBars.BarButtonItem();
       this.miConnectSpectator = new DevExpress.XtraBars.BarButtonItem();
       this.miCopyAddress = new DevExpress.XtraBars.BarButtonItem();
-      this.miUpdateServerInfo = new DevExpress.XtraBars.BarButtonItem();
       this.panelContainer1 = new DevExpress.XtraBars.Docking.DockPanel();
       this.panelPlayers = new DevExpress.XtraBars.Docking.DockPanel();
       this.dockPanel1_Container = new DevExpress.XtraBars.Docking.ControlContainer();
@@ -92,10 +95,10 @@ namespace ServerBrowser
       this.cbRefreshSelectedServer = new DevExpress.XtraEditors.CheckEdit();
       this.labelControl1 = new DevExpress.XtraEditors.LabelControl();
       this.btnQueryMaster = new DevExpress.XtraEditors.SimpleButton();
-      this.sharedImageCollection1 = new DevExpress.Utils.SharedImageCollection(this.components);
       this.panelTop = new DevExpress.XtraEditors.PanelControl();
       this.panelControls = new DevExpress.XtraEditors.PanelControl();
       this.panelOptions = new DevExpress.XtraEditors.PanelControl();
+      this.rbFavGame4 = new DevExpress.XtraEditors.CheckEdit();
       this.txtMod = new DevExpress.XtraEditors.ButtonEdit();
       this.labelControl12 = new DevExpress.XtraEditors.LabelControl();
       this.txtMap = new DevExpress.XtraEditors.ButtonEdit();
@@ -113,7 +116,6 @@ namespace ServerBrowser
       this.labelControl4 = new DevExpress.XtraEditors.LabelControl();
       this.cbGetEmpty = new DevExpress.XtraEditors.CheckEdit();
       this.panelTopFill = new DevExpress.XtraEditors.PanelControl();
-      this.picLogo = new DevExpress.XtraEditors.PictureEdit();
       this.linkFilter1 = new DevExpress.XtraEditors.HyperlinkLabelControl();
       this.labelControl3 = new DevExpress.XtraEditors.LabelControl();
       this.timerUpdateServerList = new System.Windows.Forms.Timer(this.components);
@@ -149,6 +151,8 @@ namespace ServerBrowser
       ((System.ComponentModel.ISupportInitialize)(this.gvServers)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.dockManager1)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.barManager1)).BeginInit();
+      ((System.ComponentModel.ISupportInitialize)(this.sharedImageCollection1)).BeginInit();
+      ((System.ComponentModel.ISupportInitialize)(this.sharedImageCollection1.ImageSource)).BeginInit();
       this.panelContainer1.SuspendLayout();
       this.panelPlayers.SuspendLayout();
       this.dockPanel1_Container.SuspendLayout();
@@ -162,14 +166,13 @@ namespace ServerBrowser
       this.panelServerList.SuspendLayout();
       this.controlContainer1.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.cbRefreshSelectedServer.Properties)).BeginInit();
-      ((System.ComponentModel.ISupportInitialize)(this.sharedImageCollection1)).BeginInit();
-      ((System.ComponentModel.ISupportInitialize)(this.sharedImageCollection1.ImageSource)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.panelTop)).BeginInit();
       this.panelTop.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.panelControls)).BeginInit();
       this.panelControls.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.panelOptions)).BeginInit();
       this.panelOptions.SuspendLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.rbFavGame4.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.txtMod.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.txtMap.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.txtTagExclude.Properties)).BeginInit();
@@ -179,7 +182,6 @@ namespace ServerBrowser
       ((System.ComponentModel.ISupportInitialize)(this.comboGames.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbGetEmpty.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.panelTopFill)).BeginInit();
-      ((System.ComponentModel.ISupportInitialize)(this.picLogo.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.panelAdvancedOptions)).BeginInit();
       this.panelAdvancedOptions.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.txtGameServer.Properties)).BeginInit();
@@ -204,7 +206,7 @@ namespace ServerBrowser
       this.gcDetails.Location = new System.Drawing.Point(0, 0);
       this.gcDetails.MainView = this.gvDetails;
       this.gcDetails.Name = "gcDetails";
-      this.gcDetails.Size = new System.Drawing.Size(354, 547);
+      this.gcDetails.Size = new System.Drawing.Size(354, 516);
       this.gcDetails.TabIndex = 13;
       this.gcDetails.ViewCollection.AddRange(new DevExpress.XtraGrid.Views.Base.BaseView[] {
             this.gvDetails});
@@ -299,7 +301,7 @@ namespace ServerBrowser
       this.gcPlayers.Location = new System.Drawing.Point(0, 0);
       this.gcPlayers.MainView = this.gvPlayers;
       this.gcPlayers.Name = "gcPlayers";
-      this.gcPlayers.Size = new System.Drawing.Size(354, 547);
+      this.gcPlayers.Size = new System.Drawing.Size(354, 516);
       this.gcPlayers.TabIndex = 0;
       this.gcPlayers.ViewCollection.AddRange(new DevExpress.XtraGrid.Views.Base.BaseView[] {
             this.gvPlayers});
@@ -571,25 +573,57 @@ namespace ServerBrowser
       // 
       // barManager1
       // 
+      this.barManager1.Bars.AddRange(new DevExpress.XtraBars.Bar[] {
+            this.barMenu});
+      this.barManager1.Categories.AddRange(new DevExpress.XtraBars.BarManagerCategory[] {
+            new DevExpress.XtraBars.BarManagerCategory("Server", new System.Guid("b1e08833-8d08-415c-9522-c31e9bf3c2de")),
+            new DevExpress.XtraBars.BarManagerCategory("Player", new System.Guid("9969d11d-8a54-4afd-8aea-1c952f049e03")),
+            new DevExpress.XtraBars.BarManagerCategory("Menu", new System.Guid("dce44941-9e20-4803-823c-6829c76924c5"))});
       this.barManager1.DockControls.Add(this.barDockControlTop);
       this.barManager1.DockControls.Add(this.barDockControlBottom);
       this.barManager1.DockControls.Add(this.barDockControlLeft);
       this.barManager1.DockControls.Add(this.barDockControlRight);
       this.barManager1.DockManager = this.dockManager1;
       this.barManager1.Form = this;
+      this.barManager1.Images = this.sharedImageCollection1;
       this.barManager1.Items.AddRange(new DevExpress.XtraBars.BarItem[] {
+            this.miUpdateServerInfo,
             this.miConnect,
             this.miConnectSpectator,
             this.miCopyAddress,
-            this.miUpdateServerInfo});
-      this.barManager1.MaxItemId = 4;
+            this.miReloadServers});
+      this.barManager1.MaxItemId = 5;
+      // 
+      // barMenu
+      // 
+      this.barMenu.BarName = "barMenu";
+      this.barMenu.DockCol = 0;
+      this.barMenu.DockRow = 0;
+      this.barMenu.DockStyle = DevExpress.XtraBars.BarDockStyle.Top;
+      this.barMenu.LinksPersistInfo.AddRange(new DevExpress.XtraBars.LinkPersistInfo[] {
+            new DevExpress.XtraBars.LinkPersistInfo(DevExpress.XtraBars.BarLinkUserDefines.PaintStyle, this.miReloadServers, DevExpress.XtraBars.BarItemPaintStyle.CaptionGlyph)});
+      this.barMenu.OptionsBar.AllowQuickCustomization = false;
+      this.barMenu.OptionsBar.DisableClose = true;
+      this.barMenu.OptionsBar.DrawDragBorder = false;
+      this.barMenu.OptionsBar.UseWholeRow = true;
+      this.barMenu.Text = "barMenu";
+      this.barMenu.Visible = false;
+      // 
+      // miReloadServers
+      // 
+      this.miReloadServers.Caption = "Refresh";
+      this.miReloadServers.CategoryGuid = new System.Guid("dce44941-9e20-4803-823c-6829c76924c5");
+      this.miReloadServers.Id = 4;
+      this.miReloadServers.ImageIndex = 1;
+      this.miReloadServers.Name = "miReloadServers";
+      this.miReloadServers.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miReloadServers_ItemClick);
       // 
       // barDockControlTop
       // 
       this.barDockControlTop.CausesValidation = false;
       this.barDockControlTop.Dock = System.Windows.Forms.DockStyle.Top;
       this.barDockControlTop.Location = new System.Drawing.Point(0, 0);
-      this.barDockControlTop.Size = new System.Drawing.Size(1465, 0);
+      this.barDockControlTop.Size = new System.Drawing.Size(1465, 31);
       // 
       // barDockControlBottom
       // 
@@ -602,19 +636,42 @@ namespace ServerBrowser
       // 
       this.barDockControlLeft.CausesValidation = false;
       this.barDockControlLeft.Dock = System.Windows.Forms.DockStyle.Left;
-      this.barDockControlLeft.Location = new System.Drawing.Point(0, 0);
-      this.barDockControlLeft.Size = new System.Drawing.Size(0, 808);
+      this.barDockControlLeft.Location = new System.Drawing.Point(0, 31);
+      this.barDockControlLeft.Size = new System.Drawing.Size(0, 777);
       // 
       // barDockControlRight
       // 
       this.barDockControlRight.CausesValidation = false;
       this.barDockControlRight.Dock = System.Windows.Forms.DockStyle.Right;
-      this.barDockControlRight.Location = new System.Drawing.Point(1465, 0);
-      this.barDockControlRight.Size = new System.Drawing.Size(0, 808);
+      this.barDockControlRight.Location = new System.Drawing.Point(1465, 31);
+      this.barDockControlRight.Size = new System.Drawing.Size(0, 777);
+      // 
+      // sharedImageCollection1
+      // 
+      // 
+      // 
+      // 
+      this.sharedImageCollection1.ImageSource.ImageStream = ((DevExpress.Utils.ImageCollectionStreamer)(resources.GetObject("sharedImageCollection1.ImageSource.ImageStream")));
+      this.sharedImageCollection1.ImageSource.Images.SetKeyName(0, "000.png");
+      this.sharedImageCollection1.ImageSource.Images.SetKeyName(1, "001.png");
+      this.sharedImageCollection1.ImageSource.Images.SetKeyName(2, "002.png");
+      this.sharedImageCollection1.ImageSource.Images.SetKeyName(3, "003.png");
+      this.sharedImageCollection1.ImageSource.Images.SetKeyName(4, "004.png");
+      this.sharedImageCollection1.ImageSource.Images.SetKeyName(5, "005.png");
+      this.sharedImageCollection1.ParentControl = this;
+      // 
+      // miUpdateServerInfo
+      // 
+      this.miUpdateServerInfo.Caption = "Update Information";
+      this.miUpdateServerInfo.CategoryGuid = new System.Guid("b1e08833-8d08-415c-9522-c31e9bf3c2de");
+      this.miUpdateServerInfo.Id = 3;
+      this.miUpdateServerInfo.Name = "miUpdateServerInfo";
+      this.miUpdateServerInfo.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miUpdateServerInfo_ItemClick);
       // 
       // miConnect
       // 
       this.miConnect.Caption = "Connect";
+      this.miConnect.CategoryGuid = new System.Guid("b1e08833-8d08-415c-9522-c31e9bf3c2de");
       this.miConnect.Id = 0;
       this.miConnect.Name = "miConnect";
       this.miConnect.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miConnect_ItemClick);
@@ -622,6 +679,7 @@ namespace ServerBrowser
       // miConnectSpectator
       // 
       this.miConnectSpectator.Caption = "Connect as Spectator";
+      this.miConnectSpectator.CategoryGuid = new System.Guid("b1e08833-8d08-415c-9522-c31e9bf3c2de");
       this.miConnectSpectator.Id = 1;
       this.miConnectSpectator.Name = "miConnectSpectator";
       this.miConnectSpectator.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miConnectSpectator_ItemClick);
@@ -629,16 +687,10 @@ namespace ServerBrowser
       // miCopyAddress
       // 
       this.miCopyAddress.Caption = "Copy Address to Clipboard";
+      this.miCopyAddress.CategoryGuid = new System.Guid("b1e08833-8d08-415c-9522-c31e9bf3c2de");
       this.miCopyAddress.Id = 2;
       this.miCopyAddress.Name = "miCopyAddress";
       this.miCopyAddress.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miCopyAddress_ItemClick);
-      // 
-      // miUpdateServerInfo
-      // 
-      this.miUpdateServerInfo.Caption = "Update Information";
-      this.miUpdateServerInfo.Id = 3;
-      this.miUpdateServerInfo.Name = "miUpdateServerInfo";
-      this.miUpdateServerInfo.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miUpdateServerInfo_ItemClick);
       // 
       // panelContainer1
       // 
@@ -648,10 +700,10 @@ namespace ServerBrowser
       this.panelContainer1.Controls.Add(this.panelRules);
       this.panelContainer1.Dock = DevExpress.XtraBars.Docking.DockingStyle.Right;
       this.panelContainer1.ID = new System.Guid("30169f55-f874-4297-811b-db9e1af4c59a");
-      this.panelContainer1.Location = new System.Drawing.Point(1103, 183);
+      this.panelContainer1.Location = new System.Drawing.Point(1103, 214);
       this.panelContainer1.Name = "panelContainer1";
       this.panelContainer1.OriginalSize = new System.Drawing.Size(362, 200);
-      this.panelContainer1.Size = new System.Drawing.Size(362, 601);
+      this.panelContainer1.Size = new System.Drawing.Size(362, 570);
       this.panelContainer1.Tabbed = true;
       this.panelContainer1.Text = "panelContainer1";
       // 
@@ -664,8 +716,8 @@ namespace ServerBrowser
       this.panelPlayers.Name = "panelPlayers";
       this.panelPlayers.Options.AllowFloating = false;
       this.panelPlayers.Options.ShowCloseButton = false;
-      this.panelPlayers.OriginalSize = new System.Drawing.Size(354, 553);
-      this.panelPlayers.Size = new System.Drawing.Size(354, 547);
+      this.panelPlayers.OriginalSize = new System.Drawing.Size(354, 547);
+      this.panelPlayers.Size = new System.Drawing.Size(354, 516);
       this.panelPlayers.Text = "Players";
       // 
       // dockPanel1_Container
@@ -673,7 +725,7 @@ namespace ServerBrowser
       this.dockPanel1_Container.Controls.Add(this.gcPlayers);
       this.dockPanel1_Container.Location = new System.Drawing.Point(0, 0);
       this.dockPanel1_Container.Name = "dockPanel1_Container";
-      this.dockPanel1_Container.Size = new System.Drawing.Size(354, 547);
+      this.dockPanel1_Container.Size = new System.Drawing.Size(354, 516);
       this.dockPanel1_Container.TabIndex = 0;
       // 
       // panelServerDetails
@@ -685,8 +737,8 @@ namespace ServerBrowser
       this.panelServerDetails.Name = "panelServerDetails";
       this.panelServerDetails.Options.AllowFloating = false;
       this.panelServerDetails.Options.ShowCloseButton = false;
-      this.panelServerDetails.OriginalSize = new System.Drawing.Size(354, 553);
-      this.panelServerDetails.Size = new System.Drawing.Size(354, 547);
+      this.panelServerDetails.OriginalSize = new System.Drawing.Size(354, 547);
+      this.panelServerDetails.Size = new System.Drawing.Size(354, 516);
       this.panelServerDetails.Text = "Server Details";
       // 
       // dockPanel2_Container
@@ -694,7 +746,7 @@ namespace ServerBrowser
       this.dockPanel2_Container.Controls.Add(this.gcDetails);
       this.dockPanel2_Container.Location = new System.Drawing.Point(0, 0);
       this.dockPanel2_Container.Name = "dockPanel2_Container";
-      this.dockPanel2_Container.Size = new System.Drawing.Size(354, 547);
+      this.dockPanel2_Container.Size = new System.Drawing.Size(354, 516);
       this.dockPanel2_Container.TabIndex = 0;
       // 
       // panelRules
@@ -704,8 +756,8 @@ namespace ServerBrowser
       this.panelRules.ID = new System.Guid("7cfd1891-8f2c-4d0a-bd2c-1bb030d15a66");
       this.panelRules.Location = new System.Drawing.Point(4, 23);
       this.panelRules.Name = "panelRules";
-      this.panelRules.OriginalSize = new System.Drawing.Size(354, 553);
-      this.panelRules.Size = new System.Drawing.Size(354, 547);
+      this.panelRules.OriginalSize = new System.Drawing.Size(354, 547);
+      this.panelRules.Size = new System.Drawing.Size(354, 516);
       this.panelRules.Text = "Rules";
       // 
       // controlContainer2
@@ -713,7 +765,7 @@ namespace ServerBrowser
       this.controlContainer2.Controls.Add(this.gcRules);
       this.controlContainer2.Location = new System.Drawing.Point(0, 0);
       this.controlContainer2.Name = "controlContainer2";
-      this.controlContainer2.Size = new System.Drawing.Size(354, 547);
+      this.controlContainer2.Size = new System.Drawing.Size(354, 516);
       this.controlContainer2.TabIndex = 0;
       // 
       // gcRules
@@ -723,7 +775,7 @@ namespace ServerBrowser
       this.gcRules.Location = new System.Drawing.Point(0, 0);
       this.gcRules.MainView = this.gvRules;
       this.gcRules.Name = "gcRules";
-      this.gcRules.Size = new System.Drawing.Size(354, 547);
+      this.gcRules.Size = new System.Drawing.Size(354, 516);
       this.gcRules.TabIndex = 31;
       this.gcRules.ViewCollection.AddRange(new DevExpress.XtraGrid.Views.Base.BaseView[] {
             this.gvRules});
@@ -826,27 +878,12 @@ namespace ServerBrowser
       this.btnQueryMaster.Text = "Reload Servers";
       this.btnQueryMaster.Click += new System.EventHandler(this.btnQueryMaster_Click);
       // 
-      // sharedImageCollection1
-      // 
-      // 
-      // 
-      // 
-      this.sharedImageCollection1.ImageSource.ImageStream = ((DevExpress.Utils.ImageCollectionStreamer)(resources.GetObject("sharedImageCollection1.ImageSource.ImageStream")));
-      this.sharedImageCollection1.ImageSource.Images.SetKeyName(0, "000.png");
-      this.sharedImageCollection1.ImageSource.Images.SetKeyName(1, "001.png");
-      this.sharedImageCollection1.ImageSource.Images.SetKeyName(2, "002.png");
-      this.sharedImageCollection1.ImageSource.Images.SetKeyName(3, "003.png");
-      this.sharedImageCollection1.ImageSource.Images.SetKeyName(4, "004.png");
-      this.sharedImageCollection1.ImageSource.Images.SetKeyName(5, "005.png");
-      this.sharedImageCollection1.ParentControl = this;
-      // 
       // panelTop
       // 
       this.panelTop.Controls.Add(this.panelControls);
       this.panelTop.Controls.Add(this.panelTopFill);
-      this.panelTop.Controls.Add(this.picLogo);
       this.panelTop.Dock = System.Windows.Forms.DockStyle.Top;
-      this.panelTop.Location = new System.Drawing.Point(0, 0);
+      this.panelTop.Location = new System.Drawing.Point(0, 31);
       this.panelTop.Name = "panelTop";
       this.panelTop.Size = new System.Drawing.Size(1465, 93);
       this.panelTop.TabIndex = 0;
@@ -860,12 +897,13 @@ namespace ServerBrowser
       this.panelControls.Controls.Add(this.panelOptions);
       this.panelControls.Location = new System.Drawing.Point(0, 5);
       this.panelControls.Name = "panelControls";
-      this.panelControls.Size = new System.Drawing.Size(1344, 83);
+      this.panelControls.Size = new System.Drawing.Size(1460, 83);
       this.panelControls.TabIndex = 25;
       // 
       // panelOptions
       // 
       this.panelOptions.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.NoBorder;
+      this.panelOptions.Controls.Add(this.rbFavGame4);
       this.panelOptions.Controls.Add(this.txtMod);
       this.panelOptions.Controls.Add(this.labelControl12);
       this.panelOptions.Controls.Add(this.txtMap);
@@ -891,8 +929,22 @@ namespace ServerBrowser
       this.panelOptions.Dock = System.Windows.Forms.DockStyle.Fill;
       this.panelOptions.Location = new System.Drawing.Point(0, 0);
       this.panelOptions.Name = "panelOptions";
-      this.panelOptions.Size = new System.Drawing.Size(1344, 83);
+      this.panelOptions.Size = new System.Drawing.Size(1460, 83);
       this.panelOptions.TabIndex = 0;
+      // 
+      // rbFavGame4
+      // 
+      this.rbFavGame4.Location = new System.Drawing.Point(343, 57);
+      this.rbFavGame4.Name = "rbFavGame4";
+      this.rbFavGame4.Properties.AutoWidth = true;
+      this.rbFavGame4.Properties.Caption = "CS:GO";
+      this.rbFavGame4.Properties.CheckStyle = DevExpress.XtraEditors.Controls.CheckStyles.Radio;
+      this.rbFavGame4.Properties.RadioGroupIndex = 1;
+      this.rbFavGame4.Size = new System.Drawing.Size(54, 19);
+      this.rbFavGame4.TabIndex = 9;
+      this.rbFavGame4.TabStop = false;
+      this.rbFavGame4.ToolTip = "Use Ctrl+Click to assign the game selected above to this button";
+      this.rbFavGame4.CheckedChanged += new System.EventHandler(this.rbFavGame_CheckedChanged);
       // 
       // txtMod
       // 
@@ -1012,8 +1064,6 @@ namespace ServerBrowser
       // 
       // comboGames
       // 
-      this.comboGames.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
       this.comboGames.Location = new System.Drawing.Point(99, 33);
       this.comboGames.Name = "comboGames";
       this.comboGames.Properties.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
@@ -1058,23 +1108,8 @@ namespace ServerBrowser
       this.panelTopFill.Dock = System.Windows.Forms.DockStyle.Fill;
       this.panelTopFill.Location = new System.Drawing.Point(2, 2);
       this.panelTopFill.Name = "panelTopFill";
-      this.panelTopFill.Size = new System.Drawing.Size(1344, 89);
+      this.panelTopFill.Size = new System.Drawing.Size(1461, 89);
       this.panelTopFill.TabIndex = 25;
-      // 
-      // picLogo
-      // 
-      this.picLogo.Cursor = System.Windows.Forms.Cursors.Hand;
-      this.picLogo.Dock = System.Windows.Forms.DockStyle.Right;
-      this.picLogo.Location = new System.Drawing.Point(1346, 2);
-      this.picLogo.Name = "picLogo";
-      this.picLogo.Properties.Appearance.BackColor = System.Drawing.Color.Transparent;
-      this.picLogo.Properties.Appearance.Options.UseBackColor = true;
-      this.picLogo.Properties.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.NoBorder;
-      this.picLogo.Properties.SizeMode = DevExpress.XtraEditors.Controls.PictureSizeMode.Zoom;
-      this.picLogo.Size = new System.Drawing.Size(117, 89);
-      this.picLogo.TabIndex = 0;
-      this.picLogo.Visible = false;
-      this.picLogo.Click += new System.EventHandler(this.picLogo_Click);
       // 
       // linkFilter1
       // 
@@ -1121,7 +1156,7 @@ namespace ServerBrowser
       this.panelAdvancedOptions.Controls.Add(this.spinRefreshInterval);
       this.panelAdvancedOptions.Controls.Add(this.linkDownloadSkins);
       this.panelAdvancedOptions.Dock = System.Windows.Forms.DockStyle.Top;
-      this.panelAdvancedOptions.Location = new System.Drawing.Point(0, 93);
+      this.panelAdvancedOptions.Location = new System.Drawing.Point(0, 124);
       this.panelAdvancedOptions.Name = "panelAdvancedOptions";
       this.panelAdvancedOptions.Size = new System.Drawing.Size(1465, 90);
       this.panelAdvancedOptions.TabIndex = 1;
@@ -1325,6 +1360,8 @@ namespace ServerBrowser
       ((System.ComponentModel.ISupportInitialize)(this.gvServers)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.dockManager1)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.barManager1)).EndInit();
+      ((System.ComponentModel.ISupportInitialize)(this.sharedImageCollection1.ImageSource)).EndInit();
+      ((System.ComponentModel.ISupportInitialize)(this.sharedImageCollection1)).EndInit();
       this.panelContainer1.ResumeLayout(false);
       this.panelPlayers.ResumeLayout(false);
       this.dockPanel1_Container.ResumeLayout(false);
@@ -1338,8 +1375,6 @@ namespace ServerBrowser
       this.panelServerList.ResumeLayout(false);
       this.controlContainer1.ResumeLayout(false);
       ((System.ComponentModel.ISupportInitialize)(this.cbRefreshSelectedServer.Properties)).EndInit();
-      ((System.ComponentModel.ISupportInitialize)(this.sharedImageCollection1.ImageSource)).EndInit();
-      ((System.ComponentModel.ISupportInitialize)(this.sharedImageCollection1)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.panelTop)).EndInit();
       this.panelTop.ResumeLayout(false);
       ((System.ComponentModel.ISupportInitialize)(this.panelControls)).EndInit();
@@ -1347,6 +1382,7 @@ namespace ServerBrowser
       ((System.ComponentModel.ISupportInitialize)(this.panelOptions)).EndInit();
       this.panelOptions.ResumeLayout(false);
       this.panelOptions.PerformLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.rbFavGame4.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.txtMod.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.txtMap.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.txtTagExclude.Properties)).EndInit();
@@ -1356,7 +1392,6 @@ namespace ServerBrowser
       ((System.ComponentModel.ISupportInitialize)(this.comboGames.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbGetEmpty.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.panelTopFill)).EndInit();
-      ((System.ComponentModel.ISupportInitialize)(this.picLogo.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.panelAdvancedOptions)).EndInit();
       this.panelAdvancedOptions.ResumeLayout(false);
       this.panelAdvancedOptions.PerformLayout();
@@ -1376,108 +1411,110 @@ namespace ServerBrowser
 
     #endregion
 
-    private DevExpress.XtraGrid.GridControl gcDetails;
-    private DevExpress.XtraGrid.Views.Grid.GridView gvDetails;
-    private DevExpress.XtraGrid.GridControl gcPlayers;
-    private DevExpress.XtraGrid.Views.Grid.GridView gvPlayers;
-    private DevExpress.XtraGrid.GridControl gcServers;
-    private DevExpress.XtraGrid.Views.Grid.GridView gvServers;
-    private CheckEdit rbFavGame3;
-    private ComboBoxEdit comboRegion;
-    private CheckEdit rbFavGame2;
-    private CheckEdit rbFavGame1;
-    private DevExpress.XtraBars.Docking.DockManager dockManager1;
-    private DevExpress.XtraBars.Docking.DockPanel panelServerDetails;
-    private DevExpress.XtraBars.Docking.ControlContainer dockPanel2_Container;
-    private DevExpress.XtraBars.Docking.DockPanel panelPlayers;
-    private DevExpress.XtraBars.Docking.ControlContainer dockPanel1_Container;
-    private System.Windows.Forms.BindingSource dsServers;
-    private DevExpress.XtraGrid.Columns.GridColumn colEndPoint;
-    private DevExpress.XtraGrid.Columns.GridColumn colName;
-    private DevExpress.XtraGrid.Columns.GridColumn colPing;
-    private DevExpress.XtraGrid.Columns.GridColumn colHumanPlayers;
-    private DevExpress.XtraGrid.Columns.GridColumn colMap;
-    private DevExpress.XtraGrid.Columns.GridColumn colDescription;
-    private System.Windows.Forms.BindingSource dsPlayer;
-    private DevExpress.XtraGrid.Columns.GridColumn colName1;
-    private DevExpress.XtraGrid.Columns.GridColumn colScore;
-    private DevExpress.XtraGrid.Columns.GridColumn colTime;
-    private DevExpress.XtraGrid.Columns.GridColumn colStatus;
-    private DevExpress.XtraGrid.Columns.GridColumn colKey;
-    private DevExpress.XtraGrid.Columns.GridColumn colValue;
-    private DevExpress.XtraGrid.Columns.GridColumn colTags;
-    private DevExpress.XtraGrid.Columns.GridColumn colPrivate;
-    private CheckEdit cbRefreshSelectedServer;
-    private LabelControl labelControl1;
-    private SimpleButton btnQueryMaster;
-    private SimpleButton btnSkin;
-    private PanelControl panelTop;
-    private PictureEdit picLogo;
-    private PanelControl panelTopFill;
-    private PanelControl panelControls;
-    private PanelControl panelOptions;
-    private LabelControl labelControl3;
-    private DevExpress.XtraBars.Docking.DockPanel panelServerList;
-    private DevExpress.XtraBars.Docking.ControlContainer controlContainer1;
-    private DevExpress.XtraBars.Docking.DockPanel panelContainer1;
-    private DevExpress.XtraBars.Docking.DockPanel panelRules;
-    private DevExpress.XtraBars.Docking.ControlContainer controlContainer2;
-    private DevExpress.XtraGrid.GridControl gcRules;
-    private DevExpress.XtraGrid.Views.Grid.GridView gvRules;
-    private DevExpress.XtraGrid.Columns.GridColumn gridColumn1;
-    private DevExpress.XtraGrid.Columns.GridColumn gridColumn2;
-    private System.Windows.Forms.BindingSource dsRules;
-    private DevExpress.XtraGrid.Columns.GridColumn colDedicated;
-    private ComboBoxEdit comboGames;
-    private LabelControl labelControl4;
-    private LabelControl labelControl5;
-    private System.Windows.Forms.Timer timerUpdateServerList;
-    private PanelControl panelAdvancedOptions;
-    private CheckButton cbAdvancedOptions;
-    private PanelControl panelControl1;
-    private LabelControl txtStatus;
-    private DevExpress.XtraBars.BarDockControl barDockControlLeft;
-    private DevExpress.XtraBars.BarDockControl barDockControlRight;
-    private DevExpress.XtraBars.BarDockControl barDockControlBottom;
-    private DevExpress.XtraBars.BarDockControl barDockControlTop;
-    private DevExpress.XtraBars.BarManager barManager1;
-    private DevExpress.XtraBars.BarButtonItem miConnect;
-    private DevExpress.XtraBars.BarButtonItem miConnectSpectator;
-    private DevExpress.XtraBars.PopupMenu menuServers;
-    private DevExpress.XtraBars.BarButtonItem miCopyAddress;
-    private DevExpress.XtraBars.PopupMenu menuPlayers;
-    private DevExpress.XtraBars.BarButtonItem miUpdateServerInfo;
-    private DevExpress.XtraGrid.Columns.GridColumn colBots;
-    private DevExpress.XtraGrid.Columns.GridColumn colTotalPlayers;
-    private DevExpress.XtraGrid.Columns.GridColumn colMaxPlayers;
-    private DevExpress.XtraGrid.Columns.GridColumn colPlayerCount;
-    private LabelControl labelControl9;
-    private SpinEdit spinRefreshInterval;
-    private System.Windows.Forms.Timer timerReloadServers;
-    private DevExpress.XtraBars.Alerter.AlertControl alertControl1;
-    private HyperlinkLabelControl linkFilter1;
-    private HyperlinkLabelControl linkDownloadSkins;
-    private CheckEdit cbGetEmpty;
-    private CheckEdit cbGetFull;
-    private ComboBoxEdit comboMasterServer;
-    private LabelControl labelControl7;
-    private LabelControl labelControl6;
-    private DevExpress.XtraEditors.Repository.RepositoryItemCheckEdit riCheckEdit;
-    private LabelControl labelControl10;
-    private CheckButton cbAlert;
-    private CheckEdit rbAddressHidden;
-    private CheckEdit rbAddressGamePort;
-    private CheckEdit rbAddressQueryPort;
-    private LabelControl labelControl8;
-    private LabelControl labelControl2;
-    private DevExpress.Utils.SharedImageCollection sharedImageCollection1;
-    private ButtonEdit txtTagExclude;
-    private ButtonEdit txtTagInclude;
-    private ButtonEdit txtMap;
-    private LabelControl labelControl11;
-    private ButtonEdit txtMod;
-    private LabelControl labelControl12;
-    private ButtonEdit txtGameServer;
+    protected DevExpress.XtraGrid.GridControl gcDetails;
+    protected DevExpress.XtraGrid.Views.Grid.GridView gvDetails;
+    protected DevExpress.XtraGrid.GridControl gcPlayers;
+    protected DevExpress.XtraGrid.Views.Grid.GridView gvPlayers;
+    protected DevExpress.XtraGrid.GridControl gcServers;
+    protected DevExpress.XtraGrid.Views.Grid.GridView gvServers;
+    protected CheckEdit rbFavGame3;
+    protected ComboBoxEdit comboRegion;
+    protected CheckEdit rbFavGame2;
+    protected CheckEdit rbFavGame1;
+    protected DevExpress.XtraBars.Docking.DockManager dockManager1;
+    protected DevExpress.XtraBars.Docking.DockPanel panelServerDetails;
+    protected DevExpress.XtraBars.Docking.ControlContainer dockPanel2_Container;
+    protected DevExpress.XtraBars.Docking.DockPanel panelPlayers;
+    protected DevExpress.XtraBars.Docking.ControlContainer dockPanel1_Container;
+    protected System.Windows.Forms.BindingSource dsServers;
+    protected DevExpress.XtraGrid.Columns.GridColumn colEndPoint;
+    protected DevExpress.XtraGrid.Columns.GridColumn colName;
+    protected DevExpress.XtraGrid.Columns.GridColumn colPing;
+    protected DevExpress.XtraGrid.Columns.GridColumn colHumanPlayers;
+    protected DevExpress.XtraGrid.Columns.GridColumn colMap;
+    protected DevExpress.XtraGrid.Columns.GridColumn colDescription;
+    protected System.Windows.Forms.BindingSource dsPlayer;
+    protected DevExpress.XtraGrid.Columns.GridColumn colName1;
+    protected DevExpress.XtraGrid.Columns.GridColumn colScore;
+    protected DevExpress.XtraGrid.Columns.GridColumn colTime;
+    protected DevExpress.XtraGrid.Columns.GridColumn colStatus;
+    protected DevExpress.XtraGrid.Columns.GridColumn colKey;
+    protected DevExpress.XtraGrid.Columns.GridColumn colValue;
+    protected DevExpress.XtraGrid.Columns.GridColumn colTags;
+    protected DevExpress.XtraGrid.Columns.GridColumn colPrivate;
+    protected CheckEdit cbRefreshSelectedServer;
+    protected LabelControl labelControl1;
+    protected SimpleButton btnQueryMaster;
+    protected SimpleButton btnSkin;
+    protected PanelControl panelTop;
+    protected PanelControl panelTopFill;
+    protected PanelControl panelControls;
+    protected PanelControl panelOptions;
+    protected LabelControl labelControl3;
+    protected DevExpress.XtraBars.Docking.DockPanel panelServerList;
+    protected DevExpress.XtraBars.Docking.ControlContainer controlContainer1;
+    protected DevExpress.XtraBars.Docking.DockPanel panelContainer1;
+    protected DevExpress.XtraBars.Docking.DockPanel panelRules;
+    protected DevExpress.XtraBars.Docking.ControlContainer controlContainer2;
+    protected DevExpress.XtraGrid.GridControl gcRules;
+    protected DevExpress.XtraGrid.Views.Grid.GridView gvRules;
+    protected DevExpress.XtraGrid.Columns.GridColumn gridColumn1;
+    protected DevExpress.XtraGrid.Columns.GridColumn gridColumn2;
+    protected System.Windows.Forms.BindingSource dsRules;
+    protected DevExpress.XtraGrid.Columns.GridColumn colDedicated;
+    protected ComboBoxEdit comboGames;
+    protected LabelControl labelControl4;
+    protected LabelControl labelControl5;
+    protected System.Windows.Forms.Timer timerUpdateServerList;
+    protected PanelControl panelAdvancedOptions;
+    protected CheckButton cbAdvancedOptions;
+    protected PanelControl panelControl1;
+    protected LabelControl txtStatus;
+    protected DevExpress.XtraBars.BarDockControl barDockControlLeft;
+    protected DevExpress.XtraBars.BarDockControl barDockControlRight;
+    protected DevExpress.XtraBars.BarDockControl barDockControlBottom;
+    protected DevExpress.XtraBars.BarDockControl barDockControlTop;
+    protected DevExpress.XtraBars.BarManager barManager1;
+    protected DevExpress.XtraBars.BarButtonItem miConnect;
+    protected DevExpress.XtraBars.BarButtonItem miConnectSpectator;
+    protected DevExpress.XtraBars.PopupMenu menuServers;
+    protected DevExpress.XtraBars.BarButtonItem miCopyAddress;
+    protected DevExpress.XtraBars.PopupMenu menuPlayers;
+    protected DevExpress.XtraBars.BarButtonItem miUpdateServerInfo;
+    protected DevExpress.XtraGrid.Columns.GridColumn colBots;
+    protected DevExpress.XtraGrid.Columns.GridColumn colTotalPlayers;
+    protected DevExpress.XtraGrid.Columns.GridColumn colMaxPlayers;
+    protected DevExpress.XtraGrid.Columns.GridColumn colPlayerCount;
+    protected LabelControl labelControl9;
+    protected SpinEdit spinRefreshInterval;
+    protected System.Windows.Forms.Timer timerReloadServers;
+    protected DevExpress.XtraBars.Alerter.AlertControl alertControl1;
+    protected HyperlinkLabelControl linkFilter1;
+    protected HyperlinkLabelControl linkDownloadSkins;
+    protected CheckEdit cbGetEmpty;
+    protected CheckEdit cbGetFull;
+    protected ComboBoxEdit comboMasterServer;
+    protected LabelControl labelControl7;
+    protected LabelControl labelControl6;
+    protected DevExpress.XtraEditors.Repository.RepositoryItemCheckEdit riCheckEdit;
+    protected LabelControl labelControl10;
+    protected CheckButton cbAlert;
+    protected CheckEdit rbAddressHidden;
+    protected CheckEdit rbAddressGamePort;
+    protected CheckEdit rbAddressQueryPort;
+    protected LabelControl labelControl8;
+    protected LabelControl labelControl2;
+    protected DevExpress.Utils.SharedImageCollection sharedImageCollection1;
+    protected ButtonEdit txtTagExclude;
+    protected ButtonEdit txtTagInclude;
+    protected ButtonEdit txtMap;
+    protected LabelControl labelControl11;
+    protected ButtonEdit txtMod;
+    protected LabelControl labelControl12;
+    protected ButtonEdit txtGameServer;
+    protected CheckEdit rbFavGame4;
+    protected DevExpress.XtraBars.Bar barMenu;
+    protected DevExpress.XtraBars.BarButtonItem miReloadServers;
 
 
 

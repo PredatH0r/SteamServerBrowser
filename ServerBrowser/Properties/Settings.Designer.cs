@@ -37,54 +37,6 @@ namespace ServerBrowser.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string Branding {
-            get {
-                return ((string)(this["Branding"]));
-            }
-            set {
-                this["Branding"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public int LogoHeight {
-            get {
-                return ((int)(this["LogoHeight"]));
-            }
-            set {
-                this["LogoHeight"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0.75")]
-        public float FontSizeDelta {
-            get {
-                return ((float)(this["FontSizeDelta"]));
-            }
-            set {
-                this["FontSizeDelta"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Segoe UI")]
-        public string FontName {
-            get {
-                return ((string)(this["FontName"]));
-            }
-            set {
-                this["FontName"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("324810")]
         public int InitialGameID {
             get {
@@ -237,6 +189,30 @@ namespace ServerBrowser.Properties {
             }
             set {
                 this["TagsExclude"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string FilterMod {
+            get {
+                return ((string)(this["FilterMod"]));
+            }
+            set {
+                this["FilterMod"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string FilterMap {
+            get {
+                return ((string)(this["FilterMap"]));
+            }
+            set {
+                this["FilterMap"] = value;
             }
         }
     }
