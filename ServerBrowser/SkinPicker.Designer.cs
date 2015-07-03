@@ -34,6 +34,7 @@
       this.btnCancel = new DevExpress.XtraEditors.SimpleButton();
       this.btnOk = new DevExpress.XtraEditors.SimpleButton();
       this.btnReset = new DevExpress.XtraEditors.SimpleButton();
+      this.btnDownloadBonusSkins = new DevExpress.XtraEditors.SimpleButton();
       ((System.ComponentModel.ISupportInitialize)(this.gallery)).BeginInit();
       this.gallery.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.panelControl1)).BeginInit();
@@ -68,6 +69,7 @@
       // 
       // panelControl1
       // 
+      this.panelControl1.Controls.Add(this.btnDownloadBonusSkins);
       this.panelControl1.Controls.Add(this.btnCancel);
       this.panelControl1.Controls.Add(this.btnOk);
       this.panelControl1.Controls.Add(this.btnReset);
@@ -79,8 +81,9 @@
       // 
       // btnCancel
       // 
+      this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
       this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-      this.btnCancel.Location = new System.Drawing.Point(286, 7);
+      this.btnCancel.Location = new System.Drawing.Point(888, 7);
       this.btnCancel.Name = "btnCancel";
       this.btnCancel.Size = new System.Drawing.Size(84, 23);
       this.btnCancel.TabIndex = 2;
@@ -89,8 +92,9 @@
       // 
       // btnOk
       // 
+      this.btnOk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
       this.btnOk.DialogResult = System.Windows.Forms.DialogResult.OK;
-      this.btnOk.Location = new System.Drawing.Point(186, 7);
+      this.btnOk.Location = new System.Drawing.Point(788, 7);
       this.btnOk.Name = "btnOk";
       this.btnOk.Size = new System.Drawing.Size(84, 23);
       this.btnOk.TabIndex = 1;
@@ -105,6 +109,15 @@
       this.btnReset.TabIndex = 0;
       this.btnReset.Text = "Use standard skin";
       this.btnReset.Click += new System.EventHandler(this.btnReset_Click);
+      // 
+      // btnDownloadBonusSkins
+      // 
+      this.btnDownloadBonusSkins.Location = new System.Drawing.Point(176, 7);
+      this.btnDownloadBonusSkins.Name = "btnDownloadBonusSkins";
+      this.btnDownloadBonusSkins.Size = new System.Drawing.Size(158, 23);
+      this.btnDownloadBonusSkins.TabIndex = 3;
+      this.btnDownloadBonusSkins.Text = "Download Bonus Skins";
+      this.btnDownloadBonusSkins.Click += new System.EventHandler(this.btnDownloadBonusSkins_Click);
       // 
       // SkinPicker
       // 
@@ -134,5 +147,6 @@
     private DevExpress.XtraEditors.SimpleButton btnCancel;
     private DevExpress.XtraEditors.SimpleButton btnOk;
     private DevExpress.XtraEditors.SimpleButton btnReset;
+    private DevExpress.XtraEditors.SimpleButton btnDownloadBonusSkins;
   }
 }

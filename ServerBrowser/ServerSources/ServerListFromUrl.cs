@@ -19,9 +19,8 @@ namespace ServerBrowser
     {
       try
       {
-        using (var client = new WebClient())
+        using (var client = new XWebClient())
         {
-          client.Proxy = null;
           var text = client.DownloadString(this.url);
           var lines = text.Split('\n');
           var endpoints = new List<IPEndPoint>(lines.Length);

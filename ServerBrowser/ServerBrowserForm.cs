@@ -37,7 +37,6 @@ namespace ServerBrowser
     };
     #endregion
 
-    private const string Version = "1.10";
     private const string DevExpressVersion = "v15.1";
     private volatile Game steamAppId;
     private readonly GameExtensionPool extenders = new GameExtensionPool();
@@ -58,21 +57,24 @@ namespace ServerBrowser
     public ServerBrowserForm()
     {
       InitializeComponent();
+
       this.favGameRadioButtons = new[] {rbFavGame1, rbFavGame2, rbFavGame3, rbFavGame4 };
+
+      this.InitGameInfoExtenders();
+      this.queryLogic = new ServerQueryLogic(this.extenders);
+
+      if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
+        return;
+
+      this.queryLogic.UpdateStatus += (s, e) => this.BeginInvoke((Action)(() => { this.SetStatusMessage(e.Text); }));
+      this.queryLogic.ReloadServerListComplete += (s, e) => this.BeginInvoke((Action)(() => { queryLogic_ReloadServerListComplete(e.Rows); }));
+      this.queryLogic.RefreshSingleServerComplete += (s, e) => this.BeginInvoke((Action)(() => { queryLogic_RefreshSingleServerComplete(e); }));
 
       // make the server list panel fill the remaining space (this can't be done in the Forms Designer)
       this.panelServerList.Parent.Controls.Remove(this.panelServerList);
       this.panelServerList.Dock = DockingStyle.Fill;
       this.Controls.Add(this.panelServerList);
-
       UserLookAndFeel.Default.StyleChanged += LookAndFeel_StyleChanged;
-
-
-      this.InitGameInfoExtenders();
-      this.queryLogic = new ServerQueryLogic(this.extenders);
-      this.queryLogic.UpdateStatus += (s, e) => this.BeginInvoke((Action)(() => { this.txtStatus.Text = e.Text; }));
-      this.queryLogic.ReloadServerListComplete += (s,e) => this.BeginInvoke((Action)(() => { queryLogic_ReloadServerListComplete(e.Rows); }));
-      this.queryLogic.RefreshSingleServerComplete += (s, e) => this.BeginInvoke((Action) (() => { queryLogic_RefreshSingleServerComplete(e); }));    
     }
     #endregion
 
@@ -93,13 +95,16 @@ namespace ServerBrowser
     {
       base.OnLoad(e);
 
+      if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
+        return;
+
       ++this.ignoreUiEvents;
 
       this.FillGameCombo();
       this.FillSteamServerRegions();
       this.InitGameInfoExtenders();
       this.InitBranding();
-      this.LoadBonusSkins();
+      LoadBonusSkins(this.BonusSkinDllPath);
       this.InitAppSettings();
       LookAndFeel_StyleChanged(null, null);
       --this.ignoreUiEvents;
@@ -110,8 +115,17 @@ namespace ServerBrowser
     #region OnFormClosing()
     protected override void OnFormClosing(FormClosingEventArgs e)
     {
+      this.SaveAppSettings();
+      this.queryLogic.Cancel();
+      base.OnFormClosing(e);
+    }
+    #endregion
+
+    #region SaveAppSettings()
+    protected virtual void SaveAppSettings()
+    {
       Properties.Settings.Default.MasterServer = this.comboMasterServer.Text;
-      Properties.Settings.Default.InitialGameID = (int)this.SteamAppID;
+      Properties.Settings.Default.InitialGameID = (int) this.SteamAppID;
       Properties.Settings.Default.FilterMod = this.txtMod.Text;
       Properties.Settings.Default.FilterMap = this.txtMap.Text;
       Properties.Settings.Default.TagsInclude = this.txtTagInclude.Text;
@@ -119,15 +133,13 @@ namespace ServerBrowser
       Properties.Settings.Default.GetEmptyServers = this.cbGetEmpty.Checked;
       Properties.Settings.Default.GetFullServers = this.cbGetFull.Checked;
 
+      Properties.Settings.Default.Skin = DevExpress.LookAndFeel.UserLookAndFeel.Default.SkinName;      
       Properties.Settings.Default.ShowOptions = this.cbAdvancedOptions.Checked;
       Properties.Settings.Default.ShowAddressMode = this.showAddressMode;
       Properties.Settings.Default.RefreshInterval = Convert.ToInt32(this.spinRefreshInterval.EditValue);
       Properties.Settings.Default.RefreshSelected = this.cbRefreshSelectedServer.Checked;
 
       Properties.Settings.Default.Save();
-
-      this.queryLogic.Cancel();
-      base.OnFormClosing(e);
     }
     #endregion
 
@@ -159,23 +171,15 @@ namespace ServerBrowser
     #region InitBranding()
     protected virtual void InitBranding()
     {
-      base.Text += " " + Version;
-      // ReSharper disable AssignNullToNotNullAttribute
-      this.Icon = new Icon(this.GetType().Assembly.GetManifestResourceStream("ServerBrowser.rocket.ico"));
-      // ReSharper restore AssignNullToNotNullAttribute
-
-      UserLookAndFeel.Default.SkinName = Properties.Settings.Default.Skin;
     }
     #endregion
 
     #region LoadBonusSkins()
-
     /// <summary>
     /// Load the BonusSkin DLL dynamically so that the application can be executed without it being present
     /// </summary>
-    private bool LoadBonusSkins()
+    internal static bool LoadBonusSkins(string dllPath)
     {
-      var dllPath = this.BonusSkinDllPath;
       try
       {
         if (!File.Exists(dllPath))
@@ -187,8 +191,6 @@ namespace ServerBrowser
         var method = type.GetMethod("Register", BindingFlags.Static | BindingFlags.Public);
         if (method != null)
           method.Invoke(null, null);
-
-        this.SetBonusSkinLinkState(false);
         return true;
       }
       catch
@@ -197,7 +199,6 @@ namespace ServerBrowser
         try
         {
           File.Delete(dllPath);
-          this.SetBonusSkinLinkState(true);
         }
         catch { }
         return false;
@@ -213,20 +214,6 @@ namespace ServerBrowser
         const string dllName = "DevExpress.BonusSkins." + DevExpressVersion + ".dll";
         return Path.GetDirectoryName(Application.ExecutablePath) + "\\" + dllName;        
       }
-    }
-    #endregion
-
-    #region SetBonusSkinLinkState()
-    private void SetBonusSkinLinkState(bool visible)
-    {
-      if (visible)
-      {
-        this.linkDownloadSkins.Text = "Download <href>Bonus Skins</href>";
-        this.linkDownloadSkins.Visible = true;
-        this.linkDownloadSkins.Enabled = true;
-      }
-      else
-        this.linkDownloadSkins.Visible = false;
     }
     #endregion
 
@@ -291,6 +278,7 @@ namespace ServerBrowser
     #endregion
     
     #region SteamAppId
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public Game SteamAppID
     {
       get { return this.steamAppId; }
@@ -390,7 +378,7 @@ namespace ServerBrowser
       if (appId == 0) // this would result in a truncated list of all games
         return;
 
-      this.txtStatus.Text = "Requesting server list from master server...";
+      this.SetStatusMessage("Requesting server list from master server...");
 
       var region = (QueryMaster.Region)steamRegions[this.comboRegion.SelectedIndex * 2 + 1];
 
@@ -496,14 +484,23 @@ namespace ServerBrowser
       string password = null;
       if (row.ServerInfo.IsPrivate)
       {
-        if (this.passwordForm.ShowDialog(this) == DialogResult.Cancel)
+        password = this.PromptForServerPassword(row);
+        if (password == null)
           return;
-        password = this.passwordForm.Password;
       }
 
       this.Cursor = Cursors.WaitCursor;
       row.GameExtension.Connect(row, password, spectate);
       this.Cursor = Cursors.Default;
+    }
+    #endregion
+
+    #region PromptForServerPassword()
+    protected virtual string PromptForServerPassword(ServerRow row)
+    {
+      if (this.passwordForm.ShowDialog(this) == DialogResult.Cancel)
+        return null;
+      return this.passwordForm.Password;      
     }
     #endregion
 
@@ -520,13 +517,19 @@ namespace ServerBrowser
     }
     #endregion
 
+    #region SetStatusMessage()
+    protected virtual void SetStatusMessage(string message)
+    {
+      this.txtStatus.Text = DateTime.Now.ToString("G") + " | " + message;
+    }
+    #endregion
 
     // general components
 
     #region queryLogic_ReloadServerListComplete()
     private void queryLogic_ReloadServerListComplete(List<ServerRow> rows)
     {
-      this.txtStatus.Text = DateTime.Now.ToString("G") + ": Update of " + rows.Count + " servers complete";
+      this.SetStatusMessage("Update of " + rows.Count + " servers complete");
 
       this.timerUpdateServerList_Tick(null, null);
       if (this.gvServers.RowCount > 0 && this.cbAlert.Checked)
@@ -534,7 +537,7 @@ namespace ServerBrowser
         this.cbAlert.Checked = false;
         SystemSounds.Asterisk.Play();
         this.alertControl1.Show(this, "Steam Server Browser", "Found " + this.gvServers.RowCount + " server(s) matching your criteria.", 
-          this.sharedImageCollection1.ImageSource.Images[2]);
+          this.imageCollection.Images[2]);
       }
     }
     #endregion
@@ -557,7 +560,6 @@ namespace ServerBrowser
       if (color == Color.Transparent)
         color = this.panelOptions.ForeColor;
       this.linkFilter1.Appearance.LinkColor = this.linkFilter1.Appearance.PressedColor = color;
-      this.linkDownloadSkins.Appearance.LinkColor = this.linkDownloadSkins.Appearance.PressedColor = color;
 
       this.miConnect.ItemAppearance.Normal.Font = new Font(this.miConnect.ItemAppearance.Normal.Font, FontStyle.Bold);
     }
@@ -755,36 +757,11 @@ namespace ServerBrowser
     #region btnSkin_Click
     private void btnSkin_Click(object sender, EventArgs e)
     {
-      using (var dlg = new SkinPicker())
+      using (var dlg = new SkinPicker(this.BonusSkinDllPath))
         dlg.ShowDialog(this);
     }
     #endregion
 
-    #region linkDownloadSkins_HyperlinkClick
-    private void linkDownloadSkins_HyperlinkClick(object sender, HyperlinkClickEventArgs e)
-    {
-      this.linkDownloadSkins.Text = "<href></href>Downloading Bonus Skins...";
-      this.linkDownloadSkins.Enabled = false;
-
-      var client = new WebClient();
-      client.Proxy = null;
-      client.DownloadFileCompleted += delegate(object o, AsyncCompletedEventArgs args)
-      {
-        ((WebClient)o).Dispose();
-        if (args.Error != null)
-        {
-          XtraMessageBox.Show(this, "Failed to download skin pack:\n" + args.Error, "Skin Pack", MessageBoxButtons.OK, MessageBoxIcon.Error);
-          this.SetBonusSkinLinkState(true);
-          return;
-        }
-        if (this.LoadBonusSkins())
-          this.btnSkin_Click(null, null);
-      };
-
-      var dllPath = this.BonusSkinDllPath;
-      client.DownloadFileAsync(new Uri("https://github.com/PredatH0r/SteamServerBrowser/raw/master/ServerBrowser/DLL/" + Path.GetFileName(dllPath)), dllPath);      
-    }
-    #endregion
 
     // Servers grid
 
@@ -871,7 +848,7 @@ namespace ServerBrowser
       }
       catch (Exception ex)
       {
-        this.txtStatus.Text = ex.Message;
+        this.SetStatusMessage(ex.Message);
       }
     }
     #endregion
@@ -896,7 +873,7 @@ namespace ServerBrowser
       }
       catch (Exception ex)
       {
-        this.txtStatus.Text = ex.Message;
+        this.SetStatusMessage(ex.Message);
       }
     }
     #endregion

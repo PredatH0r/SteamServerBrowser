@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Drawing;
-using System.Globalization;
 using System.Threading;
 using System.Windows.Forms;
 using DevExpress.LookAndFeel;
@@ -11,20 +10,6 @@ namespace ServerBrowser
 {
   public static class Program
   {
-    [STAThread]
-    static void Main()
-    {
-#if false
-      var culture = new CultureInfo("en");
-      Application.CurrentCulture = culture;
-      Thread.CurrentThread.CurrentUICulture = culture;
-      Thread.CurrentThread.CurrentCulture = culture;
-#endif
-      // change font before InitializeComponent() of the main Form for correct auto-scaling
-      Init(new Font("Segoe UI", AppearanceObject.DefaultFont.Size + 0.75f), "Office 2010 Black");
-      Application.Run(new ServerBrowserForm());
-    }
-
     public static void Init(Font uiFont, string skinName)
     {
       InitExceptionHandling();

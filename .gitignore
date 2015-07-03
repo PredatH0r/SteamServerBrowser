@@ -14,3 +14,5 @@ Sourceforge/*
 *.bak
 Thumbs.db
 ServerBrowser/phgp/
+Main/bin/
+Main/obj/

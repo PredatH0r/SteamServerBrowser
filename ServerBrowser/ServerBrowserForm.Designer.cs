@@ -72,7 +72,7 @@ namespace ServerBrowser
       this.barDockControlBottom = new DevExpress.XtraBars.BarDockControl();
       this.barDockControlLeft = new DevExpress.XtraBars.BarDockControl();
       this.barDockControlRight = new DevExpress.XtraBars.BarDockControl();
-      this.sharedImageCollection1 = new DevExpress.Utils.SharedImageCollection(this.components);
+      this.imageCollection = new DevExpress.Utils.ImageCollection(this.components);
       this.miUpdateServerInfo = new DevExpress.XtraBars.BarButtonItem();
       this.miConnect = new DevExpress.XtraBars.BarButtonItem();
       this.miConnectSpectator = new DevExpress.XtraBars.BarButtonItem();
@@ -129,7 +129,6 @@ namespace ServerBrowser
       this.cbAlert = new DevExpress.XtraEditors.CheckButton();
       this.rbAddressHidden = new DevExpress.XtraEditors.CheckEdit();
       this.spinRefreshInterval = new DevExpress.XtraEditors.SpinEdit();
-      this.linkDownloadSkins = new DevExpress.XtraEditors.HyperlinkLabelControl();
       this.panelControl1 = new DevExpress.XtraEditors.PanelControl();
       this.txtStatus = new DevExpress.XtraEditors.LabelControl();
       this.menuServers = new DevExpress.XtraBars.PopupMenu(this.components);
@@ -151,8 +150,7 @@ namespace ServerBrowser
       ((System.ComponentModel.ISupportInitialize)(this.gvServers)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.dockManager1)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.barManager1)).BeginInit();
-      ((System.ComponentModel.ISupportInitialize)(this.sharedImageCollection1)).BeginInit();
-      ((System.ComponentModel.ISupportInitialize)(this.sharedImageCollection1.ImageSource)).BeginInit();
+      ((System.ComponentModel.ISupportInitialize)(this.imageCollection)).BeginInit();
       this.panelContainer1.SuspendLayout();
       this.panelPlayers.SuspendLayout();
       this.dockPanel1_Container.SuspendLayout();
@@ -585,7 +583,7 @@ namespace ServerBrowser
       this.barManager1.DockControls.Add(this.barDockControlRight);
       this.barManager1.DockManager = this.dockManager1;
       this.barManager1.Form = this;
-      this.barManager1.Images = this.sharedImageCollection1;
+      this.barManager1.Images = this.imageCollection;
       this.barManager1.Items.AddRange(new DevExpress.XtraBars.BarItem[] {
             this.miUpdateServerInfo,
             this.miConnect,
@@ -646,25 +644,25 @@ namespace ServerBrowser
       this.barDockControlRight.Location = new System.Drawing.Point(1465, 31);
       this.barDockControlRight.Size = new System.Drawing.Size(0, 777);
       // 
-      // sharedImageCollection1
+      // imageCollection
       // 
-      // 
-      // 
-      // 
-      this.sharedImageCollection1.ImageSource.ImageStream = ((DevExpress.Utils.ImageCollectionStreamer)(resources.GetObject("sharedImageCollection1.ImageSource.ImageStream")));
-      this.sharedImageCollection1.ImageSource.Images.SetKeyName(0, "000.png");
-      this.sharedImageCollection1.ImageSource.Images.SetKeyName(1, "001.png");
-      this.sharedImageCollection1.ImageSource.Images.SetKeyName(2, "002.png");
-      this.sharedImageCollection1.ImageSource.Images.SetKeyName(3, "003.png");
-      this.sharedImageCollection1.ImageSource.Images.SetKeyName(4, "004.png");
-      this.sharedImageCollection1.ImageSource.Images.SetKeyName(5, "005.png");
-      this.sharedImageCollection1.ParentControl = this;
+      this.imageCollection.ImageStream = ((DevExpress.Utils.ImageCollectionStreamer)(resources.GetObject("imageCollection.ImageStream")));
+      this.imageCollection.Images.SetKeyName(0, "000.png");
+      this.imageCollection.Images.SetKeyName(1, "001.png");
+      this.imageCollection.Images.SetKeyName(2, "002.png");
+      this.imageCollection.Images.SetKeyName(3, "003.png");
+      this.imageCollection.Images.SetKeyName(4, "004.png");
+      this.imageCollection.Images.SetKeyName(5, "005.png");
+      this.imageCollection.Images.SetKeyName(6, "006.png");
+      this.imageCollection.Images.SetKeyName(7, "007.png");
+      this.imageCollection.Images.SetKeyName(8, "008.png");
       // 
       // miUpdateServerInfo
       // 
       this.miUpdateServerInfo.Caption = "Update Information";
       this.miUpdateServerInfo.CategoryGuid = new System.Guid("b1e08833-8d08-415c-9522-c31e9bf3c2de");
       this.miUpdateServerInfo.Id = 3;
+      this.miUpdateServerInfo.ImageIndex = 1;
       this.miUpdateServerInfo.Name = "miUpdateServerInfo";
       this.miUpdateServerInfo.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miUpdateServerInfo_ItemClick);
       // 
@@ -673,6 +671,7 @@ namespace ServerBrowser
       this.miConnect.Caption = "Connect";
       this.miConnect.CategoryGuid = new System.Guid("b1e08833-8d08-415c-9522-c31e9bf3c2de");
       this.miConnect.Id = 0;
+      this.miConnect.ImageIndex = 7;
       this.miConnect.Name = "miConnect";
       this.miConnect.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miConnect_ItemClick);
       // 
@@ -689,6 +688,7 @@ namespace ServerBrowser
       this.miCopyAddress.Caption = "Copy Address to Clipboard";
       this.miCopyAddress.CategoryGuid = new System.Guid("b1e08833-8d08-415c-9522-c31e9bf3c2de");
       this.miCopyAddress.Id = 2;
+      this.miCopyAddress.ImageIndex = 6;
       this.miCopyAddress.Name = "miCopyAddress";
       this.miCopyAddress.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miCopyAddress_ItemClick);
       // 
@@ -716,7 +716,7 @@ namespace ServerBrowser
       this.panelPlayers.Name = "panelPlayers";
       this.panelPlayers.Options.AllowFloating = false;
       this.panelPlayers.Options.ShowCloseButton = false;
-      this.panelPlayers.OriginalSize = new System.Drawing.Size(354, 547);
+      this.panelPlayers.OriginalSize = new System.Drawing.Size(354, 518);
       this.panelPlayers.Size = new System.Drawing.Size(354, 516);
       this.panelPlayers.Text = "Players";
       // 
@@ -737,7 +737,7 @@ namespace ServerBrowser
       this.panelServerDetails.Name = "panelServerDetails";
       this.panelServerDetails.Options.AllowFloating = false;
       this.panelServerDetails.Options.ShowCloseButton = false;
-      this.panelServerDetails.OriginalSize = new System.Drawing.Size(354, 547);
+      this.panelServerDetails.OriginalSize = new System.Drawing.Size(354, 518);
       this.panelServerDetails.Size = new System.Drawing.Size(354, 516);
       this.panelServerDetails.Text = "Server Details";
       // 
@@ -756,7 +756,7 @@ namespace ServerBrowser
       this.panelRules.ID = new System.Guid("7cfd1891-8f2c-4d0a-bd2c-1bb030d15a66");
       this.panelRules.Location = new System.Drawing.Point(4, 23);
       this.panelRules.Name = "panelRules";
-      this.panelRules.OriginalSize = new System.Drawing.Size(354, 547);
+      this.panelRules.OriginalSize = new System.Drawing.Size(354, 518);
       this.panelRules.Size = new System.Drawing.Size(354, 516);
       this.panelRules.Text = "Rules";
       // 
@@ -870,7 +870,7 @@ namespace ServerBrowser
       // btnQueryMaster
       // 
       this.btnQueryMaster.ImageIndex = 1;
-      this.btnQueryMaster.ImageList = this.sharedImageCollection1;
+      this.btnQueryMaster.ImageList = this.imageCollection;
       this.btnQueryMaster.Location = new System.Drawing.Point(939, 54);
       this.btnQueryMaster.Name = "btnQueryMaster";
       this.btnQueryMaster.Size = new System.Drawing.Size(115, 25);
@@ -1020,7 +1020,7 @@ namespace ServerBrowser
       // cbAdvancedOptions
       // 
       this.cbAdvancedOptions.ImageIndex = 4;
-      this.cbAdvancedOptions.ImageList = this.sharedImageCollection1;
+      this.cbAdvancedOptions.ImageList = this.imageCollection;
       this.cbAdvancedOptions.Location = new System.Drawing.Point(1070, 54);
       this.cbAdvancedOptions.Name = "cbAdvancedOptions";
       this.cbAdvancedOptions.Size = new System.Drawing.Size(115, 25);
@@ -1154,7 +1154,6 @@ namespace ServerBrowser
       this.panelAdvancedOptions.Controls.Add(this.cbRefreshSelectedServer);
       this.panelAdvancedOptions.Controls.Add(this.rbAddressHidden);
       this.panelAdvancedOptions.Controls.Add(this.spinRefreshInterval);
-      this.panelAdvancedOptions.Controls.Add(this.linkDownloadSkins);
       this.panelAdvancedOptions.Dock = System.Windows.Forms.DockStyle.Top;
       this.panelAdvancedOptions.Location = new System.Drawing.Point(0, 124);
       this.panelAdvancedOptions.Name = "panelAdvancedOptions";
@@ -1227,7 +1226,7 @@ namespace ServerBrowser
       // cbAlert
       // 
       this.cbAlert.ImageIndex = 5;
-      this.cbAlert.ImageList = this.sharedImageCollection1;
+      this.cbAlert.ImageList = this.imageCollection;
       this.cbAlert.Location = new System.Drawing.Point(725, 5);
       this.cbAlert.Name = "cbAlert";
       this.cbAlert.Size = new System.Drawing.Size(329, 25);
@@ -1272,16 +1271,6 @@ namespace ServerBrowser
       this.spinRefreshInterval.Size = new System.Drawing.Size(47, 20);
       this.spinRefreshInterval.TabIndex = 5;
       this.spinRefreshInterval.EditValueChanged += new System.EventHandler(this.spinRefreshInterval_EditValueChanged);
-      // 
-      // linkDownloadSkins
-      // 
-      this.linkDownloadSkins.Cursor = System.Windows.Forms.Cursors.Hand;
-      this.linkDownloadSkins.Location = new System.Drawing.Point(397, 9);
-      this.linkDownloadSkins.Name = "linkDownloadSkins";
-      this.linkDownloadSkins.Size = new System.Drawing.Size(106, 13);
-      this.linkDownloadSkins.TabIndex = 11;
-      this.linkDownloadSkins.Text = "Download Bonus Skins";
-      this.linkDownloadSkins.HyperlinkClick += new DevExpress.Utils.HyperlinkClickEventHandler(this.linkDownloadSkins_HyperlinkClick);
       // 
       // panelControl1
       // 
@@ -1360,8 +1349,7 @@ namespace ServerBrowser
       ((System.ComponentModel.ISupportInitialize)(this.gvServers)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.dockManager1)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.barManager1)).EndInit();
-      ((System.ComponentModel.ISupportInitialize)(this.sharedImageCollection1.ImageSource)).EndInit();
-      ((System.ComponentModel.ISupportInitialize)(this.sharedImageCollection1)).EndInit();
+      ((System.ComponentModel.ISupportInitialize)(this.imageCollection)).EndInit();
       this.panelContainer1.ResumeLayout(false);
       this.panelPlayers.ResumeLayout(false);
       this.dockPanel1_Container.ResumeLayout(false);
@@ -1490,7 +1478,6 @@ namespace ServerBrowser
     protected System.Windows.Forms.Timer timerReloadServers;
     protected DevExpress.XtraBars.Alerter.AlertControl alertControl1;
     protected HyperlinkLabelControl linkFilter1;
-    protected HyperlinkLabelControl linkDownloadSkins;
     protected CheckEdit cbGetEmpty;
     protected CheckEdit cbGetFull;
     protected ComboBoxEdit comboMasterServer;
@@ -1504,7 +1491,7 @@ namespace ServerBrowser
     protected CheckEdit rbAddressQueryPort;
     protected LabelControl labelControl8;
     protected LabelControl labelControl2;
-    protected DevExpress.Utils.SharedImageCollection sharedImageCollection1;
+    protected DevExpress.Utils.ImageCollection imageCollection;
     protected ButtonEdit txtTagExclude;
     protected ButtonEdit txtTagInclude;
     protected ButtonEdit txtMap;
