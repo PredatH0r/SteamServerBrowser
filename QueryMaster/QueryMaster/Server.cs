@@ -290,9 +290,9 @@ namespace QueryMaster
             Time = TimeSpan.FromSeconds(parser.ReadFloat())
           });
         }
-        playerCount = players.Count; // some servers report more players than it really returns
-        if (playerCount == 1 && players[0].Name == "Max Players")
-          return null;
+        //playerCount = players.Count; // some servers report more players than it really returns
+        //if (playerCount == 1 && players[0].Name == "Max Players")
+        //  return null;
         return players.AsReadOnly();
       }
       catch (Exception e)
