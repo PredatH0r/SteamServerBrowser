@@ -51,7 +51,7 @@ namespace ServerBrowser
     private List<ServerRow> servers;
     private ServerRow lastSelectedServer;
     private ServerRow currentServer;
-    protected string serverSourceUrl;
+    private IServerSource serverSource;
 
     #region ctor()
     public ServerBrowserForm()
@@ -66,7 +66,7 @@ namespace ServerBrowser
       if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
         return;
 
-      this.queryLogic.UpdateStatus += (s, e) => this.BeginInvoke((Action)(() => { this.SetStatusMessage(e.Text); }));
+      this.queryLogic.UpdateStatus += (s, e) => this.BeginInvoke((Action)(() => queryLogic_SetStatusMessage(s, e)));
       this.queryLogic.ReloadServerListComplete += (s, e) => this.BeginInvoke((Action)(() => { queryLogic_ReloadServerListComplete(e.Rows); }));
       this.queryLogic.RefreshSingleServerComplete += (s, e) => this.BeginInvoke((Action)(() => { queryLogic_RefreshSingleServerComplete(e); }));
 
@@ -108,6 +108,8 @@ namespace ServerBrowser
       this.InitAppSettings();
       LookAndFeel_StyleChanged(null, null);
       --this.ignoreUiEvents;
+      this.serverSource = this.CreateServerSource();
+
       this.ReloadServerList();      
     }
     #endregion
@@ -247,6 +249,13 @@ namespace ServerBrowser
     }
     #endregion
 
+    #region CreateServerSource()
+    protected virtual IServerSource CreateServerSource()
+    {
+      return new MasterServerClient(this.MasterServerEndpoint);
+    }
+    #endregion
+
     #region InitFavGameRadioButtons()
     private void InitFavGameRadioButtons()
     {
@@ -369,7 +378,7 @@ namespace ServerBrowser
     #endregion
 
     #region ReloadServerList()
-    private void ReloadServerList()
+    protected void ReloadServerList()
     {
       if (this.ignoreUiEvents > 0)
         return;
@@ -394,11 +403,8 @@ namespace ServerBrowser
         filter.Nor = new IpFilter();
         filter.Nor.Sv_Tags = this.ParseTags(this.txtTagExclude.Text);
       }
-      this.gameExtension.CustomizeServerFilter(filter);
-      var source = this.serverSourceUrl != null ? 
-        (IServerSource)new ServerListFromUrl(new Uri(this.serverSourceUrl)) : new MasterServerClient(this.MasterServerEndpoint);
-      //var source = new ServerListFromUrl(new Uri(Environment.CurrentDirectory + "\\serverlist.txt"));
-      queryLogic.ReloadServerList(source, 500, MaxResults, region, filter);
+      this.gameExtension.CustomizeServerFilter(filter);      
+      queryLogic.ReloadServerList(this.serverSource, 500, MaxResults, region, filter);
     }
     #endregion
 
@@ -406,6 +412,47 @@ namespace ServerBrowser
     private string ParseTags(string text)
     {
       return text.Replace("\\", "");
+    }
+    #endregion
+
+    #region PreFilterServers()
+    protected virtual List<ServerRow> PreFilterServers(List<ServerRow> allServers)
+    {
+      return allServers;
+    }
+    #endregion
+
+    #region UpdateViews()
+    protected void UpdateViews()
+    {
+      this.servers = this.PreFilterServers(this.queryLogic.Servers);
+      ++ignoreUiEvents;
+      this.gvServers.BeginDataUpdate();
+      this.gcServers.DataSource = servers;
+      this.gvServers.EndDataUpdate();
+
+      if (this.lastSelectedServer != null)
+      {
+        int i = 0;
+        foreach (var server in servers)
+        {
+          if (server.EndPoint.Equals(this.lastSelectedServer.EndPoint))
+          {
+            gvServers.FocusedRowHandle = gvServers.GetRowHandle(i);
+            gvServers.MakeRowVisible(gvServers.FocusedRowHandle);
+            break;
+          }
+          ++i;
+        }
+      }
+      else if (this.gvServers.FocusedRowHandle > 0)
+        this.gvServers.FocusedRowHandle = 0;
+
+      --ignoreUiEvents;
+
+      var row = (ServerRow)this.gvServers.GetFocusedRow();
+      if (row != null && row.GetAndResetIsModified())
+        this.UpdateGridDataSources();
     }
     #endregion
 
@@ -478,7 +525,7 @@ namespace ServerBrowser
     #region ConnectToGameServer()
     private void ConnectToGameServer(ServerRow row, bool spectate)
     {
-      if (row.ServerInfo == null)
+      if (row == null || row.ServerInfo == null)
         return;
 
       string password = null;
@@ -490,6 +537,7 @@ namespace ServerBrowser
       }
 
       this.Cursor = Cursors.WaitCursor;
+      this.SetStatusMessage("Connecting to game server " + row.ServerInfo.Name + " ...");
       row.GameExtension.Connect(row, password, spectate);
       this.Cursor = Cursors.Default;
     }
@@ -526,12 +574,18 @@ namespace ServerBrowser
 
     // general components
 
-    #region queryLogic_ReloadServerListComplete()
-    private void queryLogic_ReloadServerListComplete(List<ServerRow> rows)
+    #region queryLogic_SetStatusMessage
+    protected virtual void queryLogic_SetStatusMessage(object sender, TextEventArgs e)
     {
-      this.SetStatusMessage("Update of " + rows.Count + " servers complete");
+      { this.SetStatusMessage(e.Text); }
+    }
+    #endregion
 
-      this.timerUpdateServerList_Tick(null, null);
+    #region queryLogic_ReloadServerListComplete()
+    protected virtual void queryLogic_ReloadServerListComplete(List<ServerRow> rows)
+    {
+      this.UpdateViews();
+      this.SetStatusMessage("Update of " + this.servers.Count + " servers complete");
       if (this.gvServers.RowCount > 0 && this.cbAlert.Checked)
       {
         this.cbAlert.Checked = false;
@@ -543,10 +597,13 @@ namespace ServerBrowser
     #endregion
 
     #region queryLogic_RefreshSingleServerComplete()
-    private void queryLogic_RefreshSingleServerComplete(ServerEventArgs e)
+    protected virtual void queryLogic_RefreshSingleServerComplete(ServerEventArgs e)
     {
       if (this.gvServers.GetFocusedRow() == e.Server)
+      {
+        this.gvServers.RefreshRow(this.gvServers.FocusedRowHandle);
         this.UpdateGridDataSources();
+      }
     }
     #endregion
 
@@ -781,34 +838,7 @@ namespace ServerBrowser
       this.timerUpdateServerList.Stop();
       try
       {
-        this.servers = this.queryLogic.Servers;
-        ++ignoreUiEvents;
-        this.gvServers.BeginDataUpdate();
-        this.gcServers.DataSource = servers;
-        this.gvServers.EndDataUpdate();
-
-        if (this.lastSelectedServer != null)
-        {
-          int i = 0;
-          foreach (var server in servers)
-          {
-            if (server.EndPoint.Equals(this.lastSelectedServer.EndPoint))
-            {
-              gvServers.FocusedRowHandle = gvServers.GetRowHandle(i);
-              gvServers.MakeRowVisible(gvServers.FocusedRowHandle);
-              break;
-            }
-            ++i;
-          }
-        }
-        else if (this.gvServers.FocusedRowHandle > 0)
-          this.gvServers.FocusedRowHandle = 0;
-
-        --ignoreUiEvents;
-
-        var row = (ServerRow) this.gvServers.GetFocusedRow();
-        if (row != null && row.GetAndResetIsModified())
-          this.UpdateGridDataSources();
+        this.UpdateViews();
       }
       finally
       {

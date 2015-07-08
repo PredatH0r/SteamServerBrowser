@@ -6,7 +6,7 @@ using QueryMaster;
 
 namespace ServerBrowser
 {
-  class ServerListFromUrl : IServerSource
+  public class ServerListFromUrl : IServerSource
   {
     private readonly Uri url;
 

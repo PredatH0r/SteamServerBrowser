@@ -34,7 +34,13 @@ namespace ServerBrowser
       }
 
       if (row.Players != null)
-        RealPlayers = row.Players.Count(p => !string.IsNullOrEmpty(p.Name));
+      {
+        // CS:GO with default server settings returns a single fake "Max Players" entry with score=MaxPlayers and time=server up-time
+        if (row.ServerInfo != null && row.ServerInfo.Players != row.Players.Count && row.Players.Count == 1 && row.Players[0].Name == "Max Players")
+          RealPlayers = row.ServerInfo.Players;
+        else
+          RealPlayers = row.Players.Count(p => !string.IsNullOrEmpty(p.Name));
+      }
     }
 
     public int CompareTo(object b)
