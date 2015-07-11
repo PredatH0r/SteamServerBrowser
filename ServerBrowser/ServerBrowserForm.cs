@@ -403,8 +403,15 @@ namespace ServerBrowser
         filter.Nor = new IpFilter();
         filter.Nor.Sv_Tags = this.ParseTags(this.txtTagExclude.Text);
       }
-      this.gameExtension.CustomizeServerFilter(filter);      
+      this.CustomizeFilter(filter);
       queryLogic.ReloadServerList(this.serverSource, 500, MaxResults, region, filter);
+    }
+    #endregion
+
+    #region CustomizeFilter()
+    protected virtual void CustomizeFilter(IpFilter filter)
+    {
+      this.gameExtension.CustomizeServerFilter(filter);      
     }
     #endregion
 
@@ -590,7 +597,7 @@ namespace ServerBrowser
       {
         this.cbAlert.Checked = false;
         SystemSounds.Asterisk.Play();
-        this.alertControl1.Show(this, "Steam Server Browser", "Found " + this.gvServers.RowCount + " server(s) matching your criteria.", 
+        this.alertControl1.Show(this, "Steam Server Browser", DateTime.Now.ToString("HH:mm:ss") + ": Found " + this.gvServers.RowCount + " server(s) matching your criteria.", 
           this.imageCollection.Images[2]);
       }
     }
@@ -794,7 +801,7 @@ namespace ServerBrowser
       this.cbAlert.ImageIndex = this.cbAlert.Checked ? 2 : 5;
       if (!this.cbAlert.Checked || !string.IsNullOrEmpty(this.gvServers.ActiveFilterString))
         return;
-      this.gvServers.ActiveFilterString = "[ServerInfo.Players]>=1";
+      this.gvServers.ActiveFilterString = "[PlayerCount.RealPlayers]>=1";
     }
     #endregion
 

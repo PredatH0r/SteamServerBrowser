@@ -184,7 +184,6 @@
       <DependentUpon>SkinPicker.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="app.config" />
-    <None Include="CodeSigning.cmd" />
     <None Include="Properties\DataSources\Form1.ServerRow.datasource" />
     <None Include="Properties\DataSources\QueryMaster.Player.datasource" />
     <None Include="Properties\DataSources\QueryMaster.Rule.datasource" />

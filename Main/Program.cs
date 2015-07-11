@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Drawing;
-using System.Globalization;
 using System.Windows.Forms;
 using DevExpress.Utils;
 using ServerBrowser;
@@ -15,10 +14,10 @@ namespace Main
     static void Main()
     {
 #if false
-      var culture = new CultureInfo("en");
+      var culture = new System.Globalization.CultureInfo("en");
       Application.CurrentCulture = culture;
-      Thread.CurrentThread.CurrentUICulture = culture;
-      Thread.CurrentThread.CurrentCulture = culture;
+      System.Threading.Thread.CurrentThread.CurrentUICulture = culture;
+      System.Threading.Thread.CurrentThread.CurrentCulture = culture;
 #endif
       // change font before creating the main form to get correct auto-scaling
       ServerBrowser.Program.Init(new Font("Segoe UI", AppearanceObject.DefaultFont.Size + 0.75f), Properties.Settings.Default.Skin);

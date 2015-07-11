@@ -12,9 +12,10 @@ namespace ServerBrowser
   {
     private readonly ServerRow row;
 
-    public int RealPlayers { get; private set; }
-    public int Bots { get; private set; }
-    public int MaxPlayers { get; private set; }
+    public int? RealPlayers { get; private set; }
+    public int? Bots { get; private set; }
+    public int? TotalPlayers { get { return RealPlayers + Bots; } }
+    public int? MaxPlayers { get; private set; }
 
     public PlayerCountInfo(ServerRow row)
     {
@@ -25,7 +26,7 @@ namespace ServerBrowser
     public void Update()
     {
       if (row.ServerInfo == null)
-        RealPlayers = Bots = MaxPlayers = 0;
+        RealPlayers = Bots = MaxPlayers = null;
       else
       {
         Bots = row.ServerInfo.Bots;
@@ -46,6 +47,10 @@ namespace ServerBrowser
     public int CompareTo(object b)
     {
       PlayerCountInfo other = (PlayerCountInfo)b;
+      if (this.row.ServerInfo == null)
+        return other.row.ServerInfo == null ? 0 : -1;
+      if (other.row.ServerInfo == null)
+        return +1;
       if (this.RealPlayers < other.RealPlayers) return -1;
       if (this.RealPlayers > other.RealPlayers) return +1;
       if (this.Bots < other.Bots) return -1;

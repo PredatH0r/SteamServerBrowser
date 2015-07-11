@@ -477,7 +477,7 @@ namespace ServerBrowser
       // colHumanPlayers
       // 
       this.colHumanPlayers.Caption = "Humans";
-      this.colHumanPlayers.FieldName = "ServerInfo.Players";
+      this.colHumanPlayers.FieldName = "PlayerCount.RealPlayers";
       this.colHumanPlayers.Name = "colHumanPlayers";
       this.colHumanPlayers.OptionsColumn.AllowEdit = false;
       this.colHumanPlayers.ToolTip = "Human Players";
@@ -488,7 +488,7 @@ namespace ServerBrowser
       // colBots
       // 
       this.colBots.Caption = "Bots";
-      this.colBots.FieldName = "ServerInfo.Bots";
+      this.colBots.FieldName = "PlayerCount.Bots";
       this.colBots.Name = "colBots";
       this.colBots.OptionsColumn.AllowEdit = false;
       this.colBots.Visible = true;
@@ -498,7 +498,7 @@ namespace ServerBrowser
       // colTotalPlayers
       // 
       this.colTotalPlayers.Caption = "Total";
-      this.colTotalPlayers.FieldName = "TotalPlayers";
+      this.colTotalPlayers.FieldName = "PlayerCount.TotalPlayers";
       this.colTotalPlayers.Name = "colTotalPlayers";
       this.colTotalPlayers.OptionsColumn.AllowEdit = false;
       this.colTotalPlayers.ToolTip = "Total Players (Humans + Bots)";
@@ -509,7 +509,7 @@ namespace ServerBrowser
       // colMaxPlayers
       // 
       this.colMaxPlayers.Caption = "Max";
-      this.colMaxPlayers.FieldName = "ServerInfo.MaxPlayers";
+      this.colMaxPlayers.FieldName = "PlayerCount.MaxPlayers";
       this.colMaxPlayers.Name = "colMaxPlayers";
       this.colMaxPlayers.OptionsColumn.AllowEdit = false;
       this.colMaxPlayers.ToolTip = "Maximum Players";

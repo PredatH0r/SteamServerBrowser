@@ -1,3 +1,9 @@
+1.10
+---
+- added (master-)server-side filter critera (map, mod, include tags, exclude tags)
+  This is needed for games that have thousands of servers
+- improved notification system to look out for particular servers
+
 1.9
 ---
 - added support for CS:GO community servers
