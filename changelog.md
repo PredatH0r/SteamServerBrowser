@@ -1,3 +1,8 @@
+1.11
+---
+- fixed adding custom game server IP: blank value is now ignored and only IPv4 addresses of the host name are used
+- added context menu to Rules table to add selected rules to the Servers grid (which allows client side filtering)
+
 1.10
 ---
 - added (master-)server-side filter critera (map, mod, include tags, exclude tags)

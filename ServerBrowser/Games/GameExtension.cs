@@ -160,7 +160,7 @@ namespace ServerBrowser
     /// <summary>
     /// Utility method for derived classes to add game specific columns to the server or player list
     /// </summary>
-    protected GridColumn AddColumn(GridView view, string fieldName, string caption, string toolTip, int width = 70, int visibleIndex = -1, UnboundColumnType type = UnboundColumnType.String)
+    public GridColumn AddColumn(GridView view, string fieldName, string caption, string toolTip, int width = 70, int visibleIndex = -1, UnboundColumnType type = UnboundColumnType.String)
     {
       var col = new GridColumn();
       col.FieldName = fieldName;

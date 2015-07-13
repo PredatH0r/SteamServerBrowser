@@ -8,6 +8,7 @@ using System.Media;
 using System.Net;
 using System.Reflection;
 using System.Windows.Forms;
+using DevExpress.Data;
 using DevExpress.LookAndFeel;
 using DevExpress.Utils;
 using DevExpress.XtraBars;
@@ -38,6 +39,7 @@ namespace ServerBrowser
     #endregion
 
     private const string DevExpressVersion = "v15.1";
+    private const string CustomNumericRuleColumnPrefix = "castRule.";
     private volatile Game steamAppId;
     private readonly GameExtensionPool extenders = new GameExtensionPool();
     private GameExtension gameExtension;
@@ -579,6 +581,22 @@ namespace ServerBrowser
     }
     #endregion
 
+    #region AddColumnForRuleToServerGrid()
+    private void AddColumnForRuleToServerGrid(string prefix, UnboundColumnType unboundColumnType)
+    {
+      var rule = (Rule)this.gvRules.GetFocusedRow();
+      var col = this.gvServers.Columns[prefix + rule.Name];
+      if (col == null)
+        this.gameExtension.AddColumn(this.gvServers, prefix + rule.Name, rule.Name, rule.Name, 70, this.gvServers.VisibleColumns.Count, unboundColumnType);
+      else
+      {
+        XtraMessageBox.Show(string.Format("Rule {0} is already shown in column {1}.", rule.Name, col.Caption), this.Text,
+          MessageBoxButtons.OK, MessageBoxIcon.Information);
+        this.gvServers.FocusedColumn = col;
+      }
+    }
+    #endregion
+
     // general components
 
     #region queryLogic_SetStatusMessage
@@ -744,10 +762,18 @@ namespace ServerBrowser
       try
       {
         string[] parts = this.txtGameServer.Text.Split(':');
-
+        if (parts[0].Length == 0) return;
+        // get IPv4 address
         var addr = Dns.GetHostAddresses(parts[0]);
-        if (addr.Length == 0) return;
-        var endpoint = new IPEndPoint(addr[0], parts.Length > 1 ? int.Parse(parts[1]) : 25785);
+        int i;
+        for (i = 0; i < addr.Length; i++)
+        {
+          if (addr[i].AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+            break;
+        }
+        if (i >= addr.Length) return;
+        var endpoint = new IPEndPoint(addr[i], parts.Length > 1 ? int.Parse(parts[1]) : 27015);
+        if (endpoint.Address.ToString() == "0.0.0.0") return;
         ServerRow serverRow = null;
         foreach (var row in this.servers)
         {
@@ -863,6 +889,13 @@ namespace ServerBrowser
         e.Value = GetServerAddress(row);
       else if (e.Column == this.colName)
         e.Value = row.ServerInfo == null ? (showAddressMode == 0 ? GetServerAddress(row) : null) : row.ServerInfo.Name;
+      else if (e.Column.FieldName.StartsWith(CustomNumericRuleColumnPrefix))
+      {
+        var fieldName = e.Column.FieldName.Substring(CustomNumericRuleColumnPrefix.Length);
+        e.Value = row.GetExtenderCellValue(fieldName);
+        try { e.Value = Convert.ToDecimal(e.Value); }
+        catch { }
+      }
       else
         e.Value = row.GetExtenderCellValue(e.Column.FieldName);
     }
@@ -1022,6 +1055,35 @@ namespace ServerBrowser
     }
     #endregion
 
+    // Rules grid
+
+    #region gvRules_MouseDown
+    private void gvRules_MouseDown(object sender, MouseEventArgs e)
+    {
+      var hit = this.gvRules.CalcHitInfo(e.Location);
+      if (hit.InDataRow && e.Button == MouseButtons.Right)
+      {
+        this.gcRules.Focus();
+        this.gvRules.FocusedRowHandle = hit.RowHandle;
+        this.menuRules.ShowPopup(this.gcRules.PointToScreen(e.Location));
+      }
+    }
+    #endregion
+
+    #region miAddRulesColumnString_ItemClick
+    private void miAddRulesColumnString_ItemClick(object sender, ItemClickEventArgs e)
+    {
+      AddColumnForRuleToServerGrid("", UnboundColumnType.String);
+    }
+    #endregion
+
+    #region miAddRulesColumnNumeric_ItemClick
+    private void miAddRulesColumnNumeric_ItemClick(object sender, ItemClickEventArgs e)
+    {
+      AddColumnForRuleToServerGrid(CustomNumericRuleColumnPrefix, UnboundColumnType.Decimal);
+    }
+    #endregion
+
     // main menu
 
     #region miReloadServers_ItemClick
@@ -1030,5 +1092,6 @@ namespace ServerBrowser
       this.ReloadServerList();
     }
     #endregion
+
   }
 }
