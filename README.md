@@ -1,6 +1,7 @@
 # SteamServerBrowser
 
-[Download](https://github.com/PredatH0r/SteamServerBrowser/releases) | [Wiki](https://github.com/PredatH0r/SteamServerBrowser/wiki) | [Support](https://github.com/PredatH0r/SteamServerBrowser/issues)
+[![Download2](https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Download_Button.svg/120px-Download_Button.svg.png)](https://github.com/PredatH0r/SteamServerBrowser/releases)
+ | [Wiki](https://github.com/PredatH0r/SteamServerBrowser/wiki) | [Support](https://github.com/PredatH0r/SteamServerBrowser/issues) 
 
 Browse game servers listen on Valve's master servers.
 ![screenshot](http://i.imgur.com/6SmSr8d.png)
