@@ -16,7 +16,9 @@ using DevExpress.XtraBars;
 using DevExpress.XtraBars.Docking;
 using DevExpress.XtraEditors;
 using DevExpress.XtraEditors.Controls;
+using DevExpress.XtraGrid;
 using DevExpress.XtraGrid.Columns;
+using DevExpress.XtraGrid.Views.Base;
 using DevExpress.XtraGrid.Views.Grid;
 using QueryMaster;
 
@@ -619,13 +621,13 @@ namespace ServerBrowser
     {
       foreach (var server in this.servers)
       {
-        if (server.Country != null)
+        if (server.GeoInfo != null)
           continue;
 
         var safeServer = server;
-        this.geoIpClient.Lookup(safeServer.EndPoint.Address, c =>
+        this.geoIpClient.Lookup(safeServer.EndPoint.Address, geo =>
         {
-          safeServer.Country = c;
+          safeServer.GeoInfo = geo;
           Interlocked.Exchange(ref this.geoIpModified, 1);
         });          
       }
@@ -936,6 +938,37 @@ namespace ServerBrowser
       }
       else
         e.Value = row.GetExtenderCellValue(e.Column.FieldName);
+    }
+    #endregion
+
+    #region gvServers_CustomColumnDisplayText
+    private void gvServers_CustomColumnDisplayText(object sender, CustomColumnDisplayTextEventArgs e)
+    {
+      if (e.Column == this.colLocation)
+      {
+        if (e.ListSourceRowIndex < 0 || e.ListSourceRowIndex >= this.servers.Count)
+          return;
+        var row = this.servers[e.ListSourceRowIndex];
+        var geoInfo = row.GeoInfo;
+        if (geoInfo != null && geoInfo.Iso2 == "US" && !string.IsNullOrEmpty(geoInfo.State))
+          e.DisplayText = geoInfo.State;
+      }
+    }
+    #endregion
+
+    #region toolTipController_GetActiveObjectInfo
+    private void toolTipController_GetActiveObjectInfo(object sender, ToolTipControllerGetActiveObjectInfoEventArgs e)
+    {
+      if (e.Info == null && e.SelectedControl == this.gcServers)
+      {
+        var hit = this.gvServers.CalcHitInfo(e.ControlMousePosition);
+        if (hit.InRowCell && hit.Column == this.colLocation)
+        {
+          var row = (ServerRow)this.gvServers.GetRow(hit.RowHandle);
+          if (row != null)
+            e.Info = new ToolTipControlInfo(row.EndPoint + "-" + hit.Column.FieldName, row.GeoInfo.ToString());
+        }
+      }
     }
     #endregion
 

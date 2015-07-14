@@ -50,7 +50,7 @@ namespace ServerBrowser
       this.gcServers = new DevExpress.XtraGrid.GridControl();
       this.dsServers = new System.Windows.Forms.BindingSource(this.components);
       this.gvServers = new DevExpress.XtraGrid.Views.Grid.GridView();
-      this.colCountry = new DevExpress.XtraGrid.Columns.GridColumn();
+      this.colLocation = new DevExpress.XtraGrid.Columns.GridColumn();
       this.riCountryFlagEdit = new DevExpress.XtraEditors.Repository.RepositoryItemImageComboBox();
       this.imgFlags = new DevExpress.Utils.ImageCollection(this.components);
       this.colEndPoint = new DevExpress.XtraGrid.Columns.GridColumn();
@@ -67,6 +67,7 @@ namespace ServerBrowser
       this.colMap = new DevExpress.XtraGrid.Columns.GridColumn();
       this.colPing = new DevExpress.XtraGrid.Columns.GridColumn();
       this.colStatus = new DevExpress.XtraGrid.Columns.GridColumn();
+      this.toolTipController = new DevExpress.Utils.ToolTipController(this.components);
       this.dockManager1 = new DevExpress.XtraBars.Docking.DockManager(this.components);
       this.barManager1 = new DevExpress.XtraBars.BarManager(this.components);
       this.barMenu = new DevExpress.XtraBars.Bar();
@@ -372,6 +373,7 @@ namespace ServerBrowser
             this.riCountryFlagEdit});
       this.gcServers.Size = new System.Drawing.Size(1095, 497);
       this.gcServers.TabIndex = 0;
+      this.gcServers.ToolTipController = this.toolTipController;
       this.gcServers.ViewCollection.AddRange(new DevExpress.XtraGrid.Views.Base.BaseView[] {
             this.gvServers});
       // 
@@ -382,7 +384,7 @@ namespace ServerBrowser
       // gvServers
       // 
       this.gvServers.Columns.AddRange(new DevExpress.XtraGrid.Columns.GridColumn[] {
-            this.colCountry,
+            this.colLocation,
             this.colEndPoint,
             this.colName,
             this.colDedicated,
@@ -410,20 +412,21 @@ namespace ServerBrowser
       this.gvServers.FocusedRowChanged += new DevExpress.XtraGrid.Views.Base.FocusedRowChangedEventHandler(this.gvServers_FocusedRowChanged);
       this.gvServers.ColumnFilterChanged += new System.EventHandler(this.gvServers_ColumnFilterChanged);
       this.gvServers.CustomUnboundColumnData += new DevExpress.XtraGrid.Views.Base.CustomColumnDataEventHandler(this.gvServers_CustomUnboundColumnData);
+      this.gvServers.CustomColumnDisplayText += new DevExpress.XtraGrid.Views.Base.CustomColumnDisplayTextEventHandler(this.gvServers_CustomColumnDisplayText);
       this.gvServers.MouseDown += new System.Windows.Forms.MouseEventHandler(this.gvServers_MouseDown);
       this.gvServers.DoubleClick += new System.EventHandler(this.gvServers_DoubleClick);
       // 
-      // colCountry
+      // colLocation
       // 
-      this.colCountry.Caption = "Country";
-      this.colCountry.ColumnEdit = this.riCountryFlagEdit;
-      this.colCountry.FieldName = "Country";
-      this.colCountry.Name = "colCountry";
-      this.colCountry.OptionsColumn.AllowEdit = false;
-      this.colCountry.ToolTip = "Country";
-      this.colCountry.Visible = true;
-      this.colCountry.VisibleIndex = 0;
-      this.colCountry.Width = 49;
+      this.colLocation.Caption = "Location";
+      this.colLocation.ColumnEdit = this.riCountryFlagEdit;
+      this.colLocation.FieldName = "GeoInfo.Iso2";
+      this.colLocation.Name = "colLocation";
+      this.colLocation.OptionsColumn.AllowEdit = false;
+      this.colLocation.ToolTip = "Country";
+      this.colLocation.Visible = true;
+      this.colLocation.VisibleIndex = 0;
+      this.colLocation.Width = 49;
       // 
       // riCountryFlagEdit
       // 
@@ -826,6 +829,12 @@ namespace ServerBrowser
       this.colStatus.VisibleIndex = 14;
       this.colStatus.Width = 61;
       // 
+      // toolTipController
+      // 
+      this.toolTipController.AutoPopDelay = 7000;
+      this.toolTipController.InitialDelay = 100;
+      this.toolTipController.GetActiveObjectInfo += new DevExpress.Utils.ToolTipControllerGetActiveObjectInfoEventHandler(this.toolTipController_GetActiveObjectInfo);
+      // 
       // dockManager1
       // 
       this.dockManager1.Form = this;
@@ -987,7 +996,7 @@ namespace ServerBrowser
       // 
       // panelContainer1
       // 
-      this.panelContainer1.ActiveChild = this.panelRules;
+      this.panelContainer1.ActiveChild = this.panelPlayers;
       this.panelContainer1.Controls.Add(this.panelPlayers);
       this.panelContainer1.Controls.Add(this.panelServerDetails);
       this.panelContainer1.Controls.Add(this.panelRules);
@@ -1810,9 +1819,10 @@ namespace ServerBrowser
     private DevExpress.XtraBars.BarButtonItem miAddRulesColumnText;
     private DevExpress.XtraBars.PopupMenu menuRules;
     private DevExpress.XtraBars.BarButtonItem miAddRulesColumnNumeric;
-    private DevExpress.XtraGrid.Columns.GridColumn colCountry;
+    private DevExpress.XtraGrid.Columns.GridColumn colLocation;
     private DevExpress.Utils.ImageCollection imgFlags;
     private DevExpress.XtraEditors.Repository.RepositoryItemImageComboBox riCountryFlagEdit;
+    private DevExpress.Utils.ToolTipController toolTipController;
 
 
 

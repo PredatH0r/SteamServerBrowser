@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net;
+using System.Text;
 using System.Threading;
 
 namespace ServerBrowser
@@ -40,9 +42,9 @@ namespace ServerBrowser
           using (var client = new XWebClient())
           {
             var result = client.DownloadString(url);
-            var callbacks = (Action<string>)cache[ipInt];
-            string country = this.HandleResult(ipInt, result);
-            ThreadPool.QueueUserWorkItem(ctx => callbacks(country));
+            var callbacks = (Action<GeoInfo>)cache[ipInt];
+            var geoInfo = this.HandleResult(ipInt, result);
+            ThreadPool.QueueUserWorkItem(ctx => callbacks(geoInfo));
           }
         }
         catch
@@ -53,26 +55,37 @@ namespace ServerBrowser
     #endregion
 
     #region HandleResult()
-    private string HandleResult(uint ip, string result)
+    private GeoInfo HandleResult(uint ip, string result)
     {
       var parts = result.Split(',');
       if (parts.Length >= 2)
       {
+        decimal latitude, longitude;
+        decimal.TryParse(TryGet(parts, 8), NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, NumberFormatInfo.InvariantInfo, out latitude);
+        decimal.TryParse(TryGet(parts, 9), NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, NumberFormatInfo.InvariantInfo, out longitude);
+        var geoInfo = new GeoInfo(parts[1], TryGet(parts, 2), TryGet(parts, 3), TryGet(parts, 4), TryGet(parts, 5), latitude, longitude);
         lock (cache)
         {
-          cache[ip] = parts[1];
-          return parts[1];
+          cache[ip] = geoInfo;
         }
+        return geoInfo;
       }
       return null;
     }
     #endregion
 
+    #region TryGet()
+    private string TryGet(string[] parts, int index)
+    {
+      return index < parts.Length ? parts[index] : null;
+    }
+    #endregion
+
     #region Lookup()
-    public void Lookup(IPAddress ip, Action<string> callback)
+    public void Lookup(IPAddress ip, Action<GeoInfo> callback)
     {
       uint ipInt = Ip4Utils.ToInt(ip);
-      string country;
+      GeoInfo geoInfo;
       lock (cache)
       {
         object cached;
@@ -82,18 +95,55 @@ namespace ServerBrowser
           this.queue.Add(ip);
           return;
         }
-        country = cached as string;
-        if (country == null)
+        geoInfo = cached as GeoInfo;
+        if (geoInfo == null)
         {
-          var callbacks = (Action<string>) cached;
+          var callbacks = (Action<GeoInfo>) cached;
           callbacks += callback;
           cache[ipInt] = callbacks;
           return;
         }
       }
-      callback(country);    
+      callback(geoInfo);    
     }
     #endregion
 
   }
+
+  #region class GeoInfo
+  public class GeoInfo
+  {
+    public string Iso2 { get; private set; }
+    public string Country { get; private set; }
+    public string State { get; private set; }
+    public string Region { get; private set; }
+    public string City { get; private set; }
+    public decimal Longitude { get; private set; }
+    public decimal Latitude { get; private set; }
+
+    public GeoInfo(string iso2, string country, string state, string region, string city, decimal latitude, decimal longitude)
+    {
+      this.Iso2 = iso2;
+      this.Country = country;
+      this.State = state;
+      this.Region = region;
+      this.City = city;
+      this.Longitude = longitude;
+      this.Latitude = latitude;
+    }
+
+    public override string ToString()
+    {
+      StringBuilder sb = new StringBuilder();
+      sb.Append(Country);
+      if (!string.IsNullOrEmpty(State))
+        sb.Append(", ").Append(State);
+      if (!string.IsNullOrEmpty(Region))
+        sb.Append(", ").Append(Region);
+      if (!string.IsNullOrEmpty(City))
+        sb.Append(", ").Append(City);
+      return sb.ToString();
+    }
+  }
+  #endregion
 }
