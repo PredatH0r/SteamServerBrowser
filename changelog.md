@@ -1,3 +1,8 @@
+1.12
+---
+- added Geo-IP lookup (API hosted by http://freegeoip.net, flag icon provided by http://www.famfamfam.com)
+- improved connecting to QuakeLive Testing game servers
+
 1.11
 ---
 - fixed adding custom game server IP: blank value is now ignored and only IPv4 addresses of the host name are used

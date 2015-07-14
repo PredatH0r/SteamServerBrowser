@@ -50,6 +50,9 @@ namespace ServerBrowser
       this.gcServers = new DevExpress.XtraGrid.GridControl();
       this.dsServers = new System.Windows.Forms.BindingSource(this.components);
       this.gvServers = new DevExpress.XtraGrid.Views.Grid.GridView();
+      this.colCountry = new DevExpress.XtraGrid.Columns.GridColumn();
+      this.riCountryFlagEdit = new DevExpress.XtraEditors.Repository.RepositoryItemImageComboBox();
+      this.imgFlags = new DevExpress.Utils.ImageCollection(this.components);
       this.colEndPoint = new DevExpress.XtraGrid.Columns.GridColumn();
       this.colName = new DevExpress.XtraGrid.Columns.GridColumn();
       this.colDedicated = new DevExpress.XtraGrid.Columns.GridColumn();
@@ -78,6 +81,7 @@ namespace ServerBrowser
       this.miConnectSpectator = new DevExpress.XtraBars.BarButtonItem();
       this.miCopyAddress = new DevExpress.XtraBars.BarButtonItem();
       this.miAddRulesColumnText = new DevExpress.XtraBars.BarButtonItem();
+      this.miAddRulesColumnNumeric = new DevExpress.XtraBars.BarButtonItem();
       this.panelContainer1 = new DevExpress.XtraBars.Docking.DockPanel();
       this.panelRules = new DevExpress.XtraBars.Docking.DockPanel();
       this.controlContainer2 = new DevExpress.XtraBars.Docking.ControlContainer();
@@ -137,7 +141,6 @@ namespace ServerBrowser
       this.timerReloadServers = new System.Windows.Forms.Timer(this.components);
       this.alertControl1 = new DevExpress.XtraBars.Alerter.AlertControl(this.components);
       this.menuRules = new DevExpress.XtraBars.PopupMenu(this.components);
-      this.miAddRulesColumnNumeric = new DevExpress.XtraBars.BarButtonItem();
       ((System.ComponentModel.ISupportInitialize)(this.riCheckEdit)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.gcDetails)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.gvDetails)).BeginInit();
@@ -151,6 +154,8 @@ namespace ServerBrowser
       ((System.ComponentModel.ISupportInitialize)(this.gcServers)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.dsServers)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.gvServers)).BeginInit();
+      ((System.ComponentModel.ISupportInitialize)(this.riCountryFlagEdit)).BeginInit();
+      ((System.ComponentModel.ISupportInitialize)(this.imgFlags)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.dockManager1)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.barManager1)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.imageCollection)).BeginInit();
@@ -363,6 +368,8 @@ namespace ServerBrowser
       this.gcServers.Location = new System.Drawing.Point(0, 0);
       this.gcServers.MainView = this.gvServers;
       this.gcServers.Name = "gcServers";
+      this.gcServers.RepositoryItems.AddRange(new DevExpress.XtraEditors.Repository.RepositoryItem[] {
+            this.riCountryFlagEdit});
       this.gcServers.Size = new System.Drawing.Size(1095, 497);
       this.gcServers.TabIndex = 0;
       this.gcServers.ViewCollection.AddRange(new DevExpress.XtraGrid.Views.Base.BaseView[] {
@@ -375,6 +382,7 @@ namespace ServerBrowser
       // gvServers
       // 
       this.gvServers.Columns.AddRange(new DevExpress.XtraGrid.Columns.GridColumn[] {
+            this.colCountry,
             this.colEndPoint,
             this.colName,
             this.colDedicated,
@@ -405,6 +413,270 @@ namespace ServerBrowser
       this.gvServers.MouseDown += new System.Windows.Forms.MouseEventHandler(this.gvServers_MouseDown);
       this.gvServers.DoubleClick += new System.EventHandler(this.gvServers_DoubleClick);
       // 
+      // colCountry
+      // 
+      this.colCountry.Caption = "Country";
+      this.colCountry.ColumnEdit = this.riCountryFlagEdit;
+      this.colCountry.FieldName = "Country";
+      this.colCountry.Name = "colCountry";
+      this.colCountry.OptionsColumn.AllowEdit = false;
+      this.colCountry.ToolTip = "Country";
+      this.colCountry.Visible = true;
+      this.colCountry.VisibleIndex = 0;
+      this.colCountry.Width = 49;
+      // 
+      // riCountryFlagEdit
+      // 
+      this.riCountryFlagEdit.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)});
+      this.riCountryFlagEdit.Name = "riCountryFlagEdit";
+      this.riCountryFlagEdit.SmallImages = this.imgFlags;
+      // 
+      // imgFlags
+      // 
+      this.imgFlags.ImageStream = ((DevExpress.Utils.ImageCollectionStreamer)(resources.GetObject("imgFlags.ImageStream")));
+      this.imgFlags.Images.SetKeyName(0, "ad.png");
+      this.imgFlags.Images.SetKeyName(1, "ae.png");
+      this.imgFlags.Images.SetKeyName(2, "af.png");
+      this.imgFlags.Images.SetKeyName(3, "ag.png");
+      this.imgFlags.Images.SetKeyName(4, "ai.png");
+      this.imgFlags.Images.SetKeyName(5, "al.png");
+      this.imgFlags.Images.SetKeyName(6, "am.png");
+      this.imgFlags.Images.SetKeyName(7, "an.png");
+      this.imgFlags.Images.SetKeyName(8, "ao.png");
+      this.imgFlags.Images.SetKeyName(9, "ar.png");
+      this.imgFlags.Images.SetKeyName(10, "as.png");
+      this.imgFlags.Images.SetKeyName(11, "at.png");
+      this.imgFlags.Images.SetKeyName(12, "au.png");
+      this.imgFlags.Images.SetKeyName(13, "aw.png");
+      this.imgFlags.Images.SetKeyName(14, "ax.png");
+      this.imgFlags.Images.SetKeyName(15, "az.png");
+      this.imgFlags.Images.SetKeyName(16, "ba.png");
+      this.imgFlags.Images.SetKeyName(17, "bb.png");
+      this.imgFlags.Images.SetKeyName(18, "bd.png");
+      this.imgFlags.Images.SetKeyName(19, "be.png");
+      this.imgFlags.Images.SetKeyName(20, "bf.png");
+      this.imgFlags.Images.SetKeyName(21, "bg.png");
+      this.imgFlags.Images.SetKeyName(22, "bh.png");
+      this.imgFlags.Images.SetKeyName(23, "bi.png");
+      this.imgFlags.Images.SetKeyName(24, "bj.png");
+      this.imgFlags.Images.SetKeyName(25, "bm.png");
+      this.imgFlags.Images.SetKeyName(26, "bn.png");
+      this.imgFlags.Images.SetKeyName(27, "bo.png");
+      this.imgFlags.Images.SetKeyName(28, "br.png");
+      this.imgFlags.Images.SetKeyName(29, "bs.png");
+      this.imgFlags.Images.SetKeyName(30, "bt.png");
+      this.imgFlags.Images.SetKeyName(31, "bv.png");
+      this.imgFlags.Images.SetKeyName(32, "bw.png");
+      this.imgFlags.Images.SetKeyName(33, "by.png");
+      this.imgFlags.Images.SetKeyName(34, "bz.png");
+      this.imgFlags.Images.SetKeyName(35, "ca.png");
+      this.imgFlags.Images.SetKeyName(36, "cc.png");
+      this.imgFlags.Images.SetKeyName(37, "cd.png");
+      this.imgFlags.Images.SetKeyName(38, "cf.png");
+      this.imgFlags.Images.SetKeyName(39, "cg.png");
+      this.imgFlags.Images.SetKeyName(40, "ch.png");
+      this.imgFlags.Images.SetKeyName(41, "ci.png");
+      this.imgFlags.Images.SetKeyName(42, "ck.png");
+      this.imgFlags.Images.SetKeyName(43, "cl.png");
+      this.imgFlags.Images.SetKeyName(44, "cm.png");
+      this.imgFlags.Images.SetKeyName(45, "cn.png");
+      this.imgFlags.Images.SetKeyName(46, "co.png");
+      this.imgFlags.Images.SetKeyName(47, "cr.png");
+      this.imgFlags.Images.SetKeyName(48, "cs.png");
+      this.imgFlags.Images.SetKeyName(49, "cu.png");
+      this.imgFlags.Images.SetKeyName(50, "cv.png");
+      this.imgFlags.Images.SetKeyName(51, "cx.png");
+      this.imgFlags.Images.SetKeyName(52, "cy.png");
+      this.imgFlags.Images.SetKeyName(53, "cz.png");
+      this.imgFlags.Images.SetKeyName(54, "de.png");
+      this.imgFlags.Images.SetKeyName(55, "dj.png");
+      this.imgFlags.Images.SetKeyName(56, "dk.png");
+      this.imgFlags.Images.SetKeyName(57, "dm.png");
+      this.imgFlags.Images.SetKeyName(58, "do.png");
+      this.imgFlags.Images.SetKeyName(59, "dz.png");
+      this.imgFlags.Images.SetKeyName(60, "ec.png");
+      this.imgFlags.Images.SetKeyName(61, "ee.png");
+      this.imgFlags.Images.SetKeyName(62, "eg.png");
+      this.imgFlags.Images.SetKeyName(63, "eh.png");
+      this.imgFlags.Images.SetKeyName(64, "er.png");
+      this.imgFlags.Images.SetKeyName(65, "es.png");
+      this.imgFlags.Images.SetKeyName(66, "et.png");
+      this.imgFlags.Images.SetKeyName(67, "fi.png");
+      this.imgFlags.Images.SetKeyName(68, "fj.png");
+      this.imgFlags.Images.SetKeyName(69, "fk.png");
+      this.imgFlags.Images.SetKeyName(70, "fm.png");
+      this.imgFlags.Images.SetKeyName(71, "fo.png");
+      this.imgFlags.Images.SetKeyName(72, "fr.png");
+      this.imgFlags.Images.SetKeyName(73, "ga.png");
+      this.imgFlags.Images.SetKeyName(74, "gb.png");
+      this.imgFlags.Images.SetKeyName(75, "gd.png");
+      this.imgFlags.Images.SetKeyName(76, "ge.png");
+      this.imgFlags.Images.SetKeyName(77, "gf.png");
+      this.imgFlags.Images.SetKeyName(78, "gh.png");
+      this.imgFlags.Images.SetKeyName(79, "gi.png");
+      this.imgFlags.Images.SetKeyName(80, "gl.png");
+      this.imgFlags.Images.SetKeyName(81, "gm.png");
+      this.imgFlags.Images.SetKeyName(82, "gn.png");
+      this.imgFlags.Images.SetKeyName(83, "gp.png");
+      this.imgFlags.Images.SetKeyName(84, "gq.png");
+      this.imgFlags.Images.SetKeyName(85, "gr.png");
+      this.imgFlags.Images.SetKeyName(86, "gs.png");
+      this.imgFlags.Images.SetKeyName(87, "gt.png");
+      this.imgFlags.Images.SetKeyName(88, "gu.png");
+      this.imgFlags.Images.SetKeyName(89, "gw.png");
+      this.imgFlags.Images.SetKeyName(90, "gy.png");
+      this.imgFlags.Images.SetKeyName(91, "hk.png");
+      this.imgFlags.Images.SetKeyName(92, "hm.png");
+      this.imgFlags.Images.SetKeyName(93, "hn.png");
+      this.imgFlags.Images.SetKeyName(94, "hr.png");
+      this.imgFlags.Images.SetKeyName(95, "ht.png");
+      this.imgFlags.Images.SetKeyName(96, "hu.png");
+      this.imgFlags.Images.SetKeyName(97, "id.png");
+      this.imgFlags.Images.SetKeyName(98, "ie.png");
+      this.imgFlags.Images.SetKeyName(99, "il.png");
+      this.imgFlags.Images.SetKeyName(100, "in.png");
+      this.imgFlags.Images.SetKeyName(101, "io.png");
+      this.imgFlags.Images.SetKeyName(102, "iq.png");
+      this.imgFlags.Images.SetKeyName(103, "ir.png");
+      this.imgFlags.Images.SetKeyName(104, "is.png");
+      this.imgFlags.Images.SetKeyName(105, "it.png");
+      this.imgFlags.Images.SetKeyName(106, "jm.png");
+      this.imgFlags.Images.SetKeyName(107, "jo.png");
+      this.imgFlags.Images.SetKeyName(108, "jp.png");
+      this.imgFlags.Images.SetKeyName(109, "ke.png");
+      this.imgFlags.Images.SetKeyName(110, "kg.png");
+      this.imgFlags.Images.SetKeyName(111, "kh.png");
+      this.imgFlags.Images.SetKeyName(112, "ki.png");
+      this.imgFlags.Images.SetKeyName(113, "km.png");
+      this.imgFlags.Images.SetKeyName(114, "kn.png");
+      this.imgFlags.Images.SetKeyName(115, "kp.png");
+      this.imgFlags.Images.SetKeyName(116, "kr.png");
+      this.imgFlags.Images.SetKeyName(117, "kw.png");
+      this.imgFlags.Images.SetKeyName(118, "ky.png");
+      this.imgFlags.Images.SetKeyName(119, "kz.png");
+      this.imgFlags.Images.SetKeyName(120, "la.png");
+      this.imgFlags.Images.SetKeyName(121, "lb.png");
+      this.imgFlags.Images.SetKeyName(122, "lc.png");
+      this.imgFlags.Images.SetKeyName(123, "li.png");
+      this.imgFlags.Images.SetKeyName(124, "lk.png");
+      this.imgFlags.Images.SetKeyName(125, "lr.png");
+      this.imgFlags.Images.SetKeyName(126, "ls.png");
+      this.imgFlags.Images.SetKeyName(127, "lt.png");
+      this.imgFlags.Images.SetKeyName(128, "lu.png");
+      this.imgFlags.Images.SetKeyName(129, "lv.png");
+      this.imgFlags.Images.SetKeyName(130, "ly.png");
+      this.imgFlags.Images.SetKeyName(131, "ma.png");
+      this.imgFlags.Images.SetKeyName(132, "mc.png");
+      this.imgFlags.Images.SetKeyName(133, "md.png");
+      this.imgFlags.Images.SetKeyName(134, "me.png");
+      this.imgFlags.Images.SetKeyName(135, "mg.png");
+      this.imgFlags.Images.SetKeyName(136, "mh.png");
+      this.imgFlags.Images.SetKeyName(137, "mk.png");
+      this.imgFlags.Images.SetKeyName(138, "ml.png");
+      this.imgFlags.Images.SetKeyName(139, "mm.png");
+      this.imgFlags.Images.SetKeyName(140, "mn.png");
+      this.imgFlags.Images.SetKeyName(141, "mo.png");
+      this.imgFlags.Images.SetKeyName(142, "mp.png");
+      this.imgFlags.Images.SetKeyName(143, "mq.png");
+      this.imgFlags.Images.SetKeyName(144, "mr.png");
+      this.imgFlags.Images.SetKeyName(145, "ms.png");
+      this.imgFlags.Images.SetKeyName(146, "mt.png");
+      this.imgFlags.Images.SetKeyName(147, "mu.png");
+      this.imgFlags.Images.SetKeyName(148, "mv.png");
+      this.imgFlags.Images.SetKeyName(149, "mw.png");
+      this.imgFlags.Images.SetKeyName(150, "mx.png");
+      this.imgFlags.Images.SetKeyName(151, "my.png");
+      this.imgFlags.Images.SetKeyName(152, "mz.png");
+      this.imgFlags.Images.SetKeyName(153, "na.png");
+      this.imgFlags.Images.SetKeyName(154, "nc.png");
+      this.imgFlags.Images.SetKeyName(155, "ne.png");
+      this.imgFlags.Images.SetKeyName(156, "nf.png");
+      this.imgFlags.Images.SetKeyName(157, "ng.png");
+      this.imgFlags.Images.SetKeyName(158, "ni.png");
+      this.imgFlags.Images.SetKeyName(159, "nl.png");
+      this.imgFlags.Images.SetKeyName(160, "no.png");
+      this.imgFlags.Images.SetKeyName(161, "np.png");
+      this.imgFlags.Images.SetKeyName(162, "nr.png");
+      this.imgFlags.Images.SetKeyName(163, "nu.png");
+      this.imgFlags.Images.SetKeyName(164, "nz.png");
+      this.imgFlags.Images.SetKeyName(165, "om.png");
+      this.imgFlags.Images.SetKeyName(166, "pa.png");
+      this.imgFlags.Images.SetKeyName(167, "pe.png");
+      this.imgFlags.Images.SetKeyName(168, "pf.png");
+      this.imgFlags.Images.SetKeyName(169, "pg.png");
+      this.imgFlags.Images.SetKeyName(170, "ph.png");
+      this.imgFlags.Images.SetKeyName(171, "pk.png");
+      this.imgFlags.Images.SetKeyName(172, "pl.png");
+      this.imgFlags.Images.SetKeyName(173, "pm.png");
+      this.imgFlags.Images.SetKeyName(174, "pn.png");
+      this.imgFlags.Images.SetKeyName(175, "pr.png");
+      this.imgFlags.Images.SetKeyName(176, "ps.png");
+      this.imgFlags.Images.SetKeyName(177, "pt.png");
+      this.imgFlags.Images.SetKeyName(178, "pw.png");
+      this.imgFlags.Images.SetKeyName(179, "py.png");
+      this.imgFlags.Images.SetKeyName(180, "qa.png");
+      this.imgFlags.Images.SetKeyName(181, "re.png");
+      this.imgFlags.Images.SetKeyName(182, "ro.png");
+      this.imgFlags.Images.SetKeyName(183, "rs.png");
+      this.imgFlags.Images.SetKeyName(184, "ru.png");
+      this.imgFlags.Images.SetKeyName(185, "rw.png");
+      this.imgFlags.Images.SetKeyName(186, "sa.png");
+      this.imgFlags.Images.SetKeyName(187, "sb.png");
+      this.imgFlags.Images.SetKeyName(188, "sc.png");
+      this.imgFlags.Images.SetKeyName(189, "sd.png");
+      this.imgFlags.Images.SetKeyName(190, "se.png");
+      this.imgFlags.Images.SetKeyName(191, "sg.png");
+      this.imgFlags.Images.SetKeyName(192, "sh.png");
+      this.imgFlags.Images.SetKeyName(193, "si.png");
+      this.imgFlags.Images.SetKeyName(194, "sj.png");
+      this.imgFlags.Images.SetKeyName(195, "sk.png");
+      this.imgFlags.Images.SetKeyName(196, "sl.png");
+      this.imgFlags.Images.SetKeyName(197, "sm.png");
+      this.imgFlags.Images.SetKeyName(198, "sn.png");
+      this.imgFlags.Images.SetKeyName(199, "so.png");
+      this.imgFlags.Images.SetKeyName(200, "sr.png");
+      this.imgFlags.Images.SetKeyName(201, "st.png");
+      this.imgFlags.Images.SetKeyName(202, "sv.png");
+      this.imgFlags.Images.SetKeyName(203, "sy.png");
+      this.imgFlags.Images.SetKeyName(204, "sz.png");
+      this.imgFlags.Images.SetKeyName(205, "tc.png");
+      this.imgFlags.Images.SetKeyName(206, "td.png");
+      this.imgFlags.Images.SetKeyName(207, "tf.png");
+      this.imgFlags.Images.SetKeyName(208, "tg.png");
+      this.imgFlags.Images.SetKeyName(209, "th.png");
+      this.imgFlags.Images.SetKeyName(210, "tj.png");
+      this.imgFlags.Images.SetKeyName(211, "tk.png");
+      this.imgFlags.Images.SetKeyName(212, "tl.png");
+      this.imgFlags.Images.SetKeyName(213, "tm.png");
+      this.imgFlags.Images.SetKeyName(214, "tn.png");
+      this.imgFlags.Images.SetKeyName(215, "to.png");
+      this.imgFlags.Images.SetKeyName(216, "tr.png");
+      this.imgFlags.Images.SetKeyName(217, "tt.png");
+      this.imgFlags.Images.SetKeyName(218, "tv.png");
+      this.imgFlags.Images.SetKeyName(219, "tw.png");
+      this.imgFlags.Images.SetKeyName(220, "tz.png");
+      this.imgFlags.Images.SetKeyName(221, "ua.png");
+      this.imgFlags.Images.SetKeyName(222, "ug.png");
+      this.imgFlags.Images.SetKeyName(223, "um.png");
+      this.imgFlags.Images.SetKeyName(224, "us.png");
+      this.imgFlags.Images.SetKeyName(225, "uy.png");
+      this.imgFlags.Images.SetKeyName(226, "uz.png");
+      this.imgFlags.Images.SetKeyName(227, "va.png");
+      this.imgFlags.Images.SetKeyName(228, "vc.png");
+      this.imgFlags.Images.SetKeyName(229, "ve.png");
+      this.imgFlags.Images.SetKeyName(230, "vg.png");
+      this.imgFlags.Images.SetKeyName(231, "vi.png");
+      this.imgFlags.Images.SetKeyName(232, "vn.png");
+      this.imgFlags.Images.SetKeyName(233, "vu.png");
+      this.imgFlags.Images.SetKeyName(234, "wf.png");
+      this.imgFlags.Images.SetKeyName(235, "ws.png");
+      this.imgFlags.Images.SetKeyName(236, "ye.png");
+      this.imgFlags.Images.SetKeyName(237, "yt.png");
+      this.imgFlags.Images.SetKeyName(238, "za.png");
+      this.imgFlags.Images.SetKeyName(239, "zm.png");
+      this.imgFlags.Images.SetKeyName(240, "zw.png");
+      // 
       // colEndPoint
       // 
       this.colEndPoint.Caption = "Address";
@@ -413,7 +685,7 @@ namespace ServerBrowser
       this.colEndPoint.OptionsColumn.ReadOnly = true;
       this.colEndPoint.UnboundType = DevExpress.Data.UnboundColumnType.String;
       this.colEndPoint.Visible = true;
-      this.colEndPoint.VisibleIndex = 0;
+      this.colEndPoint.VisibleIndex = 1;
       this.colEndPoint.Width = 132;
       // 
       // colName
@@ -424,7 +696,7 @@ namespace ServerBrowser
       this.colName.OptionsColumn.ReadOnly = true;
       this.colName.UnboundType = DevExpress.Data.UnboundColumnType.String;
       this.colName.Visible = true;
-      this.colName.VisibleIndex = 1;
+      this.colName.VisibleIndex = 2;
       this.colName.Width = 260;
       // 
       // colDedicated
@@ -435,7 +707,7 @@ namespace ServerBrowser
       this.colDedicated.ToolTip = "Dedicated";
       this.colDedicated.UnboundType = DevExpress.Data.UnboundColumnType.Boolean;
       this.colDedicated.Visible = true;
-      this.colDedicated.VisibleIndex = 2;
+      this.colDedicated.VisibleIndex = 3;
       this.colDedicated.Width = 35;
       // 
       // colPrivate
@@ -446,7 +718,7 @@ namespace ServerBrowser
       this.colPrivate.Name = "colPrivate";
       this.colPrivate.OptionsColumn.AllowEdit = false;
       this.colPrivate.Visible = true;
-      this.colPrivate.VisibleIndex = 3;
+      this.colPrivate.VisibleIndex = 4;
       this.colPrivate.Width = 45;
       // 
       // colDescription
@@ -456,7 +728,7 @@ namespace ServerBrowser
       this.colDescription.Name = "colDescription";
       this.colDescription.OptionsColumn.AllowEdit = false;
       this.colDescription.Visible = true;
-      this.colDescription.VisibleIndex = 4;
+      this.colDescription.VisibleIndex = 5;
       this.colDescription.Width = 101;
       // 
       // colTags
@@ -466,7 +738,7 @@ namespace ServerBrowser
       this.colTags.Name = "colTags";
       this.colTags.OptionsColumn.AllowEdit = false;
       this.colTags.Visible = true;
-      this.colTags.VisibleIndex = 5;
+      this.colTags.VisibleIndex = 6;
       this.colTags.Width = 127;
       // 
       // colPlayerCount
@@ -477,7 +749,7 @@ namespace ServerBrowser
       this.colPlayerCount.OptionsColumn.AllowEdit = false;
       this.colPlayerCount.SortMode = DevExpress.XtraGrid.ColumnSortMode.Value;
       this.colPlayerCount.Visible = true;
-      this.colPlayerCount.VisibleIndex = 6;
+      this.colPlayerCount.VisibleIndex = 7;
       // 
       // colHumanPlayers
       // 
@@ -487,7 +759,7 @@ namespace ServerBrowser
       this.colHumanPlayers.OptionsColumn.AllowEdit = false;
       this.colHumanPlayers.ToolTip = "Human Players";
       this.colHumanPlayers.Visible = true;
-      this.colHumanPlayers.VisibleIndex = 7;
+      this.colHumanPlayers.VisibleIndex = 8;
       this.colHumanPlayers.Width = 30;
       // 
       // colBots
@@ -497,7 +769,7 @@ namespace ServerBrowser
       this.colBots.Name = "colBots";
       this.colBots.OptionsColumn.AllowEdit = false;
       this.colBots.Visible = true;
-      this.colBots.VisibleIndex = 8;
+      this.colBots.VisibleIndex = 9;
       this.colBots.Width = 30;
       // 
       // colTotalPlayers
@@ -508,7 +780,7 @@ namespace ServerBrowser
       this.colTotalPlayers.OptionsColumn.AllowEdit = false;
       this.colTotalPlayers.ToolTip = "Total Players (Humans + Bots)";
       this.colTotalPlayers.Visible = true;
-      this.colTotalPlayers.VisibleIndex = 9;
+      this.colTotalPlayers.VisibleIndex = 10;
       this.colTotalPlayers.Width = 30;
       // 
       // colMaxPlayers
@@ -519,7 +791,7 @@ namespace ServerBrowser
       this.colMaxPlayers.OptionsColumn.AllowEdit = false;
       this.colMaxPlayers.ToolTip = "Maximum Players";
       this.colMaxPlayers.Visible = true;
-      this.colMaxPlayers.VisibleIndex = 10;
+      this.colMaxPlayers.VisibleIndex = 11;
       this.colMaxPlayers.Width = 30;
       // 
       // colMap
@@ -529,7 +801,7 @@ namespace ServerBrowser
       this.colMap.Name = "colMap";
       this.colMap.OptionsColumn.AllowEdit = false;
       this.colMap.Visible = true;
-      this.colMap.VisibleIndex = 11;
+      this.colMap.VisibleIndex = 12;
       this.colMap.Width = 110;
       // 
       // colPing
@@ -541,7 +813,7 @@ namespace ServerBrowser
       this.colPing.Name = "colPing";
       this.colPing.OptionsColumn.AllowEdit = false;
       this.colPing.Visible = true;
-      this.colPing.VisibleIndex = 12;
+      this.colPing.VisibleIndex = 13;
       this.colPing.Width = 32;
       // 
       // colStatus
@@ -551,7 +823,7 @@ namespace ServerBrowser
       this.colStatus.Name = "colStatus";
       this.colStatus.OptionsColumn.AllowEdit = false;
       this.colStatus.Visible = true;
-      this.colStatus.VisibleIndex = 13;
+      this.colStatus.VisibleIndex = 14;
       this.colStatus.Width = 61;
       // 
       // dockManager1
@@ -705,6 +977,13 @@ namespace ServerBrowser
       this.miAddRulesColumnText.Id = 5;
       this.miAddRulesColumnText.Name = "miAddRulesColumnText";
       this.miAddRulesColumnText.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miAddRulesColumnString_ItemClick);
+      // 
+      // miAddRulesColumnNumeric
+      // 
+      this.miAddRulesColumnNumeric.Caption = "Add as numeric column to Servers table";
+      this.miAddRulesColumnNumeric.Id = 6;
+      this.miAddRulesColumnNumeric.Name = "miAddRulesColumnNumeric";
+      this.miAddRulesColumnNumeric.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miAddRulesColumnNumeric_ItemClick);
       // 
       // panelContainer1
       // 
@@ -1339,13 +1618,6 @@ namespace ServerBrowser
       this.menuRules.Manager = this.barManager1;
       this.menuRules.Name = "menuRules";
       // 
-      // miAddRulesColumnNumeric
-      // 
-      this.miAddRulesColumnNumeric.Caption = "Add as numeric column to Servers table";
-      this.miAddRulesColumnNumeric.Id = 6;
-      this.miAddRulesColumnNumeric.Name = "miAddRulesColumnNumeric";
-      this.miAddRulesColumnNumeric.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miAddRulesColumnNumeric_ItemClick);
-      // 
       // ServerBrowserForm
       // 
       this.Appearance.Options.UseFont = true;
@@ -1377,6 +1649,8 @@ namespace ServerBrowser
       ((System.ComponentModel.ISupportInitialize)(this.gcServers)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.dsServers)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.gvServers)).EndInit();
+      ((System.ComponentModel.ISupportInitialize)(this.riCountryFlagEdit)).EndInit();
+      ((System.ComponentModel.ISupportInitialize)(this.imgFlags)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.dockManager1)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.barManager1)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.imageCollection)).EndInit();
@@ -1536,6 +1810,9 @@ namespace ServerBrowser
     private DevExpress.XtraBars.BarButtonItem miAddRulesColumnText;
     private DevExpress.XtraBars.PopupMenu menuRules;
     private DevExpress.XtraBars.BarButtonItem miAddRulesColumnNumeric;
+    private DevExpress.XtraGrid.Columns.GridColumn colCountry;
+    private DevExpress.Utils.ImageCollection imgFlags;
+    private DevExpress.XtraEditors.Repository.RepositoryItemImageComboBox riCountryFlagEdit;
 
 
 

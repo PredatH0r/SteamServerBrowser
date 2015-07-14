@@ -120,6 +120,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Games\CounterStrikeGO.cs" />
+    <Compile Include="GeoIpClient.cs" />
     <Compile Include="KeyBindForm.cs">
       <SubType>Form</SubType>
     </Compile>

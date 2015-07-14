@@ -24,6 +24,7 @@ namespace ServerBrowser
     internal bool QueryPlayers { get; set; }
     internal bool QueryRules { get; set; }
     internal GameExtension GameExtension { get; set; }
+    public string Country { get; set; }
 
     public ServerRow(IPEndPoint ep, GameExtension extension)
     {

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Media;
 using System.Net;
 using System.Reflection;
+using System.Threading;
 using System.Windows.Forms;
 using DevExpress.Data;
 using DevExpress.LookAndFeel;
@@ -14,6 +15,7 @@ using DevExpress.Utils;
 using DevExpress.XtraBars;
 using DevExpress.XtraBars.Docking;
 using DevExpress.XtraEditors;
+using DevExpress.XtraEditors.Controls;
 using DevExpress.XtraGrid.Columns;
 using DevExpress.XtraGrid.Views.Grid;
 using QueryMaster;
@@ -50,10 +52,12 @@ namespace ServerBrowser
     private readonly PasswordForm passwordForm = new PasswordForm();
     private int showAddressMode;
     private readonly ServerQueryLogic queryLogic;
+    private readonly GeoIpClient geoIpClient = new GeoIpClient();
     private List<ServerRow> servers;
     private ServerRow lastSelectedServer;
     private ServerRow currentServer;
     private IServerSource serverSource;
+    private int geoIpModified;
 
     #region ctor()
     public ServerBrowserForm()
@@ -102,6 +106,7 @@ namespace ServerBrowser
 
       ++this.ignoreUiEvents;
 
+      this.FillCountryFlags();
       this.FillGameCombo();
       this.FillSteamServerRegions();
       this.InitGameInfoExtenders();
@@ -144,6 +149,18 @@ namespace ServerBrowser
       Properties.Settings.Default.RefreshSelected = this.cbRefreshSelectedServer.Checked;
 
       Properties.Settings.Default.Save();
+    }
+    #endregion
+
+    #region FillCountryFlags()
+    private void FillCountryFlags()
+    {
+      int i = 0;
+      foreach (var key in this.imgFlags.Images.Keys)
+      {
+        var country = key.Replace(".png", "").ToUpper();
+        this.riCountryFlagEdit.Items.Add(new ImageComboBoxItem(country, i++));
+      }
     }
     #endregion
 
@@ -597,6 +614,24 @@ namespace ServerBrowser
     }
     #endregion
 
+    #region LookupGeoIps()
+    private void LookupGeoIps()
+    {
+      foreach (var server in this.servers)
+      {
+        if (server.Country != null)
+          continue;
+
+        var safeServer = server;
+        this.geoIpClient.Lookup(safeServer.EndPoint.Address, c =>
+        {
+          safeServer.Country = c;
+          Interlocked.Exchange(ref this.geoIpModified, 1);
+        });          
+      }
+    }
+    #endregion
+
     // general components
 
     #region queryLogic_SetStatusMessage
@@ -618,6 +653,8 @@ namespace ServerBrowser
         this.alertControl1.Show(this, "Steam Server Browser", DateTime.Now.ToString("HH:mm:ss") + ": Found " + this.gvServers.RowCount + " server(s) matching your criteria.", 
           this.imageCollection.Images[2]);
       }
+
+      this.LookupGeoIps();
     }
     #endregion
 
@@ -743,7 +780,7 @@ namespace ServerBrowser
     #endregion
 
     #region txtTag_ButtonClick
-    private void txtTag_ButtonClick(object sender, DevExpress.XtraEditors.Controls.ButtonPressedEventArgs e)
+    private void txtTag_ButtonClick(object sender, ButtonPressedEventArgs e)
     {
       ((TextEdit)sender).Text = "";
     }
@@ -757,7 +794,7 @@ namespace ServerBrowser
     #endregion
 
     #region txtGameServer_ButtonClick
-    private void txtGameServer_ButtonClick(object sender, DevExpress.XtraEditors.Controls.ButtonPressedEventArgs e)
+    private void txtGameServer_ButtonClick(object sender, ButtonPressedEventArgs e)
     {
       try
       {
@@ -865,7 +902,8 @@ namespace ServerBrowser
     #region timerUpdateServerList_Tick
     private void timerUpdateServerList_Tick(object sender, EventArgs e)
     {
-      if (!this.queryLogic.GetAndResetDataModified())
+      int geoIpMod = Interlocked.Exchange(ref this.geoIpModified, 0);
+      if (!this.queryLogic.GetAndResetDataModified() && geoIpMod == 0)
         return;
 
       this.timerUpdateServerList.Stop();

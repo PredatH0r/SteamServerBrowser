@@ -70,8 +70,22 @@ namespace ServerBrowser
       public int TasksWithRetries;
       public int TasksWithTimeout;
 
-      public int DataModified; // bool, but there is no Interlocked.Exchange(bool)
       public volatile bool IsCancelled;
+
+      #region Get/SetDataModified()
+
+      private int DataModified; // bool, but there is no Interlocked.Exchange(bool)
+
+      public void SetDataModified()
+      {
+        Interlocked.Exchange(ref this.DataModified, 1);
+      }
+
+      public bool GetAndResetDataModified()
+      {
+        return Interlocked.Exchange(ref this.DataModified, 0) != 0;
+      }
+      #endregion
     }
     #endregion
 
@@ -110,7 +124,7 @@ namespace ServerBrowser
     #region GetAndResetDataModified()
     public bool GetAndResetDataModified()
     {
-      return Interlocked.Exchange(ref this.currentRequest.DataModified, 0) != 0;
+      return this.currentRequest.GetAndResetDataModified();
     }
     #endregion
 
@@ -168,7 +182,7 @@ namespace ServerBrowser
         }
       }
 
-      request.DataModified = 1;
+      request.SetDataModified();
       if (this.UpdateStatus != null)
         this.UpdateStatus(this, new TextEventArgs(statusText));
     }
@@ -277,7 +291,7 @@ namespace ServerBrowser
           status += " (" + row.Retries + ")";
         row.Status = status;
         row.Update();
-        request.DataModified = 1;
+        request.SetDataModified();
 
         if (fireRefreshSingleServerComplete && this.RefreshSingleServerComplete != null)
           this.RefreshSingleServerComplete(this, new ServerEventArgs(row));          
@@ -357,7 +371,7 @@ namespace ServerBrowser
       try
       {
         row.Status = "updating " + row.Retries;
-        request.DataModified = 1;
+        request.SetDataModified();
         updater(retry =>
         {
           if (request.IsCancelled)
@@ -365,7 +379,7 @@ namespace ServerBrowser
           if (row.Retries == 0)
             Interlocked.Increment(ref request.TasksWithRetries);
           row.Status = "updating " + (++row.Retries + 1);
-          request.DataModified = 1;
+          request.SetDataModified();
         });
         return true;
       }

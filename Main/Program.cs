@@ -8,7 +8,7 @@ namespace Main
 {
   public static class Program
   {
-    private const string Version = "1.11";
+    private const string Version = "1.12";
 
     [STAThread]
     static void Main()
