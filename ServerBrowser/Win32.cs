@@ -40,6 +40,10 @@ namespace ServerBrowser
     [DllImportAttribute("user32.dll")]
     public static extern bool IsWindowUnicode(IntPtr hWnd);
 
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool GetWindowPlacement(IntPtr hWnd, ref WINDOWPLACEMENT lpwndpl);
+
     public delegate bool EnumWindowProc(IntPtr hWnd, IntPtr lParam);
 
     public const int WM_KEYDOWN = 0x100;
@@ -89,6 +93,30 @@ namespace ServerBrowser
 
     #endregion
 
+    #region struct WINDOWPLACEMENT
+    [Serializable]
+    [StructLayout(LayoutKind.Sequential)]
+    public struct WINDOWPLACEMENT
+    {
+      public int length;
+      public int flags;
+      public ShowWindowCommands showCmd;
+      public System.Drawing.Point ptMinPosition;
+      public System.Drawing.Point ptMaxPosition;
+      public System.Drawing.Rectangle rcNormalPosition;
+    }
+    #endregion
+
+    #region enum ShowWindowCommands
+    public enum ShowWindowCommands
+    {
+      Hide = 0,
+      Normal = 1,
+      Minimized = 2,
+      Maximized = 3,
+    }
+    #endregion
+
     #region GetChildWindows()
 
     public static List<IntPtr> GetChildWindows(IntPtr parent)
@@ -127,6 +155,16 @@ namespace ServerBrowser
       return true;
     }
 
+    #endregion
+
+    #region GetWindowPlacement()
+    public static WINDOWPLACEMENT GetWindowPlacement(IntPtr hwnd)
+    {
+      WINDOWPLACEMENT placement = new WINDOWPLACEMENT();
+      placement.length = Marshal.SizeOf(placement);
+      GetWindowPlacement(hwnd, ref placement);
+      return placement;
+    }
     #endregion
   }
 }

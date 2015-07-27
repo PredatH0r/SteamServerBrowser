@@ -49,6 +49,8 @@ namespace ServerBrowser
         }
         catch
         {
+          lock (this.cache)
+            this.cache.Remove(ipInt);
         }        
       }
     }

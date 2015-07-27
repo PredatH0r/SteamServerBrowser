@@ -1,3 +1,15 @@
+1.12.2
+---
+- when trying to connect to a skill limited TOXIKK server, a message box informs you that this is not possible
+- TOXIKK: the players column now shows the max bot count when the server is empty and bots haven't spawned yet
+- fix: no longer trying to start TOXIKK a 2nd time when it's already running and the window minimized
+
+1.12.1
+---
+- fix: error popup when hovering mouse over a Location cell when the geo info wasn't loaded yet
+- fix: failed geo-info requests will be sent again on the next refresh
+- added code (but not yet accessible) to send RCON commands to Quake Live Testing through ZeroMQ
+
 1.12
 ---
 - added Geo-IP lookup (API hosted by http://freegeoip.net, flag icon provided by http://www.famfamfam.com)

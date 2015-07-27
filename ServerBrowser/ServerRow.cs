@@ -52,15 +52,15 @@ namespace ServerBrowser
 
     public void Update()
     {
-      this.PlayerCount.Update();
       this.extenderFieldCache.Clear();
-
       this.rulesFieldCache.Clear();
       if (this.Rules != null)
       {
         foreach (var rule in this.Rules)
           rulesFieldCache[rule.Name] = rule.Value;
       }
+
+      this.PlayerCount.Update();
       this.isModified = 1;
     }
 

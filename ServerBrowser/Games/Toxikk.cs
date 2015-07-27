@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Threading;
 using System.Windows.Forms;
 using DevExpress.Data;
+using DevExpress.XtraEditors;
 using DevExpress.XtraGrid.Views.Grid;
 using QueryMaster;
 
@@ -12,6 +13,7 @@ namespace ServerBrowser
 {
   public class Toxikk : GameExtension
   {
+    private const string MinCombatants = "p268435703";
     private const string ScoreLimit = "p268435704";
     private const string TimeLimit = "p268435705";
     private const string IsOfficial = "s15";
@@ -70,6 +72,20 @@ namespace ServerBrowser
     }
     #endregion
 
+    #region GetBotCount()
+    public override int? GetBotCount(ServerRow row)
+    {
+      if (row.ServerInfo == null)
+        return null;
+      int bots = row.ServerInfo.Bots;
+      if (bots != 0)
+        return bots;
+      if (row.Rules != null && int.TryParse(row.GetRule(MinCombatants), out bots))
+        return bots;
+      return 0;
+    }
+    #endregion
+
     #region GetBestPlayerSC()
     private decimal GetBestPlayerSC(ServerRow row)
     {
@@ -90,6 +106,24 @@ namespace ServerBrowser
 
     public override bool Connect(ServerRow server, string password, bool spectate)
     {
+      // servers with skill restrictions neither allow connections with "steam://connect" nor with an "open ip:port" console command
+      if ((string) this.GetServerCellValue(server, "_skillclass") != "1-12")
+      {
+        var res = XtraMessageBox.Show("This server has a skill restriction.\nOnly the in-game browser can connect to such servers.\nLaunch TOXIKK anyway?",
+          "Toxikk Server", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation);
+        if (res == DialogResult.No)
+          return false;
+        if (FindToxikkWindow() == IntPtr.Zero)
+        {
+          var hWnd = StartToxikk();
+          if (hWnd == IntPtr.Zero)
+            return false;
+          SkipIntro(hWnd);
+        }
+        return true;
+      }
+        
+
       if (consoleKey == Keys.None)
       {
         using (var dlg = new KeyBindForm("Please press your Toxikk console key..."))
@@ -153,8 +187,15 @@ namespace ServerBrowser
       {
         var hWnd = proc.MainWindowHandle;
         Win32.RECT rect;
+
+        // wait for the main window and ignore the smaller splash screen
         Win32.GetWindowRect(hWnd, out rect);
         if (rect.Height >= 600)
+          return hWnd;
+
+        // when the window is minimized, it can't be the splash screen
+        var placement = Win32.GetWindowPlacement(hWnd);
+        if (placement.showCmd == Win32.ShowWindowCommands.Minimized)
           return hWnd;
       }
       return IntPtr.Zero;

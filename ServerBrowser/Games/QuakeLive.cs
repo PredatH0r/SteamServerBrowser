@@ -1,10 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Net;
 using System.Threading;
 using System.Windows.Forms;
 using DevExpress.Data;
+using DevExpress.Utils.Drawing.Helpers;
 using DevExpress.XtraGrid.Views.Grid;
+using ZeroMQ;
+using ZeroMQ.Monitoring;
 
 namespace ServerBrowser
 {
@@ -150,5 +154,109 @@ namespace ServerBrowser
     }
     #endregion
 
+
+    // ZeroMQ rcon stuff
+
+    #region Rcon()
+
+    public override void Rcon(ServerRow row, int port, string password, string command)
+    {
+      using (var ctx = ZContext.Create())
+      {
+        ZSocket client, monitor;
+        var endpoint = new IPEndPoint(row.EndPoint.Address, port);
+        this.CreateClientAndMonitorSockets(ctx, endpoint, password, out client, out monitor);
+        using (client)
+        using (monitor)
+        {
+          while (true)
+          {
+            ZMessage msg = new ZMessage();
+            ZError err;
+            var poll = ZPollItem.CreateReceiver();
+            var ev = client.Poll(poll, ZPoll.In | ZPoll.Out | ZPoll.Err, ref msg, out err, TimeSpan.FromMilliseconds(500));
+            if (err == ZError.ETERM)
+              break;
+
+            var evMonitor = CheckMonitor(monitor);
+            if (evMonitor != null)
+            {
+              if (evMonitor.Item1 == ZMonitorEvents.Connected)
+              {
+                client.Send(new ZFrame("register"));
+                client.Send(new ZFrame(command));
+                return;
+              }
+              if (evMonitor.Item1 == ZMonitorEvents.Closed || evMonitor.Item1 == ZMonitorEvents.Disconnected)
+                return;
+            }
+
+            if (!ev)
+              continue;
+
+            while (true)
+            {
+              client.ReceiveMessage(ref msg, ZSocketFlags.DontWait, out err);
+              if (err != ZError.None)
+              {
+                if (err != ZError.EAGAIN)
+                  Console.WriteLine(err);
+                break;
+              }
+              Console.WriteLine(msg);
+            }
+          }
+        }
+      }
+    }
+    #endregion
+
+    #region CreateClientAndMonitorSockets()
+    private void CreateClientAndMonitorSockets(ZContext ctx, IPEndPoint endPoint, string password, out ZSocket client, out ZSocket monitor)
+    {
+      client = new ZSocket(ctx, ZSocketType.DEALER);
+      monitor = new ZSocket(ctx, ZSocketType.PAIR);
+      client.Monitor("inproc://monitor-client", ZMonitorEvents.AllEvents);
+      monitor.Connect("inproc://monitor-client");
+
+      if (!string.IsNullOrEmpty(password))
+      {
+        client.PlainUserName = "rcon";
+        client.PlainPassword = password;
+        client.ZAPDomain = "rcon";
+      }
+
+      var ident = new Guid().ToByteArray();
+      client.Identity = ident;
+      client.SetOption(ZSocketOption.IDENTITY, ident);
+      client.Connect("tcp://" + endPoint);      
+    }
+    #endregion
+
+    #region CheckMonitor()
+    private Tuple<ZMonitorEvents,object> CheckMonitor(ZSocket monitor)
+    {
+      try
+      {
+        ZMessage msg = new ZMessage();
+        ZError err;
+        monitor.ReceiveMessage(ref msg, ZSocketFlags.DontWait, out err);
+        if (err == ZError.EAGAIN)
+          return null;
+
+        var id = msg[0].ReadUInt16();
+        var val = msg[0].ReadUInt32();
+
+        var data = new byte[msg[1].Length];
+        msg[1].Read(data, 0, data.Length);
+
+        return new Tuple<ZMonitorEvents, object>((ZMonitorEvents)id, val);
+      }
+      catch (ZException)
+      {
+        return null;
+      }
+    }
+    #endregion
   }
 }

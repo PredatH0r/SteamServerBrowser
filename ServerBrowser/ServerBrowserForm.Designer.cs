@@ -84,6 +84,10 @@ namespace ServerBrowser
       this.miAddRulesColumnText = new DevExpress.XtraBars.BarButtonItem();
       this.miAddRulesColumnNumeric = new DevExpress.XtraBars.BarButtonItem();
       this.panelContainer1 = new DevExpress.XtraBars.Docking.DockPanel();
+      this.panelPlayers = new DevExpress.XtraBars.Docking.DockPanel();
+      this.dockPanel1_Container = new DevExpress.XtraBars.Docking.ControlContainer();
+      this.panelServerDetails = new DevExpress.XtraBars.Docking.DockPanel();
+      this.dockPanel2_Container = new DevExpress.XtraBars.Docking.ControlContainer();
       this.panelRules = new DevExpress.XtraBars.Docking.DockPanel();
       this.controlContainer2 = new DevExpress.XtraBars.Docking.ControlContainer();
       this.gcRules = new DevExpress.XtraGrid.GridControl();
@@ -91,10 +95,15 @@ namespace ServerBrowser
       this.gvRules = new DevExpress.XtraGrid.Views.Grid.GridView();
       this.gridColumn1 = new DevExpress.XtraGrid.Columns.GridColumn();
       this.gridColumn2 = new DevExpress.XtraGrid.Columns.GridColumn();
-      this.panelPlayers = new DevExpress.XtraBars.Docking.DockPanel();
-      this.dockPanel1_Container = new DevExpress.XtraBars.Docking.ControlContainer();
-      this.panelServerDetails = new DevExpress.XtraBars.Docking.DockPanel();
-      this.dockPanel2_Container = new DevExpress.XtraBars.Docking.ControlContainer();
+      this.panelRcon = new DevExpress.XtraBars.Docking.DockPanel();
+      this.controlContainer3 = new DevExpress.XtraBars.Docking.ControlContainer();
+      this.labelControl13 = new DevExpress.XtraEditors.LabelControl();
+      this.labelControl15 = new DevExpress.XtraEditors.LabelControl();
+      this.txtRconPort = new DevExpress.XtraEditors.ButtonEdit();
+      this.txtRconConsole = new DevExpress.XtraEditors.MemoEdit();
+      this.txtRconCommand = new DevExpress.XtraEditors.ButtonEdit();
+      this.labelControl14 = new DevExpress.XtraEditors.LabelControl();
+      this.txtRconPassword = new DevExpress.XtraEditors.ButtonEdit();
       this.panelServerList = new DevExpress.XtraBars.Docking.DockPanel();
       this.controlContainer1 = new DevExpress.XtraBars.Docking.ControlContainer();
       this.btnSkin = new DevExpress.XtraEditors.SimpleButton();
@@ -161,15 +170,21 @@ namespace ServerBrowser
       ((System.ComponentModel.ISupportInitialize)(this.barManager1)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.imageCollection)).BeginInit();
       this.panelContainer1.SuspendLayout();
+      this.panelPlayers.SuspendLayout();
+      this.dockPanel1_Container.SuspendLayout();
+      this.panelServerDetails.SuspendLayout();
+      this.dockPanel2_Container.SuspendLayout();
       this.panelRules.SuspendLayout();
       this.controlContainer2.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.gcRules)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.dsRules)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.gvRules)).BeginInit();
-      this.panelPlayers.SuspendLayout();
-      this.dockPanel1_Container.SuspendLayout();
-      this.panelServerDetails.SuspendLayout();
-      this.dockPanel2_Container.SuspendLayout();
+      this.panelRcon.SuspendLayout();
+      this.controlContainer3.SuspendLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.txtRconPort.Properties)).BeginInit();
+      ((System.ComponentModel.ISupportInitialize)(this.txtRconConsole.Properties)).BeginInit();
+      ((System.ComponentModel.ISupportInitialize)(this.txtRconCommand.Properties)).BeginInit();
+      ((System.ComponentModel.ISupportInitialize)(this.txtRconPassword.Properties)).BeginInit();
       this.panelServerList.SuspendLayout();
       this.controlContainer1.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.cbRefreshSelectedServer.Properties)).BeginInit();
@@ -371,7 +386,7 @@ namespace ServerBrowser
       this.gcServers.Name = "gcServers";
       this.gcServers.RepositoryItems.AddRange(new DevExpress.XtraEditors.Repository.RepositoryItem[] {
             this.riCountryFlagEdit});
-      this.gcServers.Size = new System.Drawing.Size(1095, 497);
+      this.gcServers.Size = new System.Drawing.Size(1095, 358);
       this.gcServers.TabIndex = 0;
       this.gcServers.ToolTipController = this.toolTipController;
       this.gcServers.ViewCollection.AddRange(new DevExpress.XtraGrid.Views.Base.BaseView[] {
@@ -838,6 +853,8 @@ namespace ServerBrowser
       // dockManager1
       // 
       this.dockManager1.Form = this;
+      this.dockManager1.HiddenPanels.AddRange(new DevExpress.XtraBars.Docking.DockPanel[] {
+            this.panelRcon});
       this.dockManager1.MenuManager = this.barManager1;
       this.dockManager1.RootPanels.AddRange(new DevExpress.XtraBars.Docking.DockPanel[] {
             this.panelContainer1,
@@ -1009,6 +1026,48 @@ namespace ServerBrowser
       this.panelContainer1.Tabbed = true;
       this.panelContainer1.Text = "panelContainer1";
       // 
+      // panelPlayers
+      // 
+      this.panelPlayers.Controls.Add(this.dockPanel1_Container);
+      this.panelPlayers.Dock = DevExpress.XtraBars.Docking.DockingStyle.Fill;
+      this.panelPlayers.ID = new System.Guid("5ff9161d-077a-43fb-9f49-f8a0728b7b57");
+      this.panelPlayers.Location = new System.Drawing.Point(4, 23);
+      this.panelPlayers.Name = "panelPlayers";
+      this.panelPlayers.Options.AllowFloating = false;
+      this.panelPlayers.Options.ShowCloseButton = false;
+      this.panelPlayers.OriginalSize = new System.Drawing.Size(354, 497);
+      this.panelPlayers.Size = new System.Drawing.Size(354, 516);
+      this.panelPlayers.Text = "Players";
+      // 
+      // dockPanel1_Container
+      // 
+      this.dockPanel1_Container.Controls.Add(this.gcPlayers);
+      this.dockPanel1_Container.Location = new System.Drawing.Point(0, 0);
+      this.dockPanel1_Container.Name = "dockPanel1_Container";
+      this.dockPanel1_Container.Size = new System.Drawing.Size(354, 516);
+      this.dockPanel1_Container.TabIndex = 0;
+      // 
+      // panelServerDetails
+      // 
+      this.panelServerDetails.Controls.Add(this.dockPanel2_Container);
+      this.panelServerDetails.Dock = DevExpress.XtraBars.Docking.DockingStyle.Fill;
+      this.panelServerDetails.ID = new System.Guid("adca8b15-d626-4469-97cf-a6cc21c21f6e");
+      this.panelServerDetails.Location = new System.Drawing.Point(4, 23);
+      this.panelServerDetails.Name = "panelServerDetails";
+      this.panelServerDetails.Options.AllowFloating = false;
+      this.panelServerDetails.Options.ShowCloseButton = false;
+      this.panelServerDetails.OriginalSize = new System.Drawing.Size(354, 497);
+      this.panelServerDetails.Size = new System.Drawing.Size(354, 516);
+      this.panelServerDetails.Text = "Server Details";
+      // 
+      // dockPanel2_Container
+      // 
+      this.dockPanel2_Container.Controls.Add(this.gcDetails);
+      this.dockPanel2_Container.Location = new System.Drawing.Point(0, 0);
+      this.dockPanel2_Container.Name = "dockPanel2_Container";
+      this.dockPanel2_Container.Size = new System.Drawing.Size(354, 516);
+      this.dockPanel2_Container.TabIndex = 0;
+      // 
       // panelRules
       // 
       this.panelRules.Controls.Add(this.controlContainer2);
@@ -1016,7 +1075,7 @@ namespace ServerBrowser
       this.panelRules.ID = new System.Guid("7cfd1891-8f2c-4d0a-bd2c-1bb030d15a66");
       this.panelRules.Location = new System.Drawing.Point(4, 23);
       this.panelRules.Name = "panelRules";
-      this.panelRules.OriginalSize = new System.Drawing.Size(354, 518);
+      this.panelRules.OriginalSize = new System.Drawing.Size(354, 497);
       this.panelRules.Size = new System.Drawing.Size(354, 516);
       this.panelRules.Text = "Rules";
       // 
@@ -1075,54 +1134,111 @@ namespace ServerBrowser
       this.gridColumn2.VisibleIndex = 1;
       this.gridColumn2.Width = 150;
       // 
-      // panelPlayers
+      // panelRcon
       // 
-      this.panelPlayers.Controls.Add(this.dockPanel1_Container);
-      this.panelPlayers.Dock = DevExpress.XtraBars.Docking.DockingStyle.Fill;
-      this.panelPlayers.ID = new System.Guid("5ff9161d-077a-43fb-9f49-f8a0728b7b57");
-      this.panelPlayers.Location = new System.Drawing.Point(4, 23);
-      this.panelPlayers.Name = "panelPlayers";
-      this.panelPlayers.Options.AllowFloating = false;
-      this.panelPlayers.Options.ShowCloseButton = false;
-      this.panelPlayers.OriginalSize = new System.Drawing.Size(354, 518);
-      this.panelPlayers.Size = new System.Drawing.Size(354, 516);
-      this.panelPlayers.Text = "Players";
+      this.panelRcon.Controls.Add(this.controlContainer3);
+      this.panelRcon.Dock = DevExpress.XtraBars.Docking.DockingStyle.Bottom;
+      this.panelRcon.ID = new System.Guid("7b6df7b6-b112-4685-a1f4-c23ae548835f");
+      this.panelRcon.Location = new System.Drawing.Point(0, 648);
+      this.panelRcon.Name = "panelRcon";
+      this.panelRcon.OriginalSize = new System.Drawing.Size(200, 136);
+      this.panelRcon.SavedDock = DevExpress.XtraBars.Docking.DockingStyle.Bottom;
+      this.panelRcon.SavedIndex = 1;
+      this.panelRcon.Size = new System.Drawing.Size(1103, 136);
+      this.panelRcon.Text = "Remote Console";
+      this.panelRcon.Visibility = DevExpress.XtraBars.Docking.DockVisibility.Hidden;
       // 
-      // dockPanel1_Container
+      // controlContainer3
       // 
-      this.dockPanel1_Container.Controls.Add(this.gcPlayers);
-      this.dockPanel1_Container.Location = new System.Drawing.Point(0, 0);
-      this.dockPanel1_Container.Name = "dockPanel1_Container";
-      this.dockPanel1_Container.Size = new System.Drawing.Size(354, 516);
-      this.dockPanel1_Container.TabIndex = 0;
+      this.controlContainer3.Controls.Add(this.labelControl13);
+      this.controlContainer3.Controls.Add(this.labelControl15);
+      this.controlContainer3.Controls.Add(this.txtRconPort);
+      this.controlContainer3.Controls.Add(this.txtRconConsole);
+      this.controlContainer3.Controls.Add(this.txtRconCommand);
+      this.controlContainer3.Controls.Add(this.labelControl14);
+      this.controlContainer3.Controls.Add(this.txtRconPassword);
+      this.controlContainer3.Location = new System.Drawing.Point(4, 23);
+      this.controlContainer3.Name = "controlContainer3";
+      this.controlContainer3.Size = new System.Drawing.Size(1095, 109);
+      this.controlContainer3.TabIndex = 0;
       // 
-      // panelServerDetails
+      // labelControl13
       // 
-      this.panelServerDetails.Controls.Add(this.dockPanel2_Container);
-      this.panelServerDetails.Dock = DevExpress.XtraBars.Docking.DockingStyle.Fill;
-      this.panelServerDetails.ID = new System.Guid("adca8b15-d626-4469-97cf-a6cc21c21f6e");
-      this.panelServerDetails.Location = new System.Drawing.Point(4, 23);
-      this.panelServerDetails.Name = "panelServerDetails";
-      this.panelServerDetails.Options.AllowFloating = false;
-      this.panelServerDetails.Options.ShowCloseButton = false;
-      this.panelServerDetails.OriginalSize = new System.Drawing.Size(354, 518);
-      this.panelServerDetails.Size = new System.Drawing.Size(354, 516);
-      this.panelServerDetails.Text = "Server Details";
+      this.labelControl13.Location = new System.Drawing.Point(4, 6);
+      this.labelControl13.Name = "labelControl13";
+      this.labelControl13.Size = new System.Drawing.Size(24, 13);
+      this.labelControl13.TabIndex = 0;
+      this.labelControl13.Text = "Port:";
       // 
-      // dockPanel2_Container
+      // labelControl15
       // 
-      this.dockPanel2_Container.Controls.Add(this.gcDetails);
-      this.dockPanel2_Container.Location = new System.Drawing.Point(0, 0);
-      this.dockPanel2_Container.Name = "dockPanel2_Container";
-      this.dockPanel2_Container.Size = new System.Drawing.Size(354, 516);
-      this.dockPanel2_Container.TabIndex = 0;
+      this.labelControl15.Location = new System.Drawing.Point(406, 6);
+      this.labelControl15.Name = "labelControl15";
+      this.labelControl15.Size = new System.Drawing.Size(51, 13);
+      this.labelControl15.TabIndex = 4;
+      this.labelControl15.Text = "Command:";
+      // 
+      // txtRconPort
+      // 
+      this.txtRconPort.Location = new System.Drawing.Point(49, 3);
+      this.txtRconPort.MenuManager = this.barManager1;
+      this.txtRconPort.Name = "txtRconPort";
+      this.txtRconPort.Properties.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Delete)});
+      this.txtRconPort.Properties.Mask.EditMask = "\\d+";
+      this.txtRconPort.Properties.Mask.MaskType = DevExpress.XtraEditors.Mask.MaskType.RegEx;
+      this.txtRconPort.Size = new System.Drawing.Size(83, 20);
+      this.txtRconPort.TabIndex = 1;
+      // 
+      // txtRconConsole
+      // 
+      this.txtRconConsole.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.txtRconConsole.Location = new System.Drawing.Point(-2, 26);
+      this.txtRconConsole.MenuManager = this.barManager1;
+      this.txtRconConsole.Name = "txtRconConsole";
+      this.txtRconConsole.Properties.ReadOnly = true;
+      this.txtRconConsole.Size = new System.Drawing.Size(1094, 81);
+      this.txtRconConsole.TabIndex = 6;
+      // 
+      // txtRconCommand
+      // 
+      this.txtRconCommand.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.txtRconCommand.Location = new System.Drawing.Point(481, 3);
+      this.txtRconCommand.MenuManager = this.barManager1;
+      this.txtRconCommand.Name = "txtRconCommand";
+      this.txtRconCommand.Properties.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Delete)});
+      this.txtRconCommand.Size = new System.Drawing.Size(611, 20);
+      this.txtRconCommand.TabIndex = 5;
+      this.txtRconCommand.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txtRconCommand_KeyDown);
+      // 
+      // labelControl14
+      // 
+      this.labelControl14.Location = new System.Drawing.Point(161, 6);
+      this.labelControl14.Name = "labelControl14";
+      this.labelControl14.Size = new System.Drawing.Size(50, 13);
+      this.labelControl14.TabIndex = 2;
+      this.labelControl14.Text = "Password:";
+      // 
+      // txtRconPassword
+      // 
+      this.txtRconPassword.Location = new System.Drawing.Point(230, 3);
+      this.txtRconPassword.MenuManager = this.barManager1;
+      this.txtRconPassword.Name = "txtRconPassword";
+      this.txtRconPassword.Properties.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Delete)});
+      this.txtRconPassword.Size = new System.Drawing.Size(143, 20);
+      this.txtRconPassword.TabIndex = 3;
       // 
       // panelServerList
       // 
       this.panelServerList.Controls.Add(this.controlContainer1);
       this.panelServerList.Dock = DevExpress.XtraBars.Docking.DockingStyle.Bottom;
       this.panelServerList.ID = new System.Guid("865607d4-b558-4563-b50b-7827abfe171b");
-      this.panelServerList.Location = new System.Drawing.Point(0, 260);
+      this.panelServerList.Location = new System.Drawing.Point(0, 399);
       this.panelServerList.Name = "panelServerList";
       this.panelServerList.Options.AllowDockAsTabbedDocument = false;
       this.panelServerList.Options.AllowDockRight = false;
@@ -1131,8 +1247,8 @@ namespace ServerBrowser
       this.panelServerList.Options.FloatOnDblClick = false;
       this.panelServerList.Options.ShowAutoHideButton = false;
       this.panelServerList.Options.ShowCloseButton = false;
-      this.panelServerList.OriginalSize = new System.Drawing.Size(1102, 524);
-      this.panelServerList.Size = new System.Drawing.Size(1103, 524);
+      this.panelServerList.OriginalSize = new System.Drawing.Size(1102, 385);
+      this.panelServerList.Size = new System.Drawing.Size(1103, 385);
       this.panelServerList.Text = "Servers";
       // 
       // controlContainer1
@@ -1140,7 +1256,7 @@ namespace ServerBrowser
       this.controlContainer1.Controls.Add(this.gcServers);
       this.controlContainer1.Location = new System.Drawing.Point(4, 23);
       this.controlContainer1.Name = "controlContainer1";
-      this.controlContainer1.Size = new System.Drawing.Size(1095, 497);
+      this.controlContainer1.Size = new System.Drawing.Size(1095, 358);
       this.controlContainer1.TabIndex = 0;
       // 
       // btnSkin
@@ -1664,15 +1780,22 @@ namespace ServerBrowser
       ((System.ComponentModel.ISupportInitialize)(this.barManager1)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.imageCollection)).EndInit();
       this.panelContainer1.ResumeLayout(false);
+      this.panelPlayers.ResumeLayout(false);
+      this.dockPanel1_Container.ResumeLayout(false);
+      this.panelServerDetails.ResumeLayout(false);
+      this.dockPanel2_Container.ResumeLayout(false);
       this.panelRules.ResumeLayout(false);
       this.controlContainer2.ResumeLayout(false);
       ((System.ComponentModel.ISupportInitialize)(this.gcRules)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.dsRules)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.gvRules)).EndInit();
-      this.panelPlayers.ResumeLayout(false);
-      this.dockPanel1_Container.ResumeLayout(false);
-      this.panelServerDetails.ResumeLayout(false);
-      this.dockPanel2_Container.ResumeLayout(false);
+      this.panelRcon.ResumeLayout(false);
+      this.controlContainer3.ResumeLayout(false);
+      this.controlContainer3.PerformLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.txtRconPort.Properties)).EndInit();
+      ((System.ComponentModel.ISupportInitialize)(this.txtRconConsole.Properties)).EndInit();
+      ((System.ComponentModel.ISupportInitialize)(this.txtRconCommand.Properties)).EndInit();
+      ((System.ComponentModel.ISupportInitialize)(this.txtRconPassword.Properties)).EndInit();
       this.panelServerList.ResumeLayout(false);
       this.controlContainer1.ResumeLayout(false);
       ((System.ComponentModel.ISupportInitialize)(this.cbRefreshSelectedServer.Properties)).EndInit();
@@ -1823,6 +1946,15 @@ namespace ServerBrowser
     private DevExpress.Utils.ImageCollection imgFlags;
     private DevExpress.XtraEditors.Repository.RepositoryItemImageComboBox riCountryFlagEdit;
     private DevExpress.Utils.ToolTipController toolTipController;
+    private DevExpress.XtraBars.Docking.DockPanel panelRcon;
+    private DevExpress.XtraBars.Docking.ControlContainer controlContainer3;
+    protected LabelControl labelControl15;
+    private MemoEdit txtRconConsole;
+    protected ButtonEdit txtRconCommand;
+    protected LabelControl labelControl14;
+    protected ButtonEdit txtRconPassword;
+    protected LabelControl labelControl13;
+    protected ButtonEdit txtRconPort;
 
 
 

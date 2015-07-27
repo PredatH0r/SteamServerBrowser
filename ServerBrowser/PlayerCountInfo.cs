@@ -29,7 +29,7 @@ namespace ServerBrowser
         RealPlayers = Bots = MaxPlayers = null;
       else
       {
-        Bots = row.ServerInfo.Bots;
+        Bots = row.GameExtension.GetBotCount(row);
         MaxPlayers = row.ServerInfo.MaxPlayers;
         RealPlayers = row.ServerInfo.Players;
       }

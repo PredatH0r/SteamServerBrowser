@@ -625,12 +625,16 @@ namespace ServerBrowser
           continue;
 
         var safeServer = server;
-        this.geoIpClient.Lookup(safeServer.EndPoint.Address, geo =>
-        {
-          safeServer.GeoInfo = geo;
-          Interlocked.Exchange(ref this.geoIpModified, 1);
-        });          
+        this.geoIpClient.Lookup(safeServer.EndPoint.Address, geo => GeoIpReceived(safeServer, geo));          
       }
+    }
+    #endregion
+
+    #region GeoIpReceived()
+    private void GeoIpReceived(ServerRow server, GeoInfo geoInfo)
+    {
+      server.GeoInfo = geoInfo;
+      Interlocked.Exchange(ref this.geoIpModified, 1);      
     }
     #endregion
 
@@ -770,7 +774,9 @@ namespace ServerBrowser
         this.SteamAppID = (Game) id;
       }
 
+      this.timerReloadServers.Stop();
       ReloadServerList();
+      this.timerReloadServers.Start();
     }
     #endregion
 
@@ -965,7 +971,7 @@ namespace ServerBrowser
         if (hit.InRowCell && hit.Column == this.colLocation)
         {
           var row = (ServerRow)this.gvServers.GetRow(hit.RowHandle);
-          if (row != null)
+          if (row != null && row.GeoInfo != null)
             e.Info = new ToolTipControlInfo(row.EndPoint + "-" + hit.Column.FieldName, row.GeoInfo.ToString());
         }
       }
@@ -985,7 +991,11 @@ namespace ServerBrowser
           this.UpdateGridDataSources();
 
         if (row != null && this.cbRefreshSelectedServer.Checked && !this.queryLogic.IsUpdating)
+        {
           this.queryLogic.RefreshSingleServer(row);
+          if (row.GeoInfo == null)
+            this.geoIpClient.Lookup(row.EndPoint.Address, geoInfo => this.GeoIpReceived(row, geoInfo));
+        }
       }
       catch (Exception ex)
       {
@@ -1164,5 +1174,29 @@ namespace ServerBrowser
     }
     #endregion
 
+    // remote console
+
+    private void txtRconCommand_KeyDown(object sender, KeyEventArgs e)
+    {
+      if (e.KeyData == Keys.Enter || e.KeyData == Keys.Return)
+      {
+        int port;
+        if (!int.TryParse(this.txtRconPort.Text, out port))
+          return;
+        var row = (ServerRow)this.gvServers.GetFocusedRow();
+        if (row != null)
+        {
+          this.SendRconCommand(row, port, this.txtRconPassword.Text, this.txtRconCommand.Text);
+          this.txtRconCommand.Text = "";
+        }
+        e.Handled = true;
+      }
+    }
+
+    private void SendRconCommand(ServerRow row, int port, string pass, string text)
+    {
+      if (row.GameExtension != null)
+        row.GameExtension.Rcon(row, port, pass, text);
+    }
   }
 }

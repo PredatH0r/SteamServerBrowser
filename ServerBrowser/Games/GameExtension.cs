@@ -94,6 +94,13 @@ namespace ServerBrowser
     }
     #endregion
 
+    #region GetBotCount()
+    public virtual int? GetBotCount(ServerRow row)
+    {
+      return row.ServerInfo != null ? row.ServerInfo.Bots : (int?)null;
+    }
+    #endregion
+
     // player list UI
 
     #region CustomizePlayerGridColumns()
@@ -181,6 +188,11 @@ namespace ServerBrowser
       return col;
     }
     #endregion
+
+    public virtual void Rcon(ServerRow row, int port, string password, string command)
+    {      
+    }
+
   }
   #endregion
 

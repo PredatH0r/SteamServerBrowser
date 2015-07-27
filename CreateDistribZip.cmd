@@ -6,11 +6,15 @@ set target=%cd%\SteamServerBrowser_%curdate%
 mkdir "%target%" 2>nul
 del /s /q "%target%\*"
 
-cd "%cwd%\Main\bin\debug"
+cd "%cwd%\Main\bin\x86\debug"
 copy ServerBrowser.exe "%target%"
 copy ServerBrowser.Core.dll "%target%"
 copy QueryMaster.dll "%target%"
 copy Ionic.BZip2.dll "%target%"
+copy libsodium.dll "%target%"
+copy libzmq.dll "%target%"
+copy ZeroMQ.dll "%target%"
+
 copy "%cwd%\ServerBrowser\bin\debug\DevExpress*.dll" "%target%"
 del "%target%\*BonusSkins*"
 cd "%target%"
@@ -19,7 +23,7 @@ call :CodeSigning
 cd "%cwd%"
 copy *.md "%target%"
 
-del "%target%.zip"
+del "%target%.zip" >nul
 "c:\program files\7-Zip\7z.exe" a -tzip "%target%.zip" SteamServerBrowser_%curdate%
 
 cd "%cwd%"

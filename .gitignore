@@ -17,3 +17,6 @@ ServerBrowser/phgp/
 Main/bin/
 Main/obj/
 ServerBrowser/images/flags/*
+packages/*
+ServerBrowser/amd64/
+ServerBrowser/i386/
