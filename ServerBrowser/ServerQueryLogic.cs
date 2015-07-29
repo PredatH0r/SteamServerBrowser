@@ -188,6 +188,18 @@ namespace ServerBrowser
     }
     #endregion
 
+    #region RefreshAllServers()
+    public void RefreshAllServers(List<ServerRow> servers)
+    {
+      var request = new UpdateRequest(this.currentRequest.AppId, this.currentRequest.MaxResults, this.currentRequest.Timeout, this.currentRequest.GameExtension);
+      request.Servers.AddRange(servers);
+      foreach (var server in servers)
+        server.Status = "updating...";
+      this.currentRequest.SetDataModified();
+      ThreadPool.QueueUserWorkItem(ctx => this.AllServersReceived(request));
+    }
+    #endregion
+
     #region AllServersReceived()
     private void AllServersReceived(UpdateRequest request)
     {

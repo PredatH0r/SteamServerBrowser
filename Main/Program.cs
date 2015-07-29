@@ -8,7 +8,7 @@ namespace Main
 {
   public static class Program
   {
-    private const string Version = "1.12.2";
+    private const string Version = "1.13";
 
     [STAThread]
     static void Main()
@@ -20,7 +20,7 @@ namespace Main
       System.Threading.Thread.CurrentThread.CurrentCulture = culture;
 #endif
       // change font before creating the main form to get correct auto-scaling
-      ServerBrowser.Program.Init(new Font("Segoe UI", AppearanceObject.DefaultFont.Size + 0.75f), Properties.Settings.Default.Skin);
+      ServerBrowser.Program.Init(new Font("Segoe UI", AppearanceObject.DefaultFont.Size + 0.75f), ServerBrowser.Properties.Settings.Default.Skin);
 
       var mainForm = new ServerBrowserForm();
       var icon = typeof (Program).Assembly.GetManifestResourceStream("Main.App.ico");

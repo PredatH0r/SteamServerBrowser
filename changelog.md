@@ -1,3 +1,10 @@
+1.13
+---
+- added support to mark servers as favorites and keep them on top of the server list
+- added button for "Quick Refresh" which updates the status of all servers in the current list
+- renamed "Reload Servers" to "Find Servers" which should make it clearer that it loads a new server list
+- removing leading/trailing spaces from server names
+
 1.12.2
 ---
 - when trying to connect to a skill limited TOXIKK server, a message box informs you that this is not possible

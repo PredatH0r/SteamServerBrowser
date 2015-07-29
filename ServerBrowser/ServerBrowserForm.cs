@@ -7,6 +7,7 @@ using System.Linq;
 using System.Media;
 using System.Net;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using DevExpress.Data;
@@ -16,7 +17,6 @@ using DevExpress.XtraBars;
 using DevExpress.XtraBars.Docking;
 using DevExpress.XtraEditors;
 using DevExpress.XtraEditors.Controls;
-using DevExpress.XtraGrid;
 using DevExpress.XtraGrid.Columns;
 using DevExpress.XtraGrid.Views.Base;
 using DevExpress.XtraGrid.Views.Grid;
@@ -60,6 +60,7 @@ namespace ServerBrowser
     private ServerRow currentServer;
     private IServerSource serverSource;
     private int geoIpModified;
+    private readonly HashSet<IPEndPoint> favServers = new HashSet<IPEndPoint>();
 
     #region ctor()
     public ServerBrowserForm()
@@ -149,6 +150,15 @@ namespace ServerBrowser
       Properties.Settings.Default.ShowAddressMode = this.showAddressMode;
       Properties.Settings.Default.RefreshInterval = Convert.ToInt32(this.spinRefreshInterval.EditValue);
       Properties.Settings.Default.RefreshSelected = this.cbRefreshSelectedServer.Checked;
+
+      var sb = new StringBuilder();
+      foreach (var fav in this.favServers)
+      {
+        if (sb.Length > 0) sb.Append(",");
+        sb.Append(fav);
+      }
+      Properties.Settings.Default.FavServers = sb.ToString();
+      Properties.Settings.Default.KeepFavServersOnTop = this.cbFavServersOnTop.Checked;
 
       Properties.Settings.Default.Save();
     }
@@ -267,6 +277,15 @@ namespace ServerBrowser
       this.txtTagExclude.Text = Properties.Settings.Default.TagsExclude;
       this.txtMod.Text = Properties.Settings.Default.FilterMod;
       this.txtMap.Text = Properties.Settings.Default.FilterMap;
+
+      // load favorite servers
+      foreach (var server in Properties.Settings.Default.FavServers.Split(','))
+      {
+        if (server == "") continue;
+        var parts = server.Split(':');
+        this.favServers.Add(new IPEndPoint(IPAddress.Parse(parts[0]), int.Parse(parts[1])));
+      }
+      this.cbFavServersOnTop.Checked = Properties.Settings.Default.KeepFavServersOnTop;
     }
     #endregion
 
@@ -780,6 +799,17 @@ namespace ServerBrowser
     }
     #endregion
 
+    #region btnQuickRefresh_Click
+    private void btnQuickRefresh_Click(object sender, EventArgs e)
+    {
+      if (this.queryLogic.IsUpdating)
+        return;
+      this.timerReloadServers.Stop();
+      this.queryLogic.RefreshAllServers(this.servers);
+      this.timerReloadServers.Start();
+    }
+    #endregion
+
     #region linkFilter_HyperlinkClick
     private void linkFilter_HyperlinkClick(object sender, HyperlinkClickEventArgs e)
     {
@@ -897,6 +927,17 @@ namespace ServerBrowser
     }
     #endregion
 
+    #region cbFavServersOnTop_CheckedChanged
+    private void cbFavServersOnTop_CheckedChanged(object sender, EventArgs e)
+    {
+      this.gvServers.BeginSort();
+      if (this.cbFavServersOnTop.Checked)
+        gvServers_StartSorting(null, null);
+      else
+        this.colFavServer.SortOrder = ColumnSortOrder.None;
+      this.gvServers.EndSort();
+    }
+    #endregion
 
     // Servers grid
 
@@ -927,20 +968,36 @@ namespace ServerBrowser
     #endregion
 
     #region gvServers_CustomUnboundColumnData
-    private void gvServers_CustomUnboundColumnData(object sender, DevExpress.XtraGrid.Views.Base.CustomColumnDataEventArgs e)
+    private void gvServers_CustomUnboundColumnData(object sender, CustomColumnDataEventArgs e)
     {
-      if (!e.IsGetData) return;
+      if (e.IsSetData)
+      {
+        if (e.Column == this.colFavServer)
+        {
+          var server = (ServerRow) e.Row;
+          if ((bool) e.Value)
+            this.favServers.Add(server.EndPoint);
+          else
+            this.favServers.Remove(server.EndPoint);
+        }
+        return;
+      }
+
       var row = (ServerRow) e.Row;
-      if (e.Column == this.colEndPoint)
+      if (e.Column == this.colFavServer)
+        e.Value = this.favServers.Contains(row.EndPoint);
+      else if (e.Column == this.colEndPoint)
         e.Value = GetServerAddress(row);
       else if (e.Column == this.colName)
-        e.Value = row.ServerInfo == null ? (showAddressMode == 0 ? GetServerAddress(row) : null) : row.ServerInfo.Name;
+        e.Value = row.ServerInfo == null ? (showAddressMode == 0 ? GetServerAddress(row) : null) : row.ServerInfo.Name.Trim();
       else if (e.Column.FieldName.StartsWith(CustomNumericRuleColumnPrefix))
       {
         var fieldName = e.Column.FieldName.Substring(CustomNumericRuleColumnPrefix.Length);
         e.Value = row.GetExtenderCellValue(fieldName);
         try { e.Value = Convert.ToDecimal(e.Value); }
-        catch { }
+        catch
+        {
+        }
       }
       else
         e.Value = row.GetExtenderCellValue(e.Column.FieldName);
@@ -979,7 +1036,7 @@ namespace ServerBrowser
     #endregion
 
     #region gvServers_FocusedRowChanged
-    private void gvServers_FocusedRowChanged(object sender, DevExpress.XtraGrid.Views.Base.FocusedRowChangedEventArgs e)
+    private void gvServers_FocusedRowChanged(object sender, FocusedRowChangedEventArgs e)
     {
       try
       {
@@ -1042,6 +1099,19 @@ namespace ServerBrowser
     }
     #endregion
 
+    #region gvServers_StartSorting
+    private void gvServers_StartSorting(object sender, EventArgs e)
+    {
+      if (this.cbFavServersOnTop.Checked)
+      {
+        if (this.gvServers.SortInfo[this.colFavServer] == null)
+          this.gvServers.SortInfo.Insert(0, this.colFavServer, ColumnSortOrder.Descending);
+        this.colFavServer.SortOrder = ColumnSortOrder.Descending;
+        this.colFavServer.SortIndex = 0;
+      }
+    }
+    #endregion
+
     #region miUpdateServerInfo_ItemClick
     private void miUpdateServerInfo_ItemClick(object sender, ItemClickEventArgs e)
     {
@@ -1071,13 +1141,33 @@ namespace ServerBrowser
     }
     #endregion
 
+    #region riFavServer_EditValueChanged
+    private void riFavServer_EditValueChanged(object sender, EventArgs e)
+    {
+      this.gvServers.PostEditor();
+    }
+    #endregion
+
+    #region miFavServer_DownChanged
+    private void miFavServer_DownChanged(object sender, ItemClickEventArgs e)
+    {
+      var row = (ServerRow)this.gvServers.GetFocusedRow();
+      if (row == null) return;
+      if (this.miFavServer.Down)
+        this.favServers.Add(row.EndPoint);
+      else
+        this.favServers.Remove(row.EndPoint);
+      this.gvServers.RefreshRow(this.gvServers.FocusedRowHandle);
+    }
+    #endregion
+
     // Players grid
 
     #region gvPlayers_CustomUnboundColumnData
-    private void gvPlayers_CustomUnboundColumnData(object sender, DevExpress.XtraGrid.Views.Base.CustomColumnDataEventArgs e)
+    private void gvPlayers_CustomUnboundColumnData(object sender, CustomColumnDataEventArgs e)
     {
       if (!e.IsGetData) return;
-      var server = (ServerRow)this.gvServers.GetFocusedRow();
+      var server = (ServerRow) this.gvServers.GetFocusedRow();
       var player = (Player) e.Row;
       if (server != null && player != null)
         e.Value = server.GameExtension.GetPlayerCellValue(server, player, e.Column.FieldName);
@@ -1198,5 +1288,6 @@ namespace ServerBrowser
       if (row.GameExtension != null)
         row.GameExtension.Rcon(row, port, pass, text);
     }
+
   }
 }
