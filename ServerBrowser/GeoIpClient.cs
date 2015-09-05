@@ -10,7 +10,7 @@ namespace ServerBrowser
 {
   class GeoIpClient
   {
-    private const int ThreadCount = 10;
+    private const int ThreadCount = 7;
     private const string DefaultServiceUrlFormat = "http://freegeoip.net/csv/{0}";
     /// <summary>
     /// the cache holds either a string with the 2-letter country ISO code, a simple callback delegate, or a multicast callback delegate
@@ -39,7 +39,7 @@ namespace ServerBrowser
         try
         {
           var url = string.Format(this.ServiceUrlFormat, ip);
-          using (var client = new XWebClient())
+          using (var client = new XWebClient(1000))
           {
             var result = client.DownloadString(url);
             var callbacks = (Action<GeoInfo>)cache[ipInt];

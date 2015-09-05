@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using DevExpress.Data;
@@ -16,6 +17,7 @@ namespace ServerBrowser
     private const string MinCombatants = "p268435703";
     private const string ScoreLimit = "p268435704";
     private const string TimeLimit = "p268435705";
+    private const string Mutators = "p1073741828";
     private const string IsOfficial = "s15";
 
     private const int SecondsToWaitForMainWindowAfterLaunch = 45;
@@ -43,6 +45,9 @@ namespace ServerBrowser
 
       view.Columns["ServerInfo.Extra.Keywords"].Visible = false;
 
+      idx = view.Columns["ServerInfo.Map"].VisibleIndex;
+      AddColumn(view, Mutators, "Mutators", "Game modifications", 100, ++idx);
+
       idx = view.Columns["ServerInfo.Ping"].VisibleIndex;
       AddColumn(view, "_skillclass", "Skill", "Skill Class: Min-Max", 45, idx, UnboundColumnType.Integer);
       AddColumn(view, "_best", "Best", "Best player's Skill Class", 40, ++idx, UnboundColumnType.Integer);
@@ -67,6 +72,17 @@ namespace ServerBrowser
         case "_gametype":
           var gt = row.ServerInfo.Description;
           return gt == null ? null : gt.Contains("BloodLust") ? "BL" : gt.Contains("TeamGame") ? "SA" : gt.Contains("Cell") ? "CC" : gt;
+        case Mutators:
+          var mods = (row.GetRule(fieldName) ?? "").ToLower();
+          var buff = new StringBuilder();
+          foreach (var mod in mods.Split('\x1c'))
+          {
+            if (mod.Length == 0) continue;
+            if (buff.Length > 0) buff.Append(", ");
+            foreach (var word in mod.Split(' '))
+              buff.Append(char.ToUpper(word[0])).Append(word.Substring(1));
+          }
+          return buff.ToString();
       }
       return base.GetServerCellValue(row, fieldName);
     }

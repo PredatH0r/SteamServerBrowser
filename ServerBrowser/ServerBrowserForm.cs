@@ -795,7 +795,8 @@ namespace ServerBrowser
 
       this.timerReloadServers.Stop();
       ReloadServerList();
-      this.timerReloadServers.Start();
+      if (this.spinRefreshInterval.Value > 0)
+        this.timerReloadServers.Start();
     }
     #endregion
 
@@ -806,7 +807,8 @@ namespace ServerBrowser
         return;
       this.timerReloadServers.Stop();
       this.queryLogic.RefreshAllServers(this.servers);
-      this.timerReloadServers.Start();
+      if (this.spinRefreshInterval.Value > 0)
+        this.timerReloadServers.Start();
     }
     #endregion
 
@@ -962,7 +964,8 @@ namespace ServerBrowser
       }
       finally
       {
-        this.timerUpdateServerList.Start();
+        if (this.spinRefreshInterval.Value > 0)
+          this.timerUpdateServerList.Start();
       }
     }
     #endregion

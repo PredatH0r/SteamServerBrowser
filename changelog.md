@@ -1,3 +1,9 @@
+1.14
+---
+- TOXIKK: added column to show mutators
+- fix: stale data was shown on screen (with missing location information)
+- fix: setting auto-refresh time to 0 caused 1sec refreshes and as a result throttling by Valve
+
 1.13
 ---
 - added support to mark servers as favorites and keep them on top of the server list

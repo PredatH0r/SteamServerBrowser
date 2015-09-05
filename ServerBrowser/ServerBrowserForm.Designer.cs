@@ -1912,6 +1912,7 @@ namespace ServerBrowser
       ((System.ComponentModel.ISupportInitialize)(this.menuPlayers)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.menuRules)).EndInit();
       this.ResumeLayout(false);
+      this.PerformLayout();
 
     }
 
