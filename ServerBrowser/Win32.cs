@@ -49,6 +49,7 @@ namespace ServerBrowser
     public const int WM_KEYDOWN = 0x100;
     public const int WM_KEYUP = 0x101;
     public const int WM_CHAR = 0x0102;
+    public const int WM_DEADCHAR = 0x0103;
     public const int WM_UNICHAR = 0x0109;
     public const int WM_IME_CHAR = 0x0286;
     public const int WM_MOUSEMOVE = 0x0200;

@@ -15,7 +15,11 @@ copy libsodium.dll "%target%"
 copy libzmq.dll "%target%"
 copy ZeroMQ.dll "%target%"
 
-copy "%cwd%\ServerBrowser\bin\debug\DevExpress*.dll" "%target%"
+del "%cwd%\ServerBrowser\bin\x86\debug\DevExpress*Office*"
+del "%cwd%\ServerBrowser\bin\x86\debug\DevExpress*Rich*"
+del "%cwd%\ServerBrowser\bin\x86\debug\DevExpress*Spark*"
+del "%cwd%\ServerBrowser\bin\x86\debug\DevExpress*Tree*"
+copy "%cwd%\ServerBrowser\bin\x86\debug\DevExpress*.dll" "%target%"
 del "%target%\*BonusSkins*"
 cd "%target%"
 call :CodeSigning

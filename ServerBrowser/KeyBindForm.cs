@@ -24,12 +24,14 @@ namespace ServerBrowser
 
 
     public Keys Key { get; private set; }
+    public int ScanCode { get; private set; }
 
     bool IMessageFilter.PreFilterMessage(ref Message msg)
     {
       if (msg.Msg == Win32.WM_KEYDOWN)
       {
-        Key = (Keys)msg.WParam;
+        this.Key = (Keys)msg.WParam;
+        this.ScanCode = (int)msg.LParam & 0x00FF0000;
         this.DialogResult = DialogResult.OK;
         return true;
       }

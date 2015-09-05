@@ -1,3 +1,7 @@
+1.15
+---
+- Reflex: simulating keystrokes to connect to a server (steam://connect/ip:port is currently not working)
+
 1.14
 ---
 - TOXIKK: added column to show mutators
