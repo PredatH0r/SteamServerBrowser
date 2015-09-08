@@ -1,6 +1,11 @@
 1.16
 ---
 - added local Geo-IP cache for game server location information
+- most text columns now use "contains" as default filter condition (instead of "starts with")
+- Ping is no longer updated when changing the selected server to prevent reordering by the new value
+- auto-update mode can be set to either full server list update or quick refresh
+- result limit can now be changed to show more than 500 servers, at the risk of getting throttled by
+  the Steam Master Server (max. 30 UDP packets per minute per client IP ... ~6930 servers)
 - fix: application error when clicking on the column filter icon in the server details or rules tab
 
 1.15

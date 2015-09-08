@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Windows.Forms;
 using DevExpress.XtraEditors;
+using DevExpress.XtraGrid.Columns;
 using DevExpress.XtraGrid.Views.Grid;
 
 namespace ServerBrowser
@@ -24,7 +25,8 @@ namespace ServerBrowser
       var colDescription = view.Columns["ServerInfo.Description"];
       var idx = colDescription.VisibleIndex;
       colDescription.Visible = false;
-      AddColumn(view, "_gametype", "GT", "Gametype", 40, idx);
+      AddColumn(view, "_gametype", "GT", "Gametype", 40, idx)
+        .OptionsFilter.AutoFilterCondition = AutoFilterCondition.Default;
       AddColumn(view, "_location", "Loc", "Location", 40, ++idx);
     }
 

@@ -183,6 +183,9 @@ namespace ServerBrowser
         col.AppearanceCell.TextOptions.HAlignment = HorzAlignment.Far;
         col.AppearanceCell.Options.UseTextOptions = true;
       }
+      else if (type == UnboundColumnType.String)
+        col.OptionsFilter.AutoFilterCondition = AutoFilterCondition.Contains;
+
       view.Columns.Add(col);
       col.VisibleIndex = visibleIndex >= 0 ? visibleIndex : view.Columns.Count;
       return col;

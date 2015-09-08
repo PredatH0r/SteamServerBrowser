@@ -7,6 +7,7 @@ using System.Threading;
 using System.Windows.Forms;
 using DevExpress.Data;
 using DevExpress.XtraEditors;
+using DevExpress.XtraGrid.Columns;
 using DevExpress.XtraGrid.Views.Grid;
 using QueryMaster;
 
@@ -41,8 +42,9 @@ namespace ServerBrowser
       var colDescription = view.Columns["ServerInfo.Description"];
       var idx = colDescription.VisibleIndex;
       colDescription.Visible = false;
-      AddColumn(view, "_gametype", "GT", "Gametype", 40, idx);
-
+      AddColumn(view, "_gametype", "GT", "Gametype", 40, idx)
+        .OptionsFilter.AutoFilterCondition = AutoFilterCondition.Default;
+      
       view.Columns["ServerInfo.Extra.Keywords"].Visible = false;
 
       idx = view.Columns["ServerInfo.Map"].VisibleIndex;

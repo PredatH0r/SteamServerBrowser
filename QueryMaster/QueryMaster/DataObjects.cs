@@ -79,7 +79,7 @@ namespace QueryMaster
         /// <summary>
         /// Round-trip delay time.
         /// </summary>
-        public long Ping { get; internal set; }
+        public long Ping { get; set; }
         /// <summary>
         /// Additional information provided by server.
         /// </summary>

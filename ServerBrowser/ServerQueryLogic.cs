@@ -75,6 +75,8 @@ namespace ServerBrowser
       #region Get/SetDataModified()
 
       private int DataModified; // bool, but there is no Interlocked.Exchange(bool)
+      public bool KeepPreviousPing { get; set; }
+      public int BatchNumber { get; set; }
 
       public void SetDataModified()
       {
@@ -111,14 +113,13 @@ namespace ServerBrowser
     #endregion
 
     #region Servers
-    public List<ServerRow> Servers { get { return this.allServers; } }
+    public List<ServerRow> Servers => this.allServers;
+
     #endregion
 
     #region IsUpdating
-    public bool IsUpdating
-    {
-      get { return this.currentRequest.PendingTasks == null || !this.currentRequest.PendingTasks.IsSet; }
-    }
+    public bool IsUpdating => this.currentRequest.PendingTasks?.IsSet ?? true;
+
     #endregion
 
     #region GetAndResetDataModified()
@@ -157,34 +158,36 @@ namespace ServerBrowser
 
       string statusText;
       if (endPoints == null)
-        statusText = "Master server request timed out";
+      {
+        statusText = $"Master server request timed out after returning {request.receivedServerCount} servers (clients are limited to receive 30 packets per minute)";
+        if (request.receivedServerCount > 0)
+          this.AllServersReceived(request);
+      }
       else
       {
-        statusText = "Requesting next batch of server list...";
+        statusText = $"Requesting batch {++request.BatchNumber} of server list...";
         foreach (var ep in endPoints)
         {
           if (request.IsCancelled)
             return;
           if (ep.Address.Equals(IPAddress.Any))
           {
-            statusText = "Master server returned " + request.Servers.Count + " servers";
+            statusText = $"Master server returned {request.Servers.Count} servers";
             this.AllServersReceived(request);
           }
-          else if (request.receivedServerCount >= request.MaxResults)
+          else if (++request.receivedServerCount >= request.MaxResults)
           {
-            statusText = "Server list limited to " + request.MaxResults + " entries";
+            statusText = $"Server list limited to {request.MaxResults} entries";
             this.AllServersReceived(request);
             break;
           }
           else if (request.GameExtension.AcceptGameServer(ep))
             request.Servers.Add(new ServerRow(ep, request.GameExtension));
-          ++request.receivedServerCount;
         }
       }
 
       request.SetDataModified();
-      if (this.UpdateStatus != null)
-        this.UpdateStatus(this, new TextEventArgs(statusText));
+      this.UpdateStatus?.Invoke(this, new TextEventArgs(statusText));
     }
     #endregion
 
@@ -253,18 +256,18 @@ namespace ServerBrowser
       else if (request.TasksWithRetries > request.TaskCount / 3)
         this.sendFirstUdpPacketTwice = true;
 
-      if (this.ReloadServerListComplete != null)
-        this.ReloadServerListComplete(this, new ServerListEventArgs(request.Servers));      
+      this.ReloadServerListComplete?.Invoke(this, new ServerListEventArgs(request.Servers));
     }
     #endregion
 
     // refresh single server
 
     #region RefreshSingleServer()
-    public void RefreshSingleServer(ServerRow row)
+    public void RefreshSingleServer(ServerRow row, bool updatePing = true)
     {
       row.Status = "updating...";
       this.currentRequest = new UpdateRequest(this.currentRequest.AppId, 1, this.currentRequest.Timeout, this.currentRequest.GameExtension);
+      this.currentRequest.KeepPreviousPing = !updatePing;
       this.currentRequest.PendingTasks = new CountdownEvent(1);
       ThreadPool.QueueUserWorkItem(dummy => this.UpdateServerAndDetails(this.currentRequest, row, true));
     }
@@ -287,8 +290,11 @@ namespace ServerBrowser
           server.SendFirstPacketTwice = this.sendFirstUdpPacketTwice;
           server.Retries = 3;
           status = "timeout";
+          var oldPing = row.ServerInfo?.Ping ?? 0;
           if (this.UpdateServerInfo(request, row, server))
           {
+            if (request.KeepPreviousPing && row.ServerInfo != null)
+              row.ServerInfo.Ping = oldPing; // keep old ping so that the row isn't immediately resorted and moved
             this.UpdatePlayers(request, row, server);
             this.UpdateRules(request, row, server);
             status = "ok";
@@ -305,8 +311,8 @@ namespace ServerBrowser
         row.Update();
         request.SetDataModified();
 
-        if (fireRefreshSingleServerComplete && this.RefreshSingleServerComplete != null)
-          this.RefreshSingleServerComplete(this, new ServerEventArgs(row));          
+        if (fireRefreshSingleServerComplete)
+          this.RefreshSingleServerComplete?.Invoke(this, new ServerEventArgs(row));          
       }
       finally
       {
@@ -322,7 +328,7 @@ namespace ServerBrowser
       bool ok = ExecuteUpdate(request, row, server, retryCallback =>
       {
         row.ServerInfo = server.GetInfo(retryCallback);
-        var gameId = row.ServerInfo.Extra != null ? row.ServerInfo.Extra.GameId : 0;
+        var gameId = row.ServerInfo.Extra?.GameId ?? 0;
         if (gameId == 0) gameId = row.ServerInfo.Id;
         if (gameId == 0) gameId = (int)request.AppId;
         var extension = this.gameExtensions.Get((Game)gameId);

@@ -195,11 +195,7 @@
     <EmbeddedResource Include="SkinPicker.resx">
       <DependentUpon>SkinPicker.cs</DependentUpon>
     </EmbeddedResource>
-    <None Include="amd64\libsodium.so" />
-    <None Include="amd64\libzmq.so" />
     <None Include="app.config" />
-    <None Include="i386\libsodium.so" />
-    <None Include="i386\libzmq.so" />
     <None Include="packages.config" />
     <None Include="Properties\DataSources\Form1.ServerRow.datasource" />
     <None Include="Properties\DataSources\QueryMaster.Player.datasource" />
@@ -234,12 +230,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="DLL\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="amd64\libsodium.dll" />
-    <Content Include="amd64\libzmq.dll" />
-    <Content Include="i386\libsodium.dll" />
-    <Content Include="i386\libzmq.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

@@ -50,7 +50,6 @@ namespace ServerBrowser
     private int ignoreUiEvents;
     private readonly CheckEdit[] favGameRadioButtons;
     private readonly List<Game> gameIdForComboBoxIndex = new List<Game>();
-    private const int MaxResults = 500;
     private readonly PasswordForm passwordForm = new PasswordForm();
     private int showAddressMode;
     private readonly ServerQueryLogic queryLogic;
@@ -148,11 +147,14 @@ namespace ServerBrowser
       Properties.Settings.Default.GetEmptyServers = this.cbGetEmpty.Checked;
       Properties.Settings.Default.GetFullServers = this.cbGetFull.Checked;
 
-      Properties.Settings.Default.Skin = DevExpress.LookAndFeel.UserLookAndFeel.Default.SkinName;      
+      Properties.Settings.Default.Skin = UserLookAndFeel.Default.SkinName;      
       Properties.Settings.Default.ShowOptions = this.cbAdvancedOptions.Checked;
       Properties.Settings.Default.ShowAddressMode = this.showAddressMode;
       Properties.Settings.Default.RefreshInterval = Convert.ToInt32(this.spinRefreshInterval.EditValue);
       Properties.Settings.Default.RefreshSelected = this.cbRefreshSelectedServer.Checked;
+      Properties.Settings.Default.MasterServerQueryLimit = Convert.ToInt32(this.comboQueryLimit.Text);
+      Properties.Settings.Default.AutoUpdateList = this.cbUpdateList.Checked;
+      Properties.Settings.Default.AutoUpdateInfo = this.cbUpdateInformation.Checked;
 
       var sb = new StringBuilder();
       foreach (var fav in this.favServers)
@@ -280,6 +282,9 @@ namespace ServerBrowser
       this.txtTagExclude.Text = Properties.Settings.Default.TagsExclude;
       this.txtMod.Text = Properties.Settings.Default.FilterMod;
       this.txtMap.Text = Properties.Settings.Default.FilterMap;
+      this.comboQueryLimit.Text = Properties.Settings.Default.MasterServerQueryLimit.ToString();
+      this.cbUpdateList.Checked = Properties.Settings.Default.AutoUpdateList;
+      this.cbUpdateInformation.Checked = Properties.Settings.Default.AutoUpdateInfo;
 
       // load favorite servers
       foreach (var server in Properties.Settings.Default.FavServers.Split(','))
@@ -420,6 +425,7 @@ namespace ServerBrowser
     }
     #endregion
 
+
     #region ReloadServerList()
     protected void ReloadServerList()
     {
@@ -447,9 +453,22 @@ namespace ServerBrowser
         filter.Nor.Sv_Tags = this.ParseTags(this.txtTagExclude.Text);
       }
       this.CustomizeFilter(filter);
-      queryLogic.ReloadServerList(this.serverSource, 500, MaxResults, region, filter);
+      queryLogic.ReloadServerList(this.serverSource, 500, int.Parse(this.comboQueryLimit.Text), region, filter);
     }
     #endregion
+
+    #region RefreshServerInfo()
+    private void RefreshServerInfo()
+    {
+      if (this.queryLogic.IsUpdating)
+        return;
+      this.timerReloadServers.Stop();
+      this.queryLogic.RefreshAllServers(this.servers);
+      if (this.spinRefreshInterval.Value > 0)
+        this.timerReloadServers.Start();
+    }
+    #endregion
+
 
     #region CustomizeFilter()
     protected virtual void CustomizeFilter(IpFilter filter)
@@ -808,12 +827,7 @@ namespace ServerBrowser
     #region btnQuickRefresh_Click
     private void btnQuickRefresh_Click(object sender, EventArgs e)
     {
-      if (this.queryLogic.IsUpdating)
-        return;
-      this.timerReloadServers.Stop();
-      this.queryLogic.RefreshAllServers(this.servers);
-      if (this.spinRefreshInterval.Value > 0)
-        this.timerReloadServers.Start();
+      this.RefreshServerInfo();
     }
     #endregion
 
@@ -951,13 +965,22 @@ namespace ServerBrowser
     #region timerReloadServers_Tick
     private void timerReloadServers_Tick(object sender, EventArgs e)
     {
-      this.ReloadServerList();
+      if (this.spinRefreshInterval.Value == 0)
+        return;
+      if (this.cbUpdateList.Checked)
+        this.ReloadServerList();
+      else if (this.cbUpdateInformation.Checked)
+        this.RefreshServerInfo();
     }
     #endregion
 
     #region timerUpdateServerList_Tick
     private void timerUpdateServerList_Tick(object sender, EventArgs e)
     {
+      // CS:GO and other huge games may return more data than can be queried in one interval
+      if (this.queryLogic.IsUpdating) 
+        return;
+
       this.timerUpdateServerList.Stop();
       try
       {
@@ -1057,7 +1080,7 @@ namespace ServerBrowser
 
         if (row != null && this.cbRefreshSelectedServer.Checked && !this.queryLogic.IsUpdating)
         {
-          this.queryLogic.RefreshSingleServer(row);
+          this.queryLogic.RefreshSingleServer(row, false);
           if (row.GeoInfo == null)
             this.geoIpClient.Lookup(row.EndPoint.Address, geoInfo => this.GeoIpReceived(row, geoInfo));
         }

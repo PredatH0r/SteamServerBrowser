@@ -6,6 +6,7 @@ using System.Threading;
 using System.Windows.Forms;
 using DevExpress.Data;
 using DevExpress.Utils.Drawing.Helpers;
+using DevExpress.XtraGrid.Columns;
 using DevExpress.XtraGrid.Views.Grid;
 using ZeroMQ;
 using ZeroMQ.Monitoring;
@@ -26,7 +27,9 @@ namespace ServerBrowser
       var colDescription = view.Columns["ServerInfo.Description"];
       var idx = colDescription.VisibleIndex;
       //colDescription.Visible = false;
-      AddColumn(view, "_gametype", "GT", "Gametype", 40, idx);
+      AddColumn(view, "_gametype", "GT", "Gametype", 40, idx)
+        .OptionsFilter.AutoFilterCondition = AutoFilterCondition.Default;
+
 
       idx = view.Columns["ServerInfo.Ping"].VisibleIndex;
       AddColumn(view, "_goalscore", "SL", "Score Limit", 30, idx, UnboundColumnType.Integer);
