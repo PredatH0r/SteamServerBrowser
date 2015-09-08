@@ -267,6 +267,7 @@ namespace ServerBrowser
       this.colValue.Caption = "Value";
       this.colValue.FieldName = "Item2";
       this.colValue.Name = "colValue";
+      this.colValue.UnboundType = DevExpress.Data.UnboundColumnType.Object;
       this.colValue.Visible = true;
       this.colValue.VisibleIndex = 1;
       this.colValue.Width = 150;
@@ -1165,7 +1166,7 @@ namespace ServerBrowser
       // 
       // panelContainer1
       // 
-      this.panelContainer1.ActiveChild = this.panelPlayers;
+      this.panelContainer1.ActiveChild = this.panelServerDetails;
       this.panelContainer1.Controls.Add(this.panelPlayers);
       this.panelContainer1.Controls.Add(this.panelServerDetails);
       this.panelContainer1.Controls.Add(this.panelRules);

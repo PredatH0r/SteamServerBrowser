@@ -1,6 +1,7 @@
 1.16
 ---
 - added local Geo-IP cache for game server location information
+- fix: application error when clicking on the column filter icon in the server details or rules tab
 
 1.15
 ---

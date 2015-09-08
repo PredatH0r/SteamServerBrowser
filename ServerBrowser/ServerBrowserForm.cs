@@ -551,7 +551,7 @@ namespace ServerBrowser
         foreach (var prop in props)
         {
           if (prop.Name != "Extra" && prop.Name != "Item" && prop.Name != "ShipInfo")
-            result.Add(new Tuple<string, object>(prop.Name.ToLower(), prop.GetValue(obj, null)));
+            result.Add(new Tuple<string, object>(prop.Name.ToLower(), prop.GetValue(obj, null)?.ToString()));
         }
       }
       return result;
@@ -1274,6 +1274,7 @@ namespace ServerBrowser
 
     // remote console
 
+    #region txtRconCommand_KeyDown
     private void txtRconCommand_KeyDown(object sender, KeyEventArgs e)
     {
       if (e.KeyData == Keys.Enter || e.KeyData == Keys.Return)
@@ -1290,12 +1291,14 @@ namespace ServerBrowser
         e.Handled = true;
       }
     }
+    #endregion
 
+    #region SendRconCommand()
     private void SendRconCommand(ServerRow row, int port, string pass, string text)
     {
       if (row.GameExtension != null)
         row.GameExtension.Rcon(row, port, pass, text);
     }
-
+    #endregion
   }
 }
