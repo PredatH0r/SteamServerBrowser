@@ -2,9 +2,11 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading;
+using System.Windows.Forms;
 
 namespace ServerBrowser
 {
@@ -13,7 +15,7 @@ namespace ServerBrowser
     private const int ThreadCount = 7;
     private const string DefaultServiceUrlFormat = "http://freegeoip.net/csv/{0}";
     /// <summary>
-    /// the cache holds either a string with the 2-letter country ISO code, a simple callback delegate, or a multicast callback delegate
+    /// the cache holds either a GeoInfo object, or a multicast callback delegate waiting for a GeoInfo object
     /// </summary>
     private readonly Dictionary<uint,object> cache = new Dictionary<uint, object>();
     private readonly BlockingCollection<IPAddress> queue = new BlockingCollection<IPAddress>();
@@ -110,6 +112,56 @@ namespace ServerBrowser
     }
     #endregion
 
+    private string CacheFile => Path.Combine(Application.LocalUserAppDataPath, "locations.txt");
+
+    #region LoadCache()
+    public void LoadCache()
+    {
+      var path = this.CacheFile;
+      if (!File.Exists(path))
+        return;
+      foreach (var line in File.ReadAllLines(path))
+      {
+        try
+        {
+          var parts = line.Split(new [] {'='}, 2);
+          uint ipInt = 0;
+          var octets = parts[0].Split('.');
+          foreach (var octet in octets)
+            ipInt = (ipInt << 8) + uint.Parse(octet);
+          var loc = parts[1].Split('|');
+          cache[ipInt] = new GeoInfo(loc[0], loc[1], loc[2], loc[3], loc[4], decimal.Parse(loc[5], NumberFormatInfo.InvariantInfo), decimal.Parse(loc[6], NumberFormatInfo.InvariantInfo));
+        }
+        catch
+        {
+        }
+      }
+    }
+    #endregion
+
+    #region SaveCache()
+    public void SaveCache()
+    {
+      try
+      {
+        var sb = new StringBuilder();
+        lock (this.cache)
+        {
+          foreach (var entry in this.cache)
+          {
+            var ip = entry.Key;
+            var info = entry.Value as GeoInfo;
+            if (info == null) continue;
+            sb.AppendFormat("{0}.{1}.{2}.{3}={4}|{5}|{6}|{7}|{8}|{9}|{10}\n",
+              ip >> 24, (ip >> 16) & 0xFF, (ip >> 8) & 0xFF, ip & 0xFF,
+              info.Iso2, info.Country, info.State, info.Region, info.City, info.Latitude, info.Longitude);
+          }
+        }
+        File.WriteAllText(this.CacheFile, sb.ToString());
+      }
+      catch { }
+    }
+    #endregion
   }
 
   #region class GeoInfo

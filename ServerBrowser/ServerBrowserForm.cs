@@ -120,6 +120,8 @@ namespace ServerBrowser
       --this.ignoreUiEvents;
       this.serverSource = this.CreateServerSource();
 
+      this.geoIpClient.LoadCache();
+
       this.ReloadServerList();      
     }
     #endregion
@@ -129,6 +131,7 @@ namespace ServerBrowser
     {
       this.SaveAppSettings();
       this.queryLogic.Cancel();
+      this.geoIpClient.SaveCache();
       base.OnFormClosing(e);
     }
     #endregion
@@ -475,6 +478,9 @@ namespace ServerBrowser
       this.servers = this.PreFilterServers(this.queryLogic.Servers);
       ++ignoreUiEvents;
       this.gvServers.BeginDataUpdate();
+
+      this.LookupGeoIps();
+
       this.gcServers.DataSource = servers;
       this.gvServers.EndDataUpdate();
 
@@ -638,6 +644,7 @@ namespace ServerBrowser
     #region LookupGeoIps()
     private void LookupGeoIps()
     {
+      if (this.servers == null) return;
       foreach (var server in this.servers)
       {
         if (server.GeoInfo != null)
@@ -678,8 +685,6 @@ namespace ServerBrowser
         this.alertControl1.Show(this, "Steam Server Browser", DateTime.Now.ToString("HH:mm:ss") + ": Found " + this.gvServers.RowCount + " server(s) matching your criteria.", 
           this.imageCollection.Images[2]);
       }
-
-      this.LookupGeoIps();
     }
     #endregion
 
@@ -953,13 +958,13 @@ namespace ServerBrowser
     #region timerUpdateServerList_Tick
     private void timerUpdateServerList_Tick(object sender, EventArgs e)
     {
-      int geoIpMod = Interlocked.Exchange(ref this.geoIpModified, 0);
-      if (!this.queryLogic.GetAndResetDataModified() && geoIpMod == 0)
-        return;
-
       this.timerUpdateServerList.Stop();
       try
       {
+        int geoIpMod = Interlocked.Exchange(ref this.geoIpModified, 0);
+        if (!this.queryLogic.GetAndResetDataModified() && geoIpMod == 0)
+          return;
+
         this.UpdateViews();
       }
       finally

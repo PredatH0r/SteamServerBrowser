@@ -1,6 +1,11 @@
+1.16
+---
+- added local Geo-IP cache for game server location information
+
 1.15
 ---
-- Reflex: simulating keystrokes to connect to a server (steam://connect/ip:port is currently not working)
+- Reflex: simulating keystrokes to connect to a server
+  (Reflex 0.36.x currently doesn't support steam://connect/ip:port URLs)
 
 1.14
 ---

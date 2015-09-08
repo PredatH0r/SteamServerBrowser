@@ -1343,7 +1343,7 @@ namespace ServerBrowser
       // 
       this.btnQueryMaster.ImageIndex = 0;
       this.btnQueryMaster.ImageList = this.imageCollection;
-      this.btnQueryMaster.Location = new System.Drawing.Point(1071, 13);
+      this.btnQueryMaster.Location = new System.Drawing.Point(939, 54);
       this.btnQueryMaster.Name = "btnQueryMaster";
       this.btnQueryMaster.Size = new System.Drawing.Size(115, 25);
       this.btnQueryMaster.TabIndex = 20;
@@ -1507,7 +1507,7 @@ namespace ServerBrowser
       // 
       this.cbAdvancedOptions.ImageIndex = 4;
       this.cbAdvancedOptions.ImageList = this.imageCollection;
-      this.cbAdvancedOptions.Location = new System.Drawing.Point(939, 54);
+      this.cbAdvancedOptions.Location = new System.Drawing.Point(1071, 9);
       this.cbAdvancedOptions.Name = "cbAdvancedOptions";
       this.cbAdvancedOptions.Size = new System.Drawing.Size(115, 25);
       this.cbAdvancedOptions.TabIndex = 21;
