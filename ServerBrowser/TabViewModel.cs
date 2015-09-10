@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using ChanSort.Api;
 using QueryMaster;
@@ -26,6 +28,7 @@ namespace ServerBrowser
     public int MasterServerQueryLimit { get; set; }
 
     public string GridFilter { get; set; }
+    public MemoryStream ServerGridLayout { get; set; }
     public SourceType Source { get; set; }
     public int ImageIndex => Source == SourceType.Favorites ? 3 : Source == SourceType.CustomList ? 12 : -1;
 
@@ -58,6 +61,7 @@ namespace ServerBrowser
       this.servers = vm.servers;
       this.gameExtension = vm.gameExtension;
       this.GridFilter = vm.GridFilter;
+      this.ServerGridLayout = vm.ServerGridLayout;
     }
     #endregion
 
@@ -75,6 +79,11 @@ namespace ServerBrowser
       this.GetFullServers = ini.GetBool("GetFullServers", true);
       this.MasterServerQueryLimit = ini.GetInt("MasterServerQueryLimit", 500);
       this.GridFilter = ini.GetString("GridFilter");
+
+      var layout = ini.GetString("GridLayout");
+      if (!string.IsNullOrEmpty(layout))
+        this.ServerGridLayout = new MemoryStream(Convert.FromBase64String(layout));
+
       this.gameExtension = pool.Get((Game) this.InitialGameID);
 
       if (this.Source == SourceType.CustomList)
@@ -104,7 +113,8 @@ namespace ServerBrowser
       ini.Append("GetFullServers=").AppendLine(this.GetFullServers ? "1" : "0");
       ini.Append("MasterServerQueryLimit=").Append(this.MasterServerQueryLimit).AppendLine();
       ini.Append("GridFilter=").AppendLine(this.GridFilter);
-
+      if (this.ServerGridLayout != null)
+        ini.Append("GridLayout=").AppendLine(Convert.ToBase64String(this.ServerGridLayout.GetBuffer(), 0, (int) this.ServerGridLayout.Length));
       if (this.Source == SourceType.CustomList)
       {
         ini.Append("Servers=");

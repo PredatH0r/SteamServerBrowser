@@ -286,7 +286,9 @@ namespace ServerBrowser
       this.cbGetEmpty.Checked = vm.GetEmptyServers;
       this.cbGetFull.Checked = vm.GetFullServers;
       this.comboQueryLimit.Text = vm.MasterServerQueryLimit.ToString();
+
       this.gvServers.ActiveFilterString = vm.GridFilter;
+
       UpdatePanelVisibility();
       this.miFindServers.Enabled = vm.Source == TabViewModel.SourceType.MasterServer;
     }
@@ -324,6 +326,7 @@ namespace ServerBrowser
       this.rbUpdateListAndStatus.Checked = opt.AutoUpdateList;
       this.rbUpdateStatusOnly.Checked = opt.AutoUpdateInfo;
       this.cbFavServersOnTop.Checked = opt.KeepFavServersOnTop;
+      this.cbRememberColumnLayout.Checked = opt.ColumnLayoutPerTab;
 
       // load favorite servers
       this.favServers.Clear();
@@ -367,6 +370,7 @@ namespace ServerBrowser
       opt.AutoUpdateInfo = this.rbUpdateStatusOnly.Checked;
       opt.Skin = UserLookAndFeel.Default.SkinName;
       opt.TabIndex = this.tabControl.SelectedTabPageIndex;
+      opt.ColumnLayoutPerTab = this.cbRememberColumnLayout.Checked;
 
       var sb = new StringBuilder();
       foreach (var fav in this.favServers)
@@ -423,7 +427,12 @@ namespace ServerBrowser
       vm.MasterServerQueryLimit = Convert.ToInt32(this.comboQueryLimit.Text);
 
       vm.GridFilter = this.gvServers.ActiveFilterString;
-
+      if (this.cbRememberColumnLayout.Checked)
+      {
+        var strm = new MemoryStream();
+        this.gvServers.SaveLayoutToStream(strm);
+        vm.ServerGridLayout = strm;
+      }
       vm.serverSource = this.CreateServerSource(vm.MasterServer);
       vm.gameExtension = this.extenders.Get((Game)vm.InitialGameID);
     }
@@ -470,8 +479,11 @@ namespace ServerBrowser
       int index = this.gameIdForComboBoxIndex.IndexOf((Game)appId);
       if (index >= 0)
         this.comboGames.SelectedIndex = index;
-      else
+      else if (appId != 0)
         this.comboGames.Text = appId.ToString();
+      else
+        this.comboGames.EditValue = null;        
+      
       --this.ignoreUiEvents;      
     }
     #endregion
@@ -479,12 +491,22 @@ namespace ServerBrowser
     #region InitGameExtension()
     private void InitGameExtension()
     {
-      this.viewModel.gameExtension = this.extenders.Get((Game)this.viewModel.InitialGameID);
+      var ext = this.extenders.Get((Game) this.viewModel.InitialGameID);
+      if (ext != this.viewModel.gameExtension)
+      {
+        this.viewModel.ServerGridLayout = null;
+        this.viewModel.gameExtension = ext;
+      }
 
       this.gvServers.BeginUpdate();
       this.ResetGridColumns(this.gvServers);
       this.viewModel.gameExtension.CustomizeServerGridColumns(gvServers);
       this.gvServers.EndUpdate();
+      if (viewModel.ServerGridLayout != null && this.cbRememberColumnLayout.Checked)
+      {
+        viewModel.ServerGridLayout.Seek(0, SeekOrigin.Begin);
+        this.gvServers.RestoreLayoutFromStream(viewModel.ServerGridLayout);
+      }
 
       this.gvPlayers.BeginUpdate();
       this.ResetGridColumns(this.gvPlayers);
@@ -1520,6 +1542,7 @@ namespace ServerBrowser
       if (this.ignoreUiEvents > 0) return;
       this.SetViewModel((TabViewModel)e.Page.Tag);
       this.UpdateViews(true);
+
       if (this.viewModel.servers == null)
         this.ReloadServerList();
       else if (this.viewModel.Source != TabViewModel.SourceType.MasterServer)

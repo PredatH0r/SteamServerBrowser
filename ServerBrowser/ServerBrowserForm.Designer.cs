@@ -150,6 +150,7 @@ namespace ServerBrowser
       this.linkFilter1 = new DevExpress.XtraEditors.HyperlinkLabelControl();
       this.timerUpdateServerList = new System.Windows.Forms.Timer(this.components);
       this.panelOptions = new DevExpress.XtraEditors.PanelControl();
+      this.cbRememberColumnLayout = new DevExpress.XtraEditors.CheckEdit();
       this.rbUpdateStatusOnly = new DevExpress.XtraEditors.CheckEdit();
       this.cbFavServersOnTop = new DevExpress.XtraEditors.CheckEdit();
       this.rbAddressGamePort = new DevExpress.XtraEditors.CheckEdit();
@@ -222,6 +223,7 @@ namespace ServerBrowser
       this.tabControl.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.panelOptions)).BeginInit();
       this.panelOptions.SuspendLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.cbRememberColumnLayout.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.rbUpdateStatusOnly.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbFavServersOnTop.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.rbAddressGamePort.Properties)).BeginInit();
@@ -1511,7 +1513,7 @@ namespace ServerBrowser
       // cbRefreshSelectedServer
       // 
       this.cbRefreshSelectedServer.EditValue = true;
-      this.cbRefreshSelectedServer.Location = new System.Drawing.Point(350, 71);
+      this.cbRefreshSelectedServer.Location = new System.Drawing.Point(350, 53);
       this.cbRefreshSelectedServer.Name = "cbRefreshSelectedServer";
       this.cbRefreshSelectedServer.Properties.AutoWidth = true;
       this.cbRefreshSelectedServer.Properties.Caption = "Update status when selecting a server";
@@ -1626,6 +1628,8 @@ namespace ServerBrowser
       this.comboGames.Properties.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
             new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)});
       this.comboGames.Properties.DropDownRows = 30;
+      this.comboGames.Properties.NullValuePrompt = "Select game or enter numeric Steam AppID";
+      this.comboGames.Properties.NullValuePromptShowForEmptyValue = true;
       this.comboGames.Size = new System.Drawing.Size(268, 20);
       this.comboGames.TabIndex = 5;
       this.comboGames.SelectedIndexChanged += new System.EventHandler(this.comboGames_SelectedIndexChanged);
@@ -1809,6 +1813,7 @@ namespace ServerBrowser
       // panelOptions
       // 
       this.panelOptions.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.NoBorder;
+      this.panelOptions.Controls.Add(this.cbRememberColumnLayout);
       this.panelOptions.Controls.Add(this.rbUpdateStatusOnly);
       this.panelOptions.Controls.Add(this.cbFavServersOnTop);
       this.panelOptions.Controls.Add(this.rbAddressGamePort);
@@ -1830,6 +1835,16 @@ namespace ServerBrowser
       this.panelOptions.TabIndex = 1;
       this.panelOptions.Visible = false;
       // 
+      // cbRememberColumnLayout
+      // 
+      this.cbRememberColumnLayout.Location = new System.Drawing.Point(350, 71);
+      this.cbRememberColumnLayout.Name = "cbRememberColumnLayout";
+      this.cbRememberColumnLayout.Properties.AutoWidth = true;
+      this.cbRememberColumnLayout.Properties.Caption = "Remember column layout for each tab";
+      this.cbRememberColumnLayout.Size = new System.Drawing.Size(204, 19);
+      this.cbRememberColumnLayout.TabIndex = 18;
+      this.cbRememberColumnLayout.ToolTip = "When enabled, you can have different column widths in different tabs.";
+      // 
       // rbUpdateStatusOnly
       // 
       this.rbUpdateStatusOnly.Location = new System.Drawing.Point(136, 52);
@@ -1844,7 +1859,7 @@ namespace ServerBrowser
       // 
       // cbFavServersOnTop
       // 
-      this.cbFavServersOnTop.Location = new System.Drawing.Point(350, 51);
+      this.cbFavServersOnTop.Location = new System.Drawing.Point(350, 33);
       this.cbFavServersOnTop.Name = "cbFavServersOnTop";
       this.cbFavServersOnTop.Properties.AutoWidth = true;
       this.cbFavServersOnTop.Properties.Caption = "Keep my favorite servers on top";
@@ -2149,6 +2164,7 @@ namespace ServerBrowser
       ((System.ComponentModel.ISupportInitialize)(this.panelOptions)).EndInit();
       this.panelOptions.ResumeLayout(false);
       this.panelOptions.PerformLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.cbRememberColumnLayout.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.rbUpdateStatusOnly.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbFavServersOnTop.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.rbAddressGamePort.Properties)).EndInit();
@@ -2319,5 +2335,6 @@ namespace ServerBrowser
     private DevExpress.XtraBars.BarSubItem mnuTabs;
     private DevExpress.XtraBars.BarSubItem mnuServer;
     private DevExpress.XtraBars.BarSubItem mnuUpdate;
+    protected CheckEdit cbRememberColumnLayout;
   }
 }

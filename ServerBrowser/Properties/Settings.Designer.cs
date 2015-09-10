@@ -299,5 +299,17 @@ namespace ServerBrowser.Properties {
                 this["TabIndex"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ColumnLayoutPerTab {
+            get {
+                return ((bool)(this["ColumnLayoutPerTab"]));
+            }
+            set {
+                this["ColumnLayoutPerTab"] = value;
+            }
+        }
     }
 }
