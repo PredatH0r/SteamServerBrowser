@@ -10,7 +10,7 @@ namespace ServerBrowser
 {
   public static class Program
   {
-    private const string Version = "1.17";
+    private const string Version = "2.0";
 
     [STAThread]
     public static void Main()

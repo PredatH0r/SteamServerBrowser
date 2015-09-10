@@ -161,20 +161,22 @@ namespace ChanSort.Api
           }
           if (currentSection == null)
             continue;
+
+          int idx = -1;
           if (val == null)
           {
-            int idx = trimmedLine.IndexOf("=");
+            idx = trimmedLine.IndexOf("=");
             if (idx < 0)
               continue;
             key = trimmedLine.Substring(0, idx).Trim();
-            val = trimmedLine.Substring(idx + 1).Trim();
+            val = "";
           }
-          else
-            val += line;
-          if (val.EndsWith("\\"))
-            val = val.Substring(val.Length - 1).Trim();
+                      
+          if (line.EndsWith("\\"))
+            val += line.Substring(idx + 1, line.Length - idx - 1 - 1).Trim() + "\n";
           else
           {
+            val += line.Substring(idx + 1).Trim();
             currentSection.Set(key, val);
             val = null;
           }

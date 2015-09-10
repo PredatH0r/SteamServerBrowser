@@ -203,7 +203,7 @@ namespace ServerBrowser
       ThreadPool.QueueUserWorkItem(ctx => this.AllServersReceived(request));
     }
     #endregion
-
+    
     #region AllServersReceived()
     private void AllServersReceived(UpdateRequest request)
     {

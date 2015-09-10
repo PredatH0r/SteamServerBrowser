@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text;
 using ChanSort.Api;
+using QueryMaster;
 
 namespace ServerBrowser
 {
@@ -11,6 +12,8 @@ namespace ServerBrowser
     internal ServerRow currentServer;
     internal IServerSource serverSource;
     internal GameExtension gameExtension;
+
+    public enum SourceType { MasterServer, CustomList, Favorites }
 
     public string MasterServer { get; set; }
     public int InitialGameID { get; set; }
@@ -23,6 +26,8 @@ namespace ServerBrowser
     public int MasterServerQueryLimit { get; set; }
 
     public string GridFilter { get; set; }
+    public SourceType Source { get; set; }
+    public int ImageIndex => Source == SourceType.Favorites ? 3 : Source == SourceType.CustomList ? 12 : -1;
 
     public TabViewModel()
     {
@@ -48,6 +53,7 @@ namespace ServerBrowser
       if (vm == null)
         return;
 
+      this.Source = vm.Source;
       this.serverSource = vm.serverSource;
       this.servers = vm.servers;
       this.gameExtension = vm.gameExtension;
@@ -56,8 +62,9 @@ namespace ServerBrowser
     #endregion
 
     #region LoadFromIni()
-    public void LoadFromIni(IniFile.Section ini)
+    public void LoadFromIni(IniFile.Section ini, GameExtensionPool pool)
     {
+      this.Source = (SourceType) ini.GetInt("Type");
       this.MasterServer = ini.GetString("MasterServer") ?? "hl2master.steampowered.com:27011";
       this.InitialGameID = ini.GetInt("InitialGameID");
       this.FilterMod = ini.GetString("FilterMod");
@@ -68,12 +75,25 @@ namespace ServerBrowser
       this.GetFullServers = ini.GetBool("GetFullServers", true);
       this.MasterServerQueryLimit = ini.GetInt("MasterServerQueryLimit", 500);
       this.GridFilter = ini.GetString("GridFilter");
+      this.gameExtension = pool.Get((Game) this.InitialGameID);
+
+      if (this.Source == SourceType.CustomList)
+      {
+        this.servers = new List<ServerRow>();
+        foreach (var server in ini.GetString("Servers").Split('\n', ' '))
+        {
+          var s = server.Trim();
+          if (s == "") continue;
+          this.servers.Add(new ServerRow(Ip4Utils.ParseEndpoint(s), this.gameExtension));
+        }
+      }
     }
     #endregion
 
     #region WriteToIni()
     public void WriteToIni(StringBuilder ini)
     {
+      ini.Append("Type=").Append((int) this.Source).AppendLine();
       ini.Append("MasterServer=").AppendLine(this.MasterServer);
       ini.Append("InitialGameID=").Append(this.InitialGameID).AppendLine();
       ini.Append("FilterMod=").AppendLine(this.FilterMod);
@@ -84,6 +104,14 @@ namespace ServerBrowser
       ini.Append("GetFullServers=").AppendLine(this.GetFullServers ? "1" : "0");
       ini.Append("MasterServerQueryLimit=").Append(this.MasterServerQueryLimit).AppendLine();
       ini.Append("GridFilter=").AppendLine(this.GridFilter);
+
+      if (this.Source == SourceType.CustomList)
+      {
+        ini.Append("Servers=");
+        foreach (var row in this.servers)
+          ini.Append("\\\n ").Append(row.EndPoint);
+        ini.AppendLine();
+      }
     }
     #endregion
   }
