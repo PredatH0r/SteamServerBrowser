@@ -22,6 +22,8 @@ namespace ServerBrowser
     public bool GetFullServers { get; set; }
     public int MasterServerQueryLimit { get; set; }
 
+    public string GridFilter { get; set; }
+
     public TabViewModel()
     {
       this.GetEmptyServers = true;
@@ -41,6 +43,15 @@ namespace ServerBrowser
       this.GetEmptyServers = opt.GetEmptyServers;
       this.GetFullServers = opt.GetFullServers;
       this.MasterServerQueryLimit = opt.MasterServerQueryLimit;
+
+      var vm = opt as TabViewModel;
+      if (vm == null)
+        return;
+
+      this.serverSource = vm.serverSource;
+      this.servers = vm.servers;
+      this.gameExtension = vm.gameExtension;
+      this.GridFilter = vm.GridFilter;
     }
     #endregion
 
@@ -56,9 +67,11 @@ namespace ServerBrowser
       this.GetEmptyServers = ini.GetBool("GetEmptyServers", true);
       this.GetFullServers = ini.GetBool("GetFullServers", true);
       this.MasterServerQueryLimit = ini.GetInt("MasterServerQueryLimit", 500);
+      this.GridFilter = ini.GetString("GridFilter");
     }
     #endregion
 
+    #region WriteToIni()
     public void WriteToIni(StringBuilder ini)
     {
       ini.Append("MasterServer=").AppendLine(this.MasterServer);
@@ -70,6 +83,8 @@ namespace ServerBrowser
       ini.Append("GetEmptyServers=").AppendLine(this.GetEmptyServers ? "1" : "0");
       ini.Append("GetFullServers=").AppendLine(this.GetFullServers ? "1" : "0");
       ini.Append("MasterServerQueryLimit=").Append(this.MasterServerQueryLimit).AppendLine();
+      ini.Append("GridFilter=").AppendLine(this.GridFilter);
     }
+    #endregion
   }
 }

@@ -97,6 +97,7 @@ namespace ServerBrowser
     private bool sendFirstUdpPacketTwice;
 
     public event EventHandler<TextEventArgs> UpdateStatus;
+    public event EventHandler ServerListReceived;
     public event EventHandler<ServerListEventArgs> ReloadServerListComplete;
     public event EventHandler<ServerEventArgs> RefreshSingleServerComplete;
 
@@ -223,6 +224,7 @@ namespace ServerBrowser
       }
 
       this.allServers = rows;
+      this.ServerListReceived?.Invoke(this, EventArgs.Empty);
 
       request.TaskCount = rows.Count;
 

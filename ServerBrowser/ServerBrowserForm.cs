@@ -43,6 +43,7 @@ namespace ServerBrowser
     private readonly HashSet<IPEndPoint> favServers = new HashSet<IPEndPoint>();
     private TabViewModel viewModel;
     private readonly string iniFile;
+    private XtraTabPage dragPage;
 
     #region ctor()
     public ServerBrowserForm()
@@ -58,6 +59,7 @@ namespace ServerBrowser
       this.iniFile = Path.Combine(Application.LocalUserAppDataPath, "ServerBrowser.ini");
 
       this.queryLogic.UpdateStatus += (s, e) => this.BeginInvoke((Action)(() => queryLogic_SetStatusMessage(s, e)));
+      this.queryLogic.ServerListReceived += (s, e) => this.BeginInvoke((Action) (() => queryLogic_ServerListReceived()));
       this.queryLogic.ReloadServerListComplete += (s, e) => this.BeginInvoke((Action)(() => { queryLogic_ReloadServerListComplete(e.Rows); }));
       this.queryLogic.RefreshSingleServerComplete += (s, e) => this.BeginInvoke((Action)(() => { queryLogic_RefreshSingleServerComplete(e); }));
 
@@ -98,8 +100,8 @@ namespace ServerBrowser
 
       this.geoIpClient.LoadCache();
 
-      this.ApplyAppSettings();
       this.LoadViewModelsFromIniFile();
+      this.ApplyAppSettings();
 
       LookAndFeel_StyleChanged(null, null);
       --this.ignoreUiEvents;
@@ -183,39 +185,6 @@ namespace ServerBrowser
     }
     #endregion
 
-    #region ApplyAppSettings()
-
-    protected virtual void ApplyAppSettings()
-    {
-      ISettings opt = Settings.Default;
-      // fill master server combobox
-      var masterServers = opt.MasterServerList.Split(',');
-      this.comboMasterServer.Properties.Items.Clear();
-      foreach (var master in masterServers)
-        this.comboMasterServer.Properties.Items.Add(master);
-
-      this.cbAdvancedOptions.Checked = opt.ShowOptions;
-
-      this.rbAddressHidden.Checked = opt.ShowAddressMode == 0;
-      this.rbAddressQueryPort.Checked = opt.ShowAddressMode == 1;
-      this.rbAddressGamePort.Checked = opt.ShowAddressMode == 2;
-      this.cbRefreshSelectedServer.Checked = opt.RefreshSelected;
-      this.spinRefreshInterval.EditValue = (decimal)opt.RefreshInterval;
-      this.cbUpdateList.Checked = opt.AutoUpdateList;
-      this.cbUpdateInformation.Checked = opt.AutoUpdateInfo;
-      this.cbFavServersOnTop.Checked = opt.KeepFavServersOnTop;
-
-      // load favorite servers
-      this.favServers.Clear();
-      foreach (var server in opt.FavServers.Split(','))
-      {
-        if (server == "") continue;
-        var parts = server.Split(':');
-        this.favServers.Add(new IPEndPoint(IPAddress.Parse(parts[0]), int.Parse(parts[1])));
-      }
-    }
-    #endregion
-
     #region LoadViewModelsFromIniFile()
     private void LoadViewModelsFromIniFile()
     {
@@ -256,8 +225,6 @@ namespace ServerBrowser
         this.tabControl.TabPages.Remove(this.tabGame);
       else
         this.tabGame.Tag = new TabViewModel();
-
-      this.SetViewModel((TabViewModel)this.tabControl.TabPages[0].Tag);
     }
     #endregion
 
@@ -277,6 +244,46 @@ namespace ServerBrowser
       this.cbGetEmpty.Checked = vm.GetEmptyServers;
       this.cbGetFull.Checked = vm.GetFullServers;
       this.comboQueryLimit.Text = vm.MasterServerQueryLimit.ToString();
+      this.gvServers.ActiveFilterString = vm.GridFilter;
+    }
+    #endregion
+
+    #region ApplyAppSettings()
+
+    protected virtual void ApplyAppSettings()
+    {
+      var opt = Settings.Default;
+      // fill master server combobox
+      var masterServers = opt.MasterServerList.Split(',');
+      this.comboMasterServer.Properties.Items.Clear();
+      foreach (var master in masterServers)
+        this.comboMasterServer.Properties.Items.Add(master);
+
+      this.miShowOptions.Down = opt.ShowOptions;
+      this.miShowServerQuery.Down = opt.ShowServerQuery;
+
+      this.rbAddressHidden.Checked = opt.ShowAddressMode == 0;
+      this.rbAddressQueryPort.Checked = opt.ShowAddressMode == 1;
+      this.rbAddressGamePort.Checked = opt.ShowAddressMode == 2;
+      this.cbRefreshSelectedServer.Checked = opt.RefreshSelected;
+      this.spinRefreshInterval.EditValue = (decimal)opt.RefreshInterval;
+      this.cbUpdateList.Checked = opt.AutoUpdateList;
+      this.cbUpdateInformation.Checked = opt.AutoUpdateInfo;
+      this.cbFavServersOnTop.Checked = opt.KeepFavServersOnTop;
+
+      // load favorite servers
+      this.favServers.Clear();
+      foreach (var server in opt.FavServers.Split(','))
+      {
+        if (server == "") continue;
+        var parts = server.Split(':');
+        this.favServers.Add(new IPEndPoint(IPAddress.Parse(parts[0]), int.Parse(parts[1])));
+      }
+
+      // select tab page
+      var idx = opt.TabIndex < this.tabControl.TabPages.Count ? opt.TabIndex : 0;
+      this.SetViewModel((TabViewModel)this.tabControl.TabPages[idx].Tag);
+      this.tabControl.SelectedTabPageIndex = idx;
     }
     #endregion
 
@@ -296,7 +303,8 @@ namespace ServerBrowser
     protected virtual void SaveAppSettings()
     {
       var opt = Settings.Default;
-      opt.ShowOptions = this.cbAdvancedOptions.Checked;
+      opt.ShowOptions = this.miShowOptions.Down;
+      opt.ShowServerQuery = this.miShowServerQuery.Down;
       opt.ShowAddressMode = this.showAddressMode;
       opt.RefreshInterval = Convert.ToInt32(this.spinRefreshInterval.EditValue);
       opt.RefreshSelected = this.cbRefreshSelectedServer.Checked;
@@ -304,6 +312,7 @@ namespace ServerBrowser
       opt.AutoUpdateList = this.cbUpdateList.Checked;
       opt.AutoUpdateInfo = this.cbUpdateInformation.Checked;
       opt.Skin = UserLookAndFeel.Default.SkinName;
+      opt.TabIndex = this.tabControl.SelectedTabPageIndex;
 
       var sb = new StringBuilder();
       foreach (var fav in this.favServers)
@@ -319,6 +328,8 @@ namespace ServerBrowser
     #region SaveViewModelsToIniFile()
     private void SaveViewModelsToIniFile()
     {
+      this.UpdateViewModel();
+
       var sb = new StringBuilder();
       int pageNr = 0;
       foreach (XtraTabPage page in this.tabControl.TabPages)
@@ -356,6 +367,8 @@ namespace ServerBrowser
       vm.GetEmptyServers = this.cbGetEmpty.Checked;
       vm.GetFullServers = this.cbGetFull.Checked;
       vm.MasterServerQueryLimit = Convert.ToInt32(this.comboQueryLimit.Text);
+
+      vm.GridFilter = this.gvServers.ActiveFilterString;
 
       vm.serverSource = this.CreateServerSource(vm.MasterServer);
       vm.gameExtension = this.extenders.Get((Game)vm.InitialGameID);
@@ -500,15 +513,8 @@ namespace ServerBrowser
     }
     #endregion
 
-    #region PreFilterServers()
-    protected virtual List<ServerRow> PreFilterServers(List<ServerRow> allServers)
-    {
-      return allServers;
-    }
-    #endregion
-
     #region UpdateViews()
-    protected void UpdateViews()
+    protected void UpdateViews(bool forceUpdateDetails = false)
     {
       ++ignoreUiEvents;
       this.gvServers.BeginDataUpdate();
@@ -538,7 +544,7 @@ namespace ServerBrowser
       --ignoreUiEvents;
 
       var row = (ServerRow)this.gvServers.GetFocusedRow();
-      if (row != null && row.GetAndResetIsModified())
+      if (forceUpdateDetails || row != null && row.GetAndResetIsModified())
         this.UpdateGridDataSources();
     }
     #endregion
@@ -707,11 +713,17 @@ namespace ServerBrowser
     }
     #endregion
 
+    #region queryLogic_ServerListReceived
+    private void queryLogic_ServerListReceived()
+    {
+      this.viewModel.servers = this.queryLogic.Servers;
+      this.UpdateViews();
+    }
+    #endregion
+
     #region queryLogic_ReloadServerListComplete()
     protected virtual void queryLogic_ReloadServerListComplete(List<ServerRow> rows)
     {
-      this.viewModel.servers = this.PreFilterServers(this.queryLogic.Servers);
-
       this.UpdateViews();
       this.SetStatusMessage("Update of " + this.viewModel.servers.Count + " servers complete");
       if (this.gvServers.RowCount > 0 && this.cbAlert.Checked)
@@ -743,7 +755,7 @@ namespace ServerBrowser
       var color = label.Color.ForeColor;      
       color = skin.TranslateColor(color);
       if (color == Color.Transparent)
-        color = this.panelTop.ForeColor;
+        color = this.panelQuery.ForeColor;
       this.linkFilter1.Appearance.LinkColor = this.linkFilter1.Appearance.PressedColor = color;
 
       this.miConnect.ItemAppearance.Normal.Font = new Font(this.miConnect.ItemAppearance.Normal.Font, FontStyle.Bold);
@@ -812,13 +824,6 @@ namespace ServerBrowser
     private void txtTag_ButtonClick(object sender, ButtonPressedEventArgs e)
     {
       ((TextEdit)sender).Text = "";
-    }
-    #endregion
-
-    #region cbAdvancedOptions_CheckedChanged
-    private void cbAdvancedOptions_CheckedChanged(object sender, EventArgs e)
-    {
-      this.panelAdvancedOptions.Visible = this.cbAdvancedOptions.Checked;
     }
     #endregion
 
@@ -937,6 +942,10 @@ namespace ServerBrowser
     {
       if (this.spinRefreshInterval.Value == 0)
         return;
+      // CS:GO and other huge games may return more data than can be queried in one interval
+      if (this.queryLogic.IsUpdating)
+        return;
+
       if (this.cbUpdateList.Checked)
         this.ReloadServerList();
       else if (this.cbUpdateInformation.Checked)
@@ -947,10 +956,6 @@ namespace ServerBrowser
     #region timerUpdateServerList_Tick
     private void timerUpdateServerList_Tick(object sender, EventArgs e)
     {
-      // CS:GO and other huge games may return more data than can be queried in one interval
-      if (this.queryLogic.IsUpdating) 
-        return;
-
       this.timerUpdateServerList.Stop();
       try
       {
@@ -1258,10 +1263,38 @@ namespace ServerBrowser
 
     // main menu
 
-    #region miReloadServers_ItemClick
-    private void miReloadServers_ItemClick(object sender, ItemClickEventArgs e)
+    #region mi*_DownChanged / ItemClick
+
+    private void miShowOptions_DownChanged(object sender, ItemClickEventArgs e)
+    {
+      this.panelOptions.Visible = this.miShowOptions.Down;
+    }
+
+    private void miServerQuery_DownChanged(object sender, ItemClickEventArgs e)
+    {
+      this.panelQuery.Visible = this.miShowServerQuery.Down;
+    }
+
+    private void miFindServers_ItemClick(object sender, ItemClickEventArgs e)
     {
       this.ReloadServerList();
+    }
+
+    private void miQuickRefresh_ItemClick(object sender, ItemClickEventArgs e)
+    {
+      this.RefreshServerInfo();
+    }
+    #endregion
+
+    #region miRenameTab_ItemClick
+    private void miRenameTab_ItemClick(object sender, ItemClickEventArgs e)
+    {
+      using (var dlg = new RenameTabForm())
+      {
+        dlg.Caption = this.tabControl.SelectedTabPage.Text;
+        if (dlg.ShowDialog(this) == DialogResult.OK)
+          this.tabControl.SelectedTabPage.Text = dlg.Caption;
+      }
     }
     #endregion
 
@@ -1303,7 +1336,7 @@ namespace ServerBrowser
       {
         e.Cancel = true;
         var page = new XtraTabPage();
-        page.Text = "Master Server Query " + this.tabControl.TabPages.Count;
+        page.Text = e.PrevPage.Text + " #2";
         page.ShowCloseButton = DefaultBoolean.True;
         var opt = new TabViewModel();
         opt.AssignFrom(this.viewModel);
@@ -1322,7 +1355,7 @@ namespace ServerBrowser
     {
       if (this.ignoreUiEvents > 0) return;
       this.SetViewModel((TabViewModel)e.Page.Tag);
-      this.UpdateViews();
+      this.UpdateViews(true);
       if (this.viewModel.servers == null)
         this.ReloadServerList();
     }
@@ -1342,6 +1375,52 @@ namespace ServerBrowser
           this.tabControl.SelectedTabPageIndex = idx - 1;
       }
       this.tabControl.TabPages.RemoveAt(idx);
+    }
+    #endregion
+
+    #region tabControl_MouseDown
+    private void tabControl_MouseDown(object sender, MouseEventArgs e)
+    {
+      if (e.Button == MouseButtons.Left)
+      {
+        this.dragPage = tabControl.CalcHitInfo(e.Location).Page;
+      }
+      else if (e.Button == MouseButtons.Right)
+      {
+        Point pt = e.Location;
+        XtraTabHitInfo info = this.tabControl.CalcHitInfo(pt);
+        if (info.HitTest == XtraTabHitTest.PageHeader)
+        {
+          if (info.Page == this.tabAdd)
+            return;
+          tabControl.SelectedTabPage = info.Page;
+          menuTab.ShowPopup(tabControl.PointToScreen(pt));
+        }
+      }
+    }
+    #endregion
+
+    #region tabControl_MouseMove
+    private void tabControl_MouseMove(object sender, MouseEventArgs e)
+    {
+      if (dragPage == null)
+        return;
+      this.tabControl.Cursor = Cursors.VSplit;
+      var dropPage = tabControl.CalcHitInfo(e.Location).Page;
+      if (dragPage == dropPage)
+        return;
+      var dragPageIndex = tabControl.TabPages.IndexOf(dragPage);
+      var dropPageIndex = tabControl.TabPages.IndexOf(dropPage);
+      var newIndex = dragPageIndex > dropPageIndex ? dropPageIndex : dropPageIndex + 1;
+      this.tabControl.TabPages.Move(newIndex, dragPage);
+    }
+    #endregion
+
+    #region tabControl_MouseUp
+    private void tabControl_MouseUp(object sender, MouseEventArgs e)
+    {
+      this.tabControl.Cursor = Cursors.Default;
+      dragPage = null;
     }
     #endregion
   }
