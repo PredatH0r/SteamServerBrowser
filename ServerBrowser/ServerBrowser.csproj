@@ -6,7 +6,7 @@
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{6F0E7614-3662-4D81-B680-53B66C089470}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ServerBrowser</RootNamespace>
     <AssemblyName>ServerBrowser.Core</AssemblyName>
@@ -52,8 +52,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>
-    </ApplicationIcon>
+    <ApplicationIcon>App.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject />
@@ -127,6 +126,7 @@
   <ItemGroup>
     <Compile Include="Games\CounterStrikeGO.cs" />
     <Compile Include="GeoIpClient.cs" />
+    <Compile Include="IniFile.cs" />
     <Compile Include="KeyBindForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -142,6 +142,7 @@
     <Compile Include="Games\Reflex.cs" />
     <Compile Include="Games\GameExtension.cs" />
     <Compile Include="PlayerCountInfo.cs" />
+    <Compile Include="ISettings.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
       <DependentUpon>Settings.settings</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -170,6 +171,7 @@
     <Compile Include="Games\QuakeLive.cs" />
     <Compile Include="Games\Toxikk.cs" />
     <Compile Include="Ip4Utils.cs" />
+    <Compile Include="TabViewModel.cs" />
     <Compile Include="Win32.cs" />
     <Compile Include="XWebClient.cs" />
     <EmbeddedResource Include="KeyBindForm.resx">
@@ -230,6 +232,9 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="DLL\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="App.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

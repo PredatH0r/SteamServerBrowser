@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Media;
 using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using ChanSort.Api;
 using DevExpress.Data;
 using DevExpress.LookAndFeel;
 using DevExpress.Utils;
@@ -20,59 +20,42 @@ using DevExpress.XtraEditors.Controls;
 using DevExpress.XtraGrid.Columns;
 using DevExpress.XtraGrid.Views.Base;
 using DevExpress.XtraGrid.Views.Grid;
+using DevExpress.XtraTab;
+using DevExpress.XtraTab.ViewInfo;
 using QueryMaster;
+using ServerBrowser.Properties;
 
 namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    #region Steam Regions
-    private static readonly object[] steamRegions = 
-    {
-      "Worldwide", QueryMaster.Region.Rest_of_the_world,
-      "Africa", QueryMaster.Region.Africa,
-      "Asia", QueryMaster.Region.Asia,
-      "Australia", QueryMaster.Region.Australia,
-      "Asia", QueryMaster.Region.Asia,
-      "Europe", QueryMaster.Region.Europe,
-      "Middle East", QueryMaster.Region.Middle_East,
-      "South America", QueryMaster.Region.South_America,
-      "US East Coast", QueryMaster.Region.US_East_coast,
-      "US West Coast", QueryMaster.Region.US_West_coast
-    };
-    #endregion
-
     private const string DevExpressVersion = "v15.1";
     private const string CustomNumericRuleColumnPrefix = "castRule.";
-    private volatile Game steamAppId;
+
     private readonly GameExtensionPool extenders = new GameExtensionPool();
-    private GameExtension gameExtension;
     private int ignoreUiEvents;
-    private readonly CheckEdit[] favGameRadioButtons;
     private readonly List<Game> gameIdForComboBoxIndex = new List<Game>();
     private readonly PasswordForm passwordForm = new PasswordForm();
     private int showAddressMode;
     private readonly ServerQueryLogic queryLogic;
     private readonly GeoIpClient geoIpClient = new GeoIpClient();
-    private List<ServerRow> servers;
-    private ServerRow lastSelectedServer;
-    private ServerRow currentServer;
-    private IServerSource serverSource;
     private int geoIpModified;
     private readonly HashSet<IPEndPoint> favServers = new HashSet<IPEndPoint>();
+    private TabViewModel viewModel;
+    private readonly string iniFile;
 
     #region ctor()
     public ServerBrowserForm()
     {
       InitializeComponent();
 
-      this.favGameRadioButtons = new[] {rbFavGame1, rbFavGame2, rbFavGame3, rbFavGame4 };
-
       this.InitGameInfoExtenders();
       this.queryLogic = new ServerQueryLogic(this.extenders);
 
       if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
         return;
+
+      this.iniFile = Path.Combine(Application.LocalUserAppDataPath, "ServerBrowser.ini");
 
       this.queryLogic.UpdateStatus += (s, e) => this.BeginInvoke((Action)(() => queryLogic_SetStatusMessage(s, e)));
       this.queryLogic.ReloadServerListComplete += (s, e) => this.BeginInvoke((Action)(() => { queryLogic_ReloadServerListComplete(e.Rows); }));
@@ -107,68 +90,24 @@ namespace ServerBrowser
         return;
 
       ++this.ignoreUiEvents;
-
       this.FillCountryFlags();
       this.FillGameCombo();
-      this.FillSteamServerRegions();
       this.InitGameInfoExtenders();
       this.InitBranding();
       LoadBonusSkins(this.BonusSkinDllPath);
-      this.InitAppSettings();
-      LookAndFeel_StyleChanged(null, null);
-      --this.ignoreUiEvents;
-      this.serverSource = this.CreateServerSource();
 
       this.geoIpClient.LoadCache();
 
+      this.ApplyAppSettings();
+      this.LoadViewModelsFromIniFile();
+
+      LookAndFeel_StyleChanged(null, null);
+      --this.ignoreUiEvents;
+
       this.ReloadServerList();      
     }
-    #endregion
-
-    #region OnFormClosing()
-    protected override void OnFormClosing(FormClosingEventArgs e)
-    {
-      this.SaveAppSettings();
-      this.queryLogic.Cancel();
-      this.geoIpClient.SaveCache();
-      base.OnFormClosing(e);
-    }
-    #endregion
-
-    #region SaveAppSettings()
-    protected virtual void SaveAppSettings()
-    {
-      Properties.Settings.Default.MasterServer = this.comboMasterServer.Text;
-      Properties.Settings.Default.InitialGameID = (int) this.SteamAppID;
-      Properties.Settings.Default.FilterMod = this.txtMod.Text;
-      Properties.Settings.Default.FilterMap = this.txtMap.Text;
-      Properties.Settings.Default.TagsInclude = this.txtTagInclude.Text;
-      Properties.Settings.Default.TagsExclude = this.txtTagExclude.Text;
-      Properties.Settings.Default.GetEmptyServers = this.cbGetEmpty.Checked;
-      Properties.Settings.Default.GetFullServers = this.cbGetFull.Checked;
-
-      Properties.Settings.Default.Skin = UserLookAndFeel.Default.SkinName;      
-      Properties.Settings.Default.ShowOptions = this.cbAdvancedOptions.Checked;
-      Properties.Settings.Default.ShowAddressMode = this.showAddressMode;
-      Properties.Settings.Default.RefreshInterval = Convert.ToInt32(this.spinRefreshInterval.EditValue);
-      Properties.Settings.Default.RefreshSelected = this.cbRefreshSelectedServer.Checked;
-      Properties.Settings.Default.MasterServerQueryLimit = Convert.ToInt32(this.comboQueryLimit.Text);
-      Properties.Settings.Default.AutoUpdateList = this.cbUpdateList.Checked;
-      Properties.Settings.Default.AutoUpdateInfo = this.cbUpdateInformation.Checked;
-
-      var sb = new StringBuilder();
-      foreach (var fav in this.favServers)
-      {
-        if (sb.Length > 0) sb.Append(",");
-        sb.Append(fav);
-      }
-      Properties.Settings.Default.FavServers = sb.ToString();
-      Properties.Settings.Default.KeepFavServersOnTop = this.cbFavServersOnTop.Checked;
-
-      Properties.Settings.Default.Save();
-    }
-    #endregion
-
+    #endregion  
+   
     #region FillCountryFlags()
     private void FillCountryFlags()
     {
@@ -196,16 +135,6 @@ namespace ServerBrowser
     }
     #endregion
 
-    #region FillSteamServerRegions()
-    private void FillSteamServerRegions()
-    {
-      for (int i = 0; i < steamRegions.Length; i += 2)
-        this.comboRegion.Properties.Items.Add(steamRegions[i]);
-      this.comboRegion.SelectedIndex = 0;
-      this.comboRegion.Properties.DropDownRows = steamRegions.Length / 2;
-    }
-    #endregion
-
     #region InitBranding()
     protected virtual void InitBranding()
     {
@@ -227,8 +156,7 @@ namespace ServerBrowser
         if (type == null)
           return false;
         var method = type.GetMethod("Register", BindingFlags.Static | BindingFlags.Public);
-        if (method != null)
-          method.Invoke(null, null);
+        method?.Invoke(null, null);
         return true;
       }
       catch
@@ -255,76 +183,190 @@ namespace ServerBrowser
     }
     #endregion
 
-    #region InitAppSettings()
-    protected virtual void InitAppSettings()
-    {
-      InitFavGameRadioButtons();
-      this.SteamAppID = (Game)Properties.Settings.Default.InitialGameID;
+    #region ApplyAppSettings()
 
+    protected virtual void ApplyAppSettings()
+    {
+      ISettings opt = Settings.Default;
       // fill master server combobox
-      var masterServers = Properties.Settings.Default.MasterServerList.Split(',');
+      var masterServers = opt.MasterServerList.Split(',');
+      this.comboMasterServer.Properties.Items.Clear();
       foreach (var master in masterServers)
         this.comboMasterServer.Properties.Items.Add(master);
-      var info = Properties.Settings.Default.MasterServer;
-      if (string.IsNullOrEmpty(info))
-        info = "hl2master.steampowered.com:27011";
-      this.comboMasterServer.Text = info;
 
-      this.cbGetEmpty.Checked = Properties.Settings.Default.GetEmptyServers;
-      this.cbGetFull.Checked = Properties.Settings.Default.GetFullServers;
-      this.rbAddressHidden.Checked = Properties.Settings.Default.ShowAddressMode == 0;
-      this.rbAddressQueryPort.Checked = Properties.Settings.Default.ShowAddressMode == 1;
-      this.rbAddressGamePort.Checked = Properties.Settings.Default.ShowAddressMode == 2;
-      this.spinRefreshInterval.EditValue = (decimal)Properties.Settings.Default.RefreshInterval;
-      this.cbAdvancedOptions.Checked = Properties.Settings.Default.ShowOptions;
-      this.cbRefreshSelectedServer.Checked = Properties.Settings.Default.RefreshSelected;
-      this.txtTagInclude.Text = Properties.Settings.Default.TagsInclude;
-      this.txtTagExclude.Text = Properties.Settings.Default.TagsExclude;
-      this.txtMod.Text = Properties.Settings.Default.FilterMod;
-      this.txtMap.Text = Properties.Settings.Default.FilterMap;
-      this.comboQueryLimit.Text = Properties.Settings.Default.MasterServerQueryLimit.ToString();
-      this.cbUpdateList.Checked = Properties.Settings.Default.AutoUpdateList;
-      this.cbUpdateInformation.Checked = Properties.Settings.Default.AutoUpdateInfo;
+      this.cbAdvancedOptions.Checked = opt.ShowOptions;
+
+      this.rbAddressHidden.Checked = opt.ShowAddressMode == 0;
+      this.rbAddressQueryPort.Checked = opt.ShowAddressMode == 1;
+      this.rbAddressGamePort.Checked = opt.ShowAddressMode == 2;
+      this.cbRefreshSelectedServer.Checked = opt.RefreshSelected;
+      this.spinRefreshInterval.EditValue = (decimal)opt.RefreshInterval;
+      this.cbUpdateList.Checked = opt.AutoUpdateList;
+      this.cbUpdateInformation.Checked = opt.AutoUpdateInfo;
+      this.cbFavServersOnTop.Checked = opt.KeepFavServersOnTop;
 
       // load favorite servers
-      foreach (var server in Properties.Settings.Default.FavServers.Split(','))
+      this.favServers.Clear();
+      foreach (var server in opt.FavServers.Split(','))
       {
         if (server == "") continue;
         var parts = server.Split(':');
         this.favServers.Add(new IPEndPoint(IPAddress.Parse(parts[0]), int.Parse(parts[1])));
       }
-      this.cbFavServersOnTop.Checked = Properties.Settings.Default.KeepFavServersOnTop;
+    }
+    #endregion
+
+    #region LoadViewModelsFromIniFile()
+    private void LoadViewModelsFromIniFile()
+    {
+      if (File.Exists(this.iniFile))
+      {
+        IniFile ini = new IniFile(this.iniFile);
+        int i = 0;
+        foreach (var section in ini.Sections)
+        {
+          if (!section.Name.StartsWith("Tab")) continue;
+          var vm = new TabViewModel();
+          vm.LoadFromIni(section);
+          var page = new XtraTabPage();
+          page.Text = section.GetString("TabName") ?? this.GetGameCaption((Game)vm.InitialGameID);
+          page.Tag = vm;
+          this.tabControl.TabPages.Insert(i++, page);
+        }
+      }
+      else
+      {
+        // migrate favorite games from v1.16
+        int i = 0;
+        foreach (var gameId in Settings.Default.FavGameIDs.Split(','))
+        {
+          if (string.IsNullOrEmpty(gameId))
+            continue;
+          var vm = new TabViewModel();
+          vm.AssignFrom(Settings.Default);
+          vm.InitialGameID = int.Parse(gameId);
+          var page = new XtraTabPage();
+          page.Text = this.GetGameCaption((Game)vm.InitialGameID);
+          page.Tag = vm;
+          this.tabControl.TabPages.Insert(i++, page);
+        }
+      }
+
+      if (this.tabControl.TabPages.Count > 2)
+        this.tabControl.TabPages.Remove(this.tabGame);
+      else
+        this.tabGame.Tag = new TabViewModel();
+
+      this.SetViewModel((TabViewModel)this.tabControl.TabPages[0].Tag);
+    }
+    #endregion
+
+    #region SetViewModel()
+    private void SetViewModel(TabViewModel vm)
+    {
+      this.viewModel = vm;
+      var info = vm.MasterServer;
+      if (string.IsNullOrEmpty(info))
+        info = "hl2master.steampowered.com:27011";
+      this.comboMasterServer.Text = info;
+      this.SetSteamAppId(vm.InitialGameID);
+      this.txtTagInclude.Text = vm.TagsInclude;
+      this.txtTagExclude.Text = vm.TagsExclude;
+      this.txtMod.Text = vm.FilterMod;
+      this.txtMap.Text = vm.FilterMap;
+      this.cbGetEmpty.Checked = vm.GetEmptyServers;
+      this.cbGetFull.Checked = vm.GetFullServers;
+      this.comboQueryLimit.Text = vm.MasterServerQueryLimit.ToString();
+    }
+    #endregion
+
+
+    #region OnFormClosing()
+    protected override void OnFormClosing(FormClosingEventArgs e)
+    {
+      this.SaveViewModelsToIniFile();
+      this.SaveAppSettings();
+      this.queryLogic.Cancel();
+      this.geoIpClient.SaveCache();
+      base.OnFormClosing(e);
+    }
+    #endregion
+
+    #region SaveAppSettings()
+    protected virtual void SaveAppSettings()
+    {
+      var opt = Settings.Default;
+      opt.ShowOptions = this.cbAdvancedOptions.Checked;
+      opt.ShowAddressMode = this.showAddressMode;
+      opt.RefreshInterval = Convert.ToInt32(this.spinRefreshInterval.EditValue);
+      opt.RefreshSelected = this.cbRefreshSelectedServer.Checked;
+      opt.KeepFavServersOnTop = this.cbFavServersOnTop.Checked;
+      opt.AutoUpdateList = this.cbUpdateList.Checked;
+      opt.AutoUpdateInfo = this.cbUpdateInformation.Checked;
+      opt.Skin = UserLookAndFeel.Default.SkinName;
+
+      var sb = new StringBuilder();
+      foreach (var fav in this.favServers)
+      {
+        if (sb.Length > 0) sb.Append(",");
+        sb.Append(fav);
+      }
+      opt.FavServers = sb.ToString();
+      opt.Save();
+    }
+    #endregion
+
+    #region SaveViewModelsToIniFile()
+    private void SaveViewModelsToIniFile()
+    {
+      var sb = new StringBuilder();
+      int pageNr = 0;
+      foreach (XtraTabPage page in this.tabControl.TabPages)
+      {
+        if (page == this.tabAdd) continue;
+        sb.AppendLine($"[Tab{++pageNr}]");
+        sb.AppendLine($"TabName={page.Text}");
+        var opt = (TabViewModel)page.Tag;
+        opt.WriteToIni(sb);
+      }
+      File.WriteAllText(this.iniFile, sb.ToString());
+    }
+    #endregion
+
+
+    #region UpdateViewModel()
+    protected virtual void UpdateViewModel()
+    {
+      var vm = this.viewModel;
+      vm.MasterServer = this.comboMasterServer.Text;
+
+      if (this.comboGames.SelectedIndex < 0)
+      {
+        int id;
+        if (int.TryParse(this.comboGames.Text, out id))
+          vm.InitialGameID = id;
+      }
+      else
+        vm.InitialGameID = (int)this.gameIdForComboBoxIndex[this.comboGames.SelectedIndex];
+
+      vm.FilterMod = this.txtMod.Text;
+      vm.FilterMap = this.txtMap.Text;
+      vm.TagsInclude = this.txtTagInclude.Text;
+      vm.TagsExclude = this.txtTagExclude.Text;
+      vm.GetEmptyServers = this.cbGetEmpty.Checked;
+      vm.GetFullServers = this.cbGetFull.Checked;
+      vm.MasterServerQueryLimit = Convert.ToInt32(this.comboQueryLimit.Text);
+
+      vm.serverSource = this.CreateServerSource(vm.MasterServer);
+      vm.gameExtension = this.extenders.Get((Game)vm.InitialGameID);
     }
     #endregion
 
     #region CreateServerSource()
-    protected virtual IServerSource CreateServerSource()
+    protected virtual IServerSource CreateServerSource(string addressAndPort)
     {
-      return new MasterServerClient(this.MasterServerEndpoint);
+      return new MasterServerClient(Ip4Utils.ParseEndpoint(addressAndPort));
     }
-    #endregion
-
-    #region InitFavGameRadioButtons()
-    private void InitFavGameRadioButtons()
-    {
-      var favGameIds = Properties.Settings.Default.FavGameIDs.Split(',');
-      CheckEdit prevRadio = null;
-      for (int i = 0; i < favGameRadioButtons.Length; i++)
-      {
-        var radio = favGameRadioButtons[i];
-        int id = 0;
-        if (i < favGameIds.Length && int.TryParse(favGameIds[i], out id))
-          radio.Text = this.GetGameCaption((Game) id);
-        else
-          radio.Text = "Empty";
-          
-        radio.Tag = (Game) id;
-        if (prevRadio != null)
-          radio.Left = prevRadio.Right + 20;
-        prevRadio = radio;
-      }
-    }
-
     #endregion
 
     #region GetGameCaption()
@@ -333,78 +375,53 @@ namespace ServerBrowser
       return game.ToString().Replace("_", " ");
     }
     #endregion
-    
-    #region SteamAppId
-    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-    public Game SteamAppID
-    {
-      get { return this.steamAppId; }
-      set
-      {
-        if (value == this.steamAppId)
-          return;
 
-        this.gcServers.DataSource = null;
-        this.gcDetails.DataSource = null;
-        this.gcPlayers.DataSource = null;
-        this.gcRules.DataSource = null;
-        this.lastSelectedServer = null;
-        this.currentServer = null;
+    #region SetSteamAppId()
 
-        this.steamAppId = value;
-        this.InitGameExtension();
+    private void SetSteamAppId(int appId)
+    { 
+      this.gcServers.DataSource = null;
+      this.gcDetails.DataSource = null;
+      this.gcPlayers.DataSource = null;
+      this.gcRules.DataSource = null;
+      this.viewModel.lastSelectedServer = null;
+      this.viewModel.currentServer = null;
+
+      this.viewModel.InitialGameID = appId;
+      this.InitGameExtension();
         
-        // show/hide the Rules panel but don't bring it to the front
-        var parentPanel = this.panelRules.SavedParent;
-        var curTopmost = parentPanel == null ? -1 : parentPanel.ActiveChildIndex;
-        this.panelPlayers.Visibility = this.gameExtension.SupportsPlayersQuery(null) ? DockVisibility.Visible : DockVisibility.Hidden;
-        this.panelRules.Visibility = this.gameExtension.SupportsRulesQuery(null) ? DockVisibility.Visible : DockVisibility.Hidden;
-        parentPanel = this.panelRules.ParentPanel;
-        if (parentPanel != null && curTopmost >= 0)
-          parentPanel.ActiveChildIndex = curTopmost;
+      // show/hide the Rules panel but don't bring it to the front
+      var parentPanel = this.panelRules.SavedParent;
+      var curTopmost = parentPanel?.ActiveChildIndex ?? -1;
+      this.panelPlayers.Visibility = this.viewModel.gameExtension.SupportsPlayersQuery(null) ? DockVisibility.Visible : DockVisibility.Hidden;
+      this.panelRules.Visibility = this.viewModel.gameExtension.SupportsRulesQuery(null) ? DockVisibility.Visible : DockVisibility.Hidden;
+      parentPanel = this.panelRules.ParentPanel;
+      if (parentPanel != null && curTopmost >= 0)
+        parentPanel.ActiveChildIndex = curTopmost;
 
-        ++this.ignoreUiEvents;
-        foreach (var rbFav in this.favGameRadioButtons)
-          rbFav.Checked = rbFav.Tag != null && (Game) rbFav.Tag == this.steamAppId;
-        int index = this.gameIdForComboBoxIndex.IndexOf(value);
-        if (index >= 0)
-          this.comboGames.SelectedIndex = index;
-        else
-          this.comboGames.Text = ((int)value).ToString();
-        --this.ignoreUiEvents;
-      }
-    }
-    #endregion
-
-    #region MasterServerEndpoint
-    private IPEndPoint MasterServerEndpoint
-    {
-      get
-      {
-        string info = this.comboMasterServer.Text;
-        var parts = info.Split(':');
-        int port;
-        if (parts.Length < 2 || !int.TryParse(parts[1], out port))
-          port = 27011;
-        var ips = Dns.GetHostAddresses(parts[0]);
-        return ips.Length == 0 ? new IPEndPoint(IPAddress.None, 0) : new IPEndPoint(ips[0], port);
-      }
+      ++this.ignoreUiEvents;
+      int index = this.gameIdForComboBoxIndex.IndexOf((Game)appId);
+      if (index >= 0)
+        this.comboGames.SelectedIndex = index;
+      else
+        this.comboGames.Text = appId.ToString();
+      --this.ignoreUiEvents;      
     }
     #endregion
 
     #region InitGameExtension()
     private void InitGameExtension()
     {
-      this.gameExtension = this.extenders.Get(this.SteamAppID);
+      this.viewModel.gameExtension = this.extenders.Get((Game)this.viewModel.InitialGameID);
 
       this.gvServers.BeginUpdate();
       this.ResetGridColumns(this.gvServers);
-      this.gameExtension.CustomizeServerGridColumns(gvServers);
+      this.viewModel.gameExtension.CustomizeServerGridColumns(gvServers);
       this.gvServers.EndUpdate();
 
       this.gvPlayers.BeginUpdate();
       this.ResetGridColumns(this.gvPlayers);
-      this.gameExtension.CustomizePlayerGridColumns(gvPlayers);
+      this.viewModel.gameExtension.CustomizePlayerGridColumns(gvPlayers);
       this.gvPlayers.EndUpdate();
     }
     #endregion
@@ -432,28 +449,27 @@ namespace ServerBrowser
       if (this.ignoreUiEvents > 0)
         return;
 
-      var appId = this.SteamAppID;
-      if (appId == 0) // this would result in a truncated list of all games
+      this.UpdateViewModel();
+      if (this.viewModel.InitialGameID == 0) // this would result in a truncated list of all games
         return;
 
       this.SetStatusMessage("Requesting server list from master server...");
 
-      var region = (QueryMaster.Region)steamRegions[this.comboRegion.SelectedIndex * 2 + 1];
-
       IpFilter filter = new IpFilter();
-      filter.App = appId;
-      filter.IsNotEmpty = !this.cbGetEmpty.Checked;
-      filter.IsNotFull = !this.cbGetFull.Checked;
-      filter.GameDirectory = this.txtMod.Text;
-      filter.Map = this.txtMap.Text;
-      filter.Sv_Tags = this.ParseTags(this.txtTagInclude.Text);
-      if (this.txtTagExclude.Text != "")
+      filter.App = (Game)this.viewModel.InitialGameID;
+      filter.IsNotEmpty = !this.viewModel.GetEmptyServers;
+      filter.IsNotFull = !this.viewModel.GetFullServers;
+      filter.GameDirectory = this.viewModel.FilterMod;
+      filter.Map = this.viewModel.FilterMap;
+      filter.Sv_Tags = this.ParseTags(this.viewModel.TagsInclude);
+      if (this.viewModel.TagsExclude != "")
       {
         filter.Nor = new IpFilter();
-        filter.Nor.Sv_Tags = this.ParseTags(this.txtTagExclude.Text);
+        filter.Nor.Sv_Tags = this.ParseTags(this.viewModel.TagsExclude);
       }
       this.CustomizeFilter(filter);
-      queryLogic.ReloadServerList(this.serverSource, 500, int.Parse(this.comboQueryLimit.Text), region, filter);
+
+      queryLogic.ReloadServerList(this.viewModel.serverSource, 500, this.viewModel.MasterServerQueryLimit, QueryMaster.Region.Rest_of_the_world, filter);
     }
     #endregion
 
@@ -463,7 +479,7 @@ namespace ServerBrowser
       if (this.queryLogic.IsUpdating)
         return;
       this.timerReloadServers.Stop();
-      this.queryLogic.RefreshAllServers(this.servers);
+      this.queryLogic.RefreshAllServers(this.viewModel.servers);
       if (this.spinRefreshInterval.Value > 0)
         this.timerReloadServers.Start();
     }
@@ -473,7 +489,7 @@ namespace ServerBrowser
     #region CustomizeFilter()
     protected virtual void CustomizeFilter(IpFilter filter)
     {
-      this.gameExtension.CustomizeServerFilter(filter);      
+      this.viewModel.gameExtension.CustomizeServerFilter(filter);      
     }
     #endregion
 
@@ -494,21 +510,20 @@ namespace ServerBrowser
     #region UpdateViews()
     protected void UpdateViews()
     {
-      this.servers = this.PreFilterServers(this.queryLogic.Servers);
       ++ignoreUiEvents;
       this.gvServers.BeginDataUpdate();
 
       this.LookupGeoIps();
 
-      this.gcServers.DataSource = servers;
+      this.gcServers.DataSource = this.viewModel.servers;
       this.gvServers.EndDataUpdate();
 
-      if (this.lastSelectedServer != null)
+      if (this.viewModel.lastSelectedServer != null)
       {
         int i = 0;
-        foreach (var server in servers)
+        foreach (var server in this.viewModel.servers)
         {
-          if (server.EndPoint.Equals(this.lastSelectedServer.EndPoint))
+          if (server.EndPoint.Equals(this.viewModel.lastSelectedServer.EndPoint))
           {
             gvServers.FocusedRowHandle = gvServers.GetRowHandle(i);
             gvServers.MakeRowVisible(gvServers.FocusedRowHandle);
@@ -532,7 +547,7 @@ namespace ServerBrowser
     private void UpdateGridDataSources()
     {
       var row = (ServerRow)this.gvServers.GetFocusedRow();
-      this.currentServer = row;
+      this.viewModel.currentServer = row;
 
       this.gvDetails.BeginDataUpdate();
       if (row == null)
@@ -541,17 +556,17 @@ namespace ServerBrowser
       {
         this.gcDetails.DataSource = EnumerateProps(
           row.ServerInfo,
-          row.ServerInfo == null ? null : row.ServerInfo.Extra,
-          row.ServerInfo == null ? null : row.ServerInfo.ShipInfo);
+          row.ServerInfo?.Extra,
+          row.ServerInfo?.ShipInfo);
       }
       this.gvDetails.EndDataUpdate();
 
       this.gvPlayers.BeginDataUpdate();
-      this.gcPlayers.DataSource = row == null ? null : row.Players;
+      this.gcPlayers.DataSource = row?.Players;
       this.gvPlayers.EndDataUpdate();
 
       this.gvRules.BeginDataUpdate();
-      this.gcRules.DataSource = row == null ? null : row.Rules;
+      this.gcRules.DataSource = row?.Rules;
       this.gvRules.EndDataUpdate();
 
       this.UpdateServerContextMenu();
@@ -580,7 +595,7 @@ namespace ServerBrowser
     #region GetServerAddress()
     private string GetServerAddress(ServerRow row)
     {
-      return this.showAddressMode == 2 && row.ServerInfo != null && row.ServerInfo.Extra != null
+      return this.showAddressMode == 2 && row.ServerInfo?.Extra != null
         ? row.EndPoint.Address + ":" + row.ServerInfo.Extra.Port
         : row.EndPoint.ToString();
     }
@@ -589,7 +604,7 @@ namespace ServerBrowser
     #region UpdateServerContextMenu()
     private void UpdateServerContextMenu()
     {
-      var canSpec = this.currentServer != null && this.currentServer.GameExtension.SupportsConnectAsSpectator(this.currentServer);
+      var canSpec = this.viewModel.currentServer != null && this.viewModel.currentServer.GameExtension.SupportsConnectAsSpectator(this.viewModel.currentServer);
       this.miConnectSpectator.Visibility = canSpec ? BarItemVisibility.Always : BarItemVisibility.Never;
     }
     #endregion
@@ -597,7 +612,7 @@ namespace ServerBrowser
     #region ConnectToGameServer()
     private void ConnectToGameServer(ServerRow row, bool spectate)
     {
-      if (row == null || row.ServerInfo == null)
+      if (row?.ServerInfo == null)
         return;
 
       string password = null;
@@ -650,10 +665,10 @@ namespace ServerBrowser
       var rule = (Rule)this.gvRules.GetFocusedRow();
       var col = this.gvServers.Columns[prefix + rule.Name];
       if (col == null)
-        this.gameExtension.AddColumn(this.gvServers, prefix + rule.Name, rule.Name, rule.Name, 70, this.gvServers.VisibleColumns.Count, unboundColumnType);
+        this.viewModel.gameExtension.AddColumn(this.gvServers, prefix + rule.Name, rule.Name, rule.Name, 70, this.gvServers.VisibleColumns.Count, unboundColumnType);
       else
       {
-        XtraMessageBox.Show(string.Format("Rule {0} is already shown in column {1}.", rule.Name, col.Caption), this.Text,
+        XtraMessageBox.Show($"Rule {rule.Name} is already shown in column {col.Caption}.", this.Text,
           MessageBoxButtons.OK, MessageBoxIcon.Information);
         this.gvServers.FocusedColumn = col;
       }
@@ -663,8 +678,8 @@ namespace ServerBrowser
     #region LookupGeoIps()
     private void LookupGeoIps()
     {
-      if (this.servers == null) return;
-      foreach (var server in this.servers)
+      if (this.viewModel.servers == null) return;
+      foreach (var server in this.viewModel.servers)
       {
         if (server.GeoInfo != null)
           continue;
@@ -695,8 +710,10 @@ namespace ServerBrowser
     #region queryLogic_ReloadServerListComplete()
     protected virtual void queryLogic_ReloadServerListComplete(List<ServerRow> rows)
     {
+      this.viewModel.servers = this.PreFilterServers(this.queryLogic.Servers);
+
       this.UpdateViews();
-      this.SetStatusMessage("Update of " + this.servers.Count + " servers complete");
+      this.SetStatusMessage("Update of " + this.viewModel.servers.Count + " servers complete");
       if (this.gvServers.RowCount > 0 && this.cbAlert.Checked)
       {
         this.cbAlert.Checked = false;
@@ -726,7 +743,7 @@ namespace ServerBrowser
       var color = label.Color.ForeColor;      
       color = skin.TranslateColor(color);
       if (color == Color.Transparent)
-        color = this.panelOptions.ForeColor;
+        color = this.panelTop.ForeColor;
       this.linkFilter1.Appearance.LinkColor = this.linkFilter1.Appearance.PressedColor = color;
 
       this.miConnect.ItemAppearance.Normal.Font = new Font(this.miConnect.ItemAppearance.Normal.Font, FontStyle.Bold);
@@ -763,60 +780,13 @@ namespace ServerBrowser
       var idx = this.comboGames.SelectedIndex;
       if (idx < 0)
         return;
-      this.SteamAppID = this.gameIdForComboBoxIndex[idx];
-      this.ReloadServerList();
-    }
-    #endregion
-
-    #region rbFavGame_CheckedChanged
-    private void rbFavGame_CheckedChanged(object sender, EventArgs e)
-    {
-      var radio = (CheckEdit) sender; 
-      if (!radio.Checked) // ignore the "uncheck" event
-        return;
-
-      if (ModifierKeys == Keys.Control)
-      {
-        // redefine a favorite
-        var idx = Array.IndexOf(this.favGameRadioButtons, radio);
-        var ids = Properties.Settings.Default.FavGameIDs.Split(',').ToList();
-        for (int i=ids.Count; i<=idx; i++)
-          ids.Add("0");
-        ids[idx] = ((int)this.SteamAppID).ToString();
-        Properties.Settings.Default.FavGameIDs = string.Join(",", ids);
-        this.InitFavGameRadioButtons();
-      }
-      else
-      {
-        // update server list for selected favorite
-        var game = (Game) radio.Tag;
-        if (game != 0)
-        {
-          this.SteamAppID = game;
-          this.ReloadServerList();
-        }
-      }
-    }
-    #endregion
-
-    #region comboRegion_SelectedIndexChanged
-    private void comboRegion_SelectedIndexChanged(object sender, EventArgs e)
-    {
-      this.ReloadServerList();
+      this.UpdateViewModel();
     }
     #endregion
 
     #region btnQueryMaster_Click
     private void btnQueryMaster_Click(object sender, EventArgs e)
     {
-      if (this.comboGames.SelectedIndex < 0)
-      {
-        int id;
-        if (!int.TryParse(this.comboGames.Text, out id))
-          return;
-        this.SteamAppID = (Game) id;
-      }
-
       this.timerReloadServers.Stop();
       ReloadServerList();
       if (this.spinRefreshInterval.Value > 0)
@@ -871,7 +841,7 @@ namespace ServerBrowser
         var endpoint = new IPEndPoint(addr[i], parts.Length > 1 ? int.Parse(parts[1]) : 27015);
         if (endpoint.Address.ToString() == "0.0.0.0") return;
         ServerRow serverRow = null;
-        foreach (var row in this.servers)
+        foreach (var row in this.viewModel.servers)
         {
           if (row.EndPoint.Equals(endpoint))
           {
@@ -884,9 +854,9 @@ namespace ServerBrowser
         {
           this.gvServers.BeginDataUpdate();
           serverRow = new ServerRow(endpoint, this.extenders.Get(0));
-          this.servers.Add(serverRow);
+          this.viewModel.servers.Add(serverRow);
           this.gvServers.EndDataUpdate();
-          this.gvServers.FocusedRowHandle = this.gvServers.GetRowHandle(this.servers.Count - 1);
+          this.gvServers.FocusedRowHandle = this.gvServers.GetRowHandle(this.viewModel.servers.Count - 1);
         }
         this.queryLogic.RefreshSingleServer(serverRow);
       }
@@ -1020,7 +990,7 @@ namespace ServerBrowser
       else if (e.Column == this.colEndPoint)
         e.Value = GetServerAddress(row);
       else if (e.Column == this.colName)
-        e.Value = row.ServerInfo == null ? (showAddressMode == 0 ? GetServerAddress(row) : null) : row.ServerInfo.Name.Trim();
+        e.Value = row.ServerInfo?.Name.Trim() ?? (showAddressMode == 0 ? GetServerAddress(row) : null);
       else if (e.Column.FieldName.StartsWith(CustomNumericRuleColumnPrefix))
       {
         var fieldName = e.Column.FieldName.Substring(CustomNumericRuleColumnPrefix.Length);
@@ -1040,9 +1010,9 @@ namespace ServerBrowser
     {
       if (e.Column == this.colLocation)
       {
-        if (e.ListSourceRowIndex < 0 || e.ListSourceRowIndex >= this.servers.Count)
+        if (e.ListSourceRowIndex < 0 || e.ListSourceRowIndex >= this.viewModel.servers.Count)
           return;
-        var row = this.servers[e.ListSourceRowIndex];
+        var row = this.viewModel.servers[e.ListSourceRowIndex];
         var geoInfo = row.GeoInfo;
         if (geoInfo != null && geoInfo.Iso2 == "US" && !string.IsNullOrEmpty(geoInfo.State))
           e.DisplayText = geoInfo.State;
@@ -1059,7 +1029,7 @@ namespace ServerBrowser
         if (hit.InRowCell && hit.Column == this.colLocation)
         {
           var row = (ServerRow)this.gvServers.GetRow(hit.RowHandle);
-          if (row != null && row.GeoInfo != null)
+          if (row?.GeoInfo != null)
             e.Info = new ToolTipControlInfo(row.EndPoint + "-" + hit.Column.FieldName, row.GeoInfo.ToString());
         }
       }
@@ -1074,8 +1044,8 @@ namespace ServerBrowser
         if (this.ignoreUiEvents > 0) return;
 
         var row = (ServerRow)this.gvServers.GetFocusedRow();
-        this.lastSelectedServer = row;
-        if (row != this.currentServer)
+        this.viewModel.lastSelectedServer = row;
+        if (row != this.viewModel.currentServer)
           this.UpdateGridDataSources();
 
         if (row != null && this.cbRefreshSelectedServer.Checked && !this.queryLogic.IsUpdating)
@@ -1319,8 +1289,59 @@ namespace ServerBrowser
     #region SendRconCommand()
     private void SendRconCommand(ServerRow row, int port, string pass, string text)
     {
-      if (row.GameExtension != null)
-        row.GameExtension.Rcon(row, port, pass, text);
+      row.GameExtension?.Rcon(row, port, pass, text);
+    }
+
+    #endregion
+
+    // tabs
+
+    #region tabControl_SelectedPageChanging
+    private void tabControl_SelectedPageChanging(object sender, TabPageChangingEventArgs e)
+    {
+      if (e.Page == this.tabAdd)
+      {
+        e.Cancel = true;
+        var page = new XtraTabPage();
+        page.Text = "Master Server Query " + this.tabControl.TabPages.Count;
+        page.ShowCloseButton = DefaultBoolean.True;
+        var opt = new TabViewModel();
+        opt.AssignFrom(this.viewModel);
+        page.Tag = opt;
+        this.tabControl.TabPages.Insert(this.tabControl.TabPages.Count - 1, page);
+        this.BeginInvoke((Action)(() => { this.tabControl.SelectedTabPage = page; }));
+        return;
+      }
+
+      this.UpdateViewModel();
+    }
+    #endregion
+
+    #region tabControl_SelectedPageChanged
+    private void tabControl_SelectedPageChanged(object sender, TabPageChangedEventArgs e)
+    {
+      if (this.ignoreUiEvents > 0) return;
+      this.SetViewModel((TabViewModel)e.Page.Tag);
+      this.UpdateViews();
+      if (this.viewModel.servers == null)
+        this.ReloadServerList();
+    }
+    #endregion
+
+    #region tabControl_CloseButtonClick
+    private void tabControl_CloseButtonClick(object sender, EventArgs e)
+    {
+      var args = e as ClosePageButtonEventArgs;
+      if (args == null || this.tabControl.TabPages.Count <= 2)
+        return;
+
+      var idx = this.tabControl.TabPages.IndexOf((XtraTabPage)args.Page);
+      if (args.Page == tabControl.SelectedTabPage)
+      {
+        if (idx > 0)
+          this.tabControl.SelectedTabPageIndex = idx - 1;
+      }
+      this.tabControl.TabPages.RemoveAt(idx);
     }
     #endregion
   }

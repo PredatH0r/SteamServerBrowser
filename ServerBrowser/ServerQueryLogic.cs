@@ -118,7 +118,7 @@ namespace ServerBrowser
     #endregion
 
     #region IsUpdating
-    public bool IsUpdating => this.currentRequest.PendingTasks?.IsSet ?? true;
+    public bool IsUpdating => !this.currentRequest.PendingTasks?.IsSet ?? true;
 
     #endregion
 
@@ -266,10 +266,11 @@ namespace ServerBrowser
     public void RefreshSingleServer(ServerRow row, bool updatePing = true)
     {
       row.Status = "updating...";
-      this.currentRequest = new UpdateRequest(this.currentRequest.AppId, 1, this.currentRequest.Timeout, this.currentRequest.GameExtension);
-      this.currentRequest.KeepPreviousPing = !updatePing;
-      this.currentRequest.PendingTasks = new CountdownEvent(1);
-      ThreadPool.QueueUserWorkItem(dummy => this.UpdateServerAndDetails(this.currentRequest, row, true));
+      var req = new UpdateRequest(this.currentRequest.AppId, 1, this.currentRequest.Timeout, this.currentRequest.GameExtension);
+      req.KeepPreviousPing = !updatePing;
+      req.PendingTasks = new CountdownEvent(1);
+      this.currentRequest = req;
+      ThreadPool.QueueUserWorkItem(dummy => this.UpdateServerAndDetails(req, row, true));
     }
     #endregion
 

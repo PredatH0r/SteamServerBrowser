@@ -21,6 +21,18 @@ namespace ServerBrowser
     {
       var mask = -1 << bits;
       return (ip & mask) == (ToInt(subnetA, subnetB, subnetC, subnetD) & mask);
-    }    
+    }
+
+    public static IPEndPoint ParseEndpoint(string addressAndPort)
+    {
+      string info = addressAndPort;
+      var parts = info.Split(':');
+      int port;
+      if (parts.Length < 2 || !int.TryParse(parts[1], out port))
+        port = 27011;
+      var ips = Dns.GetHostAddresses(parts[0]);
+      return ips.Length == 0 ? new IPEndPoint(IPAddress.None, 0) : new IPEndPoint(ips[0], port);
+
+    }
   }
 }

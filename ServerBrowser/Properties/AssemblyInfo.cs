@@ -1,15 +1,16 @@
 ﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Steam Game Server Browser")]
-[assembly: AssemblyDescription("Steam Game Server Browser")]
+[assembly: AssemblyTitle("Steam Server Browser")]
+[assembly: AssemblyDescription("Steam Server Browser")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Steam Game Server Browser")]
-[assembly: AssemblyCopyright("PredatH0r (predathor@gmx.at)")]
+[assembly: AssemblyCompany("ServerBrowser")]
+[assembly: AssemblyProduct("ServerBrowser")]
+[assembly: AssemblyCopyright("PredatH0r (predath0r@gmx.at)")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 // Setting ComVisible to false makes the types in this assembly not visible 
