@@ -1061,7 +1061,7 @@ namespace ServerBrowser
       {
         if (filter != "")
           filter += " and ";
-        filter += "[Ping]<=" + ping;
+        filter += "[ServerInfo.Ping]<=" + ping;
       }
       this.gvServers.ActiveFilterString = filter;
     }

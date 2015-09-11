@@ -1,3 +1,16 @@
+2.1
+---
+- fix: servers now stay seleted after updating their data
+- added controls to easily add filters for player count and/or ping
+- automatically adding Ping as a (last) sort criteria to break ties
+
+2.0
+---
+- added tabbed browsing with individual search and filter settings for each tab
+- added support for custom server lists, which can be edited with copy&paste
+- added support for a combined Favorites list
+- added multi selection to server list
+
 1.16
 ---
 - added local Geo-IP cache for game server location information
