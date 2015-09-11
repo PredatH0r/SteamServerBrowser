@@ -613,15 +613,22 @@ namespace ServerBrowser
         {
           if (server.EndPoint.Equals(this.viewModel.lastSelectedServer.EndPoint))
           {
-            gvServers.FocusedRowHandle = gvServers.GetRowHandle(i);
-            gvServers.MakeRowVisible(gvServers.FocusedRowHandle);
+            var h = gvServers.GetRowHandle(i);
+            this.gvServers.FocusedRowHandle = h;
+            this.gvServers.ClearSelection();
+            this.gvServers.SelectRow(h);
+            this.gvServers.MakeRowVisible(gvServers.FocusedRowHandle);
             break;
           }
           ++i;
         }
       }
       else if (this.gvServers.FocusedRowHandle > 0)
+      {
         this.gvServers.FocusedRowHandle = 0;
+        this.gvServers.ClearSelection();
+        this.gvServers.SelectRow(0);
+      }
 
       --ignoreUiEvents;
 
@@ -838,7 +845,11 @@ namespace ServerBrowser
     {
       if (this.gvServers.GetFocusedRow() == e.Server)
       {
-        this.gvServers.RefreshRow(this.gvServers.FocusedRowHandle);
+        if (this.gvServers.SelectedRowsCount <= 1)
+          this.gvServers.RefreshRow(this.gvServers.FocusedRowHandle);
+        else
+          this.gvServers.RefreshData();
+        //this.gvServers.SelectRow(this.gvServers.FocusedRowHandle);
         this.UpdateGridDataSources();
       }
     }
@@ -958,7 +969,9 @@ namespace ServerBrowser
           serverRow = new ServerRow(endpoint, this.extenders.Get(0));
           this.viewModel.servers.Add(serverRow);
           this.gvServers.EndDataUpdate();
-          this.gvServers.FocusedRowHandle = this.gvServers.GetRowHandle(this.viewModel.servers.Count - 1);
+          var handle = this.gvServers.GetRowHandle(this.viewModel.servers.Count - 1);
+          this.gvServers.FocusedRowHandle = handle;
+          this.gvServers.SelectRow(handle);
         }
         this.queryLogic.RefreshSingleServer(serverRow);
       }
@@ -1029,6 +1042,28 @@ namespace ServerBrowser
       else
         this.colFavServer.SortOrder = ColumnSortOrder.None;
       this.gvServers.EndSort();
+    }
+    #endregion
+
+    #region btnApplyFilter_Click
+    private void btnApplyFilter_Click(object sender, EventArgs e)
+    {
+      var filter = "";
+      if (this.spinMinPlayers.Value > 0)
+      {
+        filter = this.cbMinPlayersBots.Checked ? "[PlayerCount.TotalPlayers]" : "[PlayerCount.RealPlayers]";
+        filter += ">=" + this.spinMinPlayers.Value;
+      }
+
+      int ping;
+      int.TryParse(this.comboMaxPing.Text, out ping);
+      if (ping != 0)
+      {
+        if (filter != "")
+          filter += " and ";
+        filter += "[Ping]<=" + ping;
+      }
+      this.gvServers.ActiveFilterString = filter;
     }
     #endregion
 
@@ -1167,7 +1202,8 @@ namespace ServerBrowser
     #region gvServers_SelectionChanged
     private void gvServers_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-      this.UpdateServerContextMenu();
+      if (this.ignoreUiEvents == 0)
+        this.UpdateServerContextMenu();
     }
     #endregion
 
@@ -1204,6 +1240,11 @@ namespace ServerBrowser
       {
         this.gcServers.Focus();
         this.gvServers.FocusedRowHandle = hit.RowHandle;
+        if (!this.gvServers.IsRowSelected(hit.RowHandle))
+        {
+          this.gvServers.ClearSelection();
+          this.gvServers.SelectRow(hit.RowHandle);
+        }
         this.UpdateServerContextMenu();
         this.menuServers.ShowPopup(this.gcServers.PointToScreen(e.Location));
       }
@@ -1219,6 +1260,32 @@ namespace ServerBrowser
           this.gvServers.SortInfo.Insert(0, this.colFavServer, ColumnSortOrder.Descending);
         this.colFavServer.SortOrder = ColumnSortOrder.Descending;
         this.colFavServer.SortIndex = 0;
+      }
+
+      // always add Ping as a last sorting criteria
+      if (this.gvServers.SortInfo[this.colPing] == null)
+      {
+        this.gvServers.SortInfo.Add(this.colPing, ColumnSortOrder.Ascending);
+        this.colPing.SortOrder = ColumnSortOrder.Ascending;
+        this.colPing.SortIndex = this.gvServers.SortInfo.Count - 1;
+      }
+    }
+    #endregion
+
+    #region gvServers_CustomColumnSort
+    private void gvServers_CustomColumnSort(object sender, CustomColumnSortEventArgs e)
+    {
+      if (e.Column == this.colPing)
+      {
+        object val1 = this.gvServers.GetListSourceRowCellValue(e.ListSourceRowIndex1, colPing);
+        object val2 = this.gvServers.GetListSourceRowCellValue(e.ListSourceRowIndex1, colPing);
+        if (val1 == null)
+          e.Result = val2 == null ? 0 : 1;
+        else if (val2 == null)
+          e.Result = -1;
+        else
+          e.Result = Comparer<int>.Default.Compare((int) val1, (int) val2);
+        e.Handled = true;
       }
     }
     #endregion
@@ -1521,7 +1588,7 @@ namespace ServerBrowser
     #endregion
 
     #region CloneTab()
-    private XtraTabPage CloneTab(XtraTabPage source)
+    private void CloneTab(XtraTabPage source)
     {
       var page = new XtraTabPage();
       page.Text = source.Text + " #2";
@@ -1530,9 +1597,9 @@ namespace ServerBrowser
       vm.AssignFrom(this.viewModel);
       page.Tag = vm;
       page.ImageIndex = vm.ImageIndex;
-      this.tabControl.TabPages.Insert(this.tabControl.TabPages.Count - 1, page);
+      var idx = this.tabControl.TabPages.IndexOf(source);
+      this.tabControl.TabPages.Insert(idx + 1, page);
       this.tabControl.SelectedTabPage = page;
-      return page;
     }
     #endregion
 

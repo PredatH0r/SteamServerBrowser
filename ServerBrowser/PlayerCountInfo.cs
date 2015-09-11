@@ -55,8 +55,8 @@ namespace ServerBrowser
       if (this.RealPlayers > other.RealPlayers) return +1;
       if (this.Bots < other.Bots) return -1;
       if (this.Bots > other.Bots) return +1;
-      if (this.MaxPlayers < other.MaxPlayers) return -1;
-      if (this.MaxPlayers > other.MaxPlayers) return +1;
+      //if (this.MaxPlayers < other.MaxPlayers) return -1;
+      //if (this.MaxPlayers > other.MaxPlayers) return +1;
       return 0;
     }
 
