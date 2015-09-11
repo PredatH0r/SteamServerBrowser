@@ -6,20 +6,16 @@ set target=%cd%\SteamServerBrowser_%curdate%
 mkdir "%target%" 2>nul
 del /s /q "%target%\*"
 
-cd "%cwd%\Main\bin\x86\debug"
+cd "%cwd%\ServerBrowser\bin\x86\debug"
 copy ServerBrowser.exe "%target%"
-copy ServerBrowser.Core.dll "%target%"
 copy QueryMaster.dll "%target%"
 copy Ionic.BZip2.dll "%target%"
-copy libsodium.dll "%target%"
-copy libzmq.dll "%target%"
-copy ZeroMQ.dll "%target%"
 
-del "%cwd%\ServerBrowser\bin\x86\debug\DevExpress*Office*"
-del "%cwd%\ServerBrowser\bin\x86\debug\DevExpress*Rich*"
-del "%cwd%\ServerBrowser\bin\x86\debug\DevExpress*Spark*"
-del "%cwd%\ServerBrowser\bin\x86\debug\DevExpress*Tree*"
-copy "%cwd%\ServerBrowser\bin\x86\debug\DevExpress*.dll" "%target%"
+del "DevExpress*Office*"
+del "DevExpress*Rich*"
+del "DevExpress*Spark*"
+del "DevExpress*Tree*"
+copy "DevExpress*.dll" "%target%"
 del "%target%\*BonusSkins*"
 cd "%target%"
 call :CodeSigning
@@ -42,6 +38,6 @@ rem If you want to digitally sign the generated .exe and .dll files,
 rem you need to have your code signing certificate installed in the Windows certificate storage
 rem -----------------------------
 set signtool="C:\Program Files\Microsoft SDKs\Windows\v6.0A\Bin\signtool.exe"
-set files=ServerBrowser.exe ServerBrowser.Core.dll QueryMaster.dll
+set files=ServerBrowser.exe QueryMaster.dll
 %signtool% sign /a /t "http://timestamp.comodoca.com/authenticode" %files%
 goto :eof
