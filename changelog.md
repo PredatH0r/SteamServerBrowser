@@ -1,3 +1,8 @@
+2.2
+---
+- moved the more important options to the left
+- Quake Live: removing "^1" color codes from player names
+
 2.1
 ---
 - fix: servers now stay seleted after updating their data

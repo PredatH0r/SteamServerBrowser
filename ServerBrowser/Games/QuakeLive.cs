@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
 using DevExpress.Data;
-using DevExpress.Utils.Drawing.Helpers;
 using DevExpress.XtraGrid.Columns;
 using DevExpress.XtraGrid.Views.Grid;
+using QueryMaster;
 using ZeroMQ;
 using ZeroMQ.Monitoring;
 
@@ -22,6 +23,9 @@ namespace ServerBrowser
       { 0, "FFA" },{ 1, "Duel" },{ 2, "Race" },{ 3, "TDM" },{ 4, "CA" },{ 5, "CTF" },{ 6, "1Flag" },{ 8, "Harv" },{ 9, "FT" },{ 10, "Dom" },{ 11, "A&D" },{ 12, "RR" }
     };
 
+    private static readonly Regex NameColors = new Regex("\\^[0-9]");
+
+    #region CustomizeServerGridColumns
     public override void CustomizeServerGridColumns(GridView view)
     {
       var colDescription = view.Columns["ServerInfo.Description"];
@@ -36,6 +40,7 @@ namespace ServerBrowser
       AddColumn(view, "timelimit", "TL", "Time Limit", 30, ++idx, UnboundColumnType.Integer);
       AddColumn(view, "g_instagib", "Insta", "Instagib", 35, ++idx, UnboundColumnType.Boolean);
     }
+    #endregion
 
     #region GetServerCellValue()
     public override object GetServerCellValue(ServerRow row, string fieldName)
@@ -69,6 +74,27 @@ namespace ServerBrowser
           return row.GetRule(fieldName) == "1";
       }
       return base.GetServerCellValue(row, fieldName);
+    }
+    #endregion
+
+    #region CustomizePlayerGridColumns()
+    public override void CustomizePlayerGridColumns(GridView view)
+    {
+      var col = view.Columns["Name"];
+      if (col != null)
+        col.Visible = false;
+
+      col = this.AddColumn(view, "NameWithoutColorCodes", "Name", "Name", 150, 0);
+      col.FieldName = "NameWithoutColorCodes";
+    }
+    #endregion
+
+    #region GetPlayerCellValue()
+    public override object GetPlayerCellValue(ServerRow server, Player player, string fieldName)
+    {
+      if (fieldName == "NameWithoutColorCodes")
+        return NameColors.Replace(player.Name, "");
+      return base.GetPlayerCellValue(server, player, fieldName);
     }
     #endregion
 

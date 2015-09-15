@@ -31,6 +31,7 @@ namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
+    private const string Version = "2.2";
     private const string DevExpressVersion = "v15.1";
     private const string CustomNumericRuleColumnPrefix = "castRule.";
 
@@ -59,6 +60,8 @@ namespace ServerBrowser
 
       if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
         return;
+
+      base.Text += " " + Version;
 
       this.iniFile = Path.Combine(Application.LocalUserAppDataPath, "ServerBrowser.ini");
 

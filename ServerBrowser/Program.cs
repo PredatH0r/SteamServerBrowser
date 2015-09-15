@@ -10,8 +10,6 @@ namespace ServerBrowser
 {
   public static class Program
   {
-    private const string Version = "2.1";
-
     [STAThread]
     public static void Main()
     {
@@ -22,15 +20,9 @@ namespace ServerBrowser
       System.Threading.Thread.CurrentThread.CurrentCulture = culture;
 #endif
       // change font before creating the main form to get correct auto-scaling
-      ServerBrowser.Program.Init(new Font("Segoe UI", AppearanceObject.DefaultFont.Size + 0.75f), ServerBrowser.Properties.Settings.Default.Skin);
+      Init(new Font("Segoe UI", AppearanceObject.DefaultFont.Size + 0.75f), Properties.Settings.Default.Skin);
 
       var mainForm = new ServerBrowserForm();
-      var icon = typeof(Program).Assembly.GetManifestResourceStream("Main.App.ico");
-      if (icon != null)
-        mainForm.Icon = new Icon(icon);
-
-      mainForm.Text += " " + Version;
-
       Application.Run(mainForm);
     }
 
