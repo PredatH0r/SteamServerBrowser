@@ -144,7 +144,7 @@ namespace ServerBrowser
         ini.AppendLine();
         ini.AppendLine($"[{sectionName}_Servers]");
         foreach (var row in this.servers)
-          ini.AppendLine($"{row.EndPoint}={row.ServerInfo?.Name}");
+          ini.AppendLine($"{row.EndPoint}={row.ServerInfo?.Name ?? row.CachedName}");
       }
     }
     #endregion
