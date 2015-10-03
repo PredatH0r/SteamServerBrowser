@@ -46,6 +46,20 @@ namespace ServerBrowser
 
     public delegate bool EnumWindowProc(IntPtr hWnd, IntPtr lParam);
 
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    public static extern int GetWindowTextLength(IntPtr hWnd);
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    public static extern int GetWindowText(IntPtr hWnd, StringBuilder strText, int maxCount);
+    [DllImport("user32.dll")]
+    public static extern bool EnumWindows(EnumWindowProc enumProc, IntPtr lParam);
+    [DllImport("user32.dll")]
+    public static extern bool IsWindowVisible(IntPtr hWnd);
+
+    [DllImport("user32.dll")]
+    public static extern IntPtr GetWindowThreadProcessId(IntPtr hWnd, out int hProcId);
+
+
     public const int WM_KEYDOWN = 0x100;
     public const int WM_KEYUP = 0x101;
     public const int WM_CHAR = 0x0102;
@@ -118,16 +132,25 @@ namespace ServerBrowser
     }
     #endregion
 
-    #region GetChildWindows()
+    #region GetTopLevelWindows(), GetChildWindows()
+
+    public static List<IntPtr> GetTopLevelWindows()
+    {
+      return GetWindowsCore((fn, lparam) => EnumWindows(fn, lparam));
+    }
 
     public static List<IntPtr> GetChildWindows(IntPtr parent)
+    {
+      return GetWindowsCore((fn,lparam) => EnumChildWindows(parent, fn, lparam));
+    }
+
+    private static List<IntPtr> GetWindowsCore(Action<EnumWindowProc,IntPtr> getWindows)
     {
       var result = new List<IntPtr>();
       GCHandle listHandle = GCHandle.Alloc(result);
       try
       {
-        EnumWindowProc childProc = EnumWindow;
-        EnumChildWindows(parent, childProc, GCHandle.ToIntPtr(listHandle));
+        getWindows(EnumWindow, GCHandle.ToIntPtr(listHandle));
       }
       finally
       {

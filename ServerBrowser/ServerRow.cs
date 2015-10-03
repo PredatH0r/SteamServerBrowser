@@ -10,13 +10,14 @@ namespace ServerBrowser
     private readonly Dictionary<string, string> rulesFieldCache = new Dictionary<string, string>();
     private readonly Dictionary<string, object> extenderFieldCache = new Dictionary<string, object>();
 
+    public string Name => ServerInfo != null ? ServerInfo.Name : CachedName != "" ? CachedName : EndPoint.ToString();
     public IPEndPoint EndPoint { get; private set; }
     public long RequestTimestamp { get; set; }
     public ServerInfo ServerInfo { get; set; }
     public PlayerCountInfo PlayerCount { get; private set; }
     internal int Retries { get; set; }
     public string Status { get; set; }
-    public bool Dedicated { get { return ServerInfo != null && ServerInfo.ServerType == "Dedicated"; } }
+    public bool Dedicated => ServerInfo != null && ServerInfo.ServerType == "Dedicated";
     public List<Player> Players { get; set; }
     public List<Rule> Rules { get; set; }
     
@@ -25,6 +26,7 @@ namespace ServerBrowser
     internal bool QueryRules { get; set; }
     internal GameExtension GameExtension { get; set; }
     public GeoInfo GeoInfo { get; set; }
+    public string CachedName { get; set; }
 
     public ServerRow(IPEndPoint ep, GameExtension extension)
     {

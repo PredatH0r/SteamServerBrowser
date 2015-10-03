@@ -44,7 +44,7 @@ namespace ServerBrowser
     private readonly ServerQueryLogic queryLogic;
     private readonly GeoIpClient geoIpClient = new GeoIpClient();
     private int geoIpModified;
-    private readonly HashSet<IPEndPoint> favServers = new HashSet<IPEndPoint>();
+    private readonly Dictionary<IPEndPoint, string> favServers = new Dictionary<IPEndPoint, string>();
     private TabViewModel viewModel;
     private readonly string iniFile;
     private XtraTabPage dragPage;
@@ -112,8 +112,9 @@ namespace ServerBrowser
 
       this.geoIpClient.LoadCache();
 
-      this.LoadViewModelsFromIniFile();
-      this.ApplyAppSettings();
+      IniFile ini = File.Exists(this.iniFile) ? new IniFile(this.iniFile) : null;
+      this.LoadViewModelsFromIniFile(ini);
+      this.ApplyAppSettings(ini);
 
       LookAndFeel_StyleChanged(null, null);
       --this.ignoreUiEvents;
@@ -198,24 +199,25 @@ namespace ServerBrowser
     #endregion
 
     #region LoadViewModelsFromIniFile()
-    private void LoadViewModelsFromIniFile()
+    private void LoadViewModelsFromIniFile(IniFile ini)
     {
       bool hasFavTab = false;
-      if (File.Exists(this.iniFile))
+      if (ini != null)
       {
-        IniFile ini = new IniFile(this.iniFile);
         int i = 0;
         foreach (var section in ini.Sections)
         {
-          if (!section.Name.StartsWith("Tab")) continue;
-          var vm = new TabViewModel();
-          vm.LoadFromIni(section, this.extenders);
-          var page = new XtraTabPage();
-          page.Text = section.GetString("TabName") ?? this.GetGameCaption((Game)vm.InitialGameID);
-          page.Tag = vm;
-          page.ImageIndex = vm.ImageIndex;
-          this.tabControl.TabPages.Insert(i++, page);
-          hasFavTab |= vm.Source == TabViewModel.SourceType.Favorites;
+          if (System.Text.RegularExpressions.Regex.IsMatch(section.Name, "^Tab[0-9]+$"))
+          {
+            var vm = new TabViewModel();
+            vm.LoadFromIni(ini, section, this.extenders);
+            var page = new XtraTabPage();
+            page.Text = section.GetString("TabName") ?? this.GetGameCaption((Game) vm.InitialGameID);
+            page.Tag = vm;
+            page.ImageIndex = vm.ImageIndex;
+            this.tabControl.TabPages.Insert(i++, page);
+            hasFavTab |= vm.Source == TabViewModel.SourceType.Favorites;
+          }
         }
       }
       else
@@ -273,8 +275,12 @@ namespace ServerBrowser
       if (vm.Source == TabViewModel.SourceType.Favorites)
       {
         vm.servers = new List<ServerRow>();
-        foreach(var fav in this.favServers)
-          vm.servers.Add(new ServerRow(fav, this.extenders.Get(0)));
+        foreach (var fav in this.favServers)
+        {
+          var row = new ServerRow(fav.Key, this.extenders.Get(0));
+          row.CachedName = fav.Value;
+          vm.servers.Add(row);
+        }
       }
 
       var info = vm.MasterServer;
@@ -309,14 +315,69 @@ namespace ServerBrowser
 
     #region ApplyAppSettings()
 
-    protected virtual void ApplyAppSettings()
+    protected virtual void ApplyAppSettings(IniFile ini)
     {
-      var opt = Settings.Default;
+      string[] masterServers;
+      int tabIndex;
+
+      this.favServers.Clear();
+
+      var options = ini?.GetSection("Options");
+      if (options != null)
+        tabIndex = ApplyAppSettingsFromIni(ini, options, out masterServers);
+      else
+        tabIndex = ApplyAppSettingsFromXml(out masterServers);
+
       // fill master server combobox
-      var masterServers = opt.MasterServerList.Split(',');
       this.comboMasterServer.Properties.Items.Clear();
       foreach (var master in masterServers)
         this.comboMasterServer.Properties.Items.Add(master);
+
+      // select tab page
+      var idx = tabIndex < this.tabControl.TabPages.Count - 1 ? tabIndex : 0;
+      this.SetViewModel((TabViewModel)this.tabControl.TabPages[idx].Tag);
+      this.tabControl.SelectedTabPageIndex = idx;
+    }
+    #endregion
+
+    #region ApplyAppSettingsFromIni()
+    private int ApplyAppSettingsFromIni(IniFile ini, IniFile.Section options, out string[] masterServers)
+    {
+      masterServers = (options.GetString("ApplyAppSettingsFromXml") ?? "").Split(',');
+      this.miShowOptions.Down = options.GetBool("ShowOptions");
+      this.miShowServerQuery.Down = options.GetBool("ShowServerQuery");
+
+      this.rbAddressHidden.Checked = options.GetInt("ShowAddressMode") == 0;
+      this.rbAddressQueryPort.Checked = options.GetInt("ShowAddressMode") == 1;
+      this.rbAddressGamePort.Checked = options.GetInt("ShowAddressMode") == 2;
+      this.cbRefreshSelectedServer.Checked = options.GetBool("RefreshSelected");
+      this.spinRefreshInterval.EditValue = options.GetDecimal("RefreshInterval");
+      this.rbUpdateListAndStatus.Checked = options.GetBool("AutoUpdateList");
+      this.rbUpdateStatusOnly.Checked = options.GetBool("AutoUpdateInfo");
+      this.cbFavServersOnTop.Checked = options.GetBool("KeepFavServersOnTop");
+      this.cbRememberColumnLayout.Checked = options.GetBool("ColumnLayoutPerTab");
+
+      // load favorite servers
+      var favs = ini.GetSection("FavoriteServers");
+      if (favs != null)
+      {
+        foreach (var server in favs.Keys)
+        {
+          if (server == "") continue;
+          var parts = server.Split(':');
+          this.favServers.Add(new IPEndPoint(IPAddress.Parse(parts[0]), int.Parse(parts[1])), favs.GetString(server));
+        }
+      }
+      return options.GetInt("TabIndex");
+    }
+
+    #endregion
+
+    #region ApplyAppSettingsFromXml()
+    private int ApplyAppSettingsFromXml(out string[] masterServers)
+    {
+      var opt = Settings.Default;
+      masterServers = opt.MasterServerList.Split(',');
 
       this.miShowOptions.Down = opt.ShowOptions;
       this.miShowServerQuery.Down = opt.ShowServerQuery;
@@ -325,34 +386,34 @@ namespace ServerBrowser
       this.rbAddressQueryPort.Checked = opt.ShowAddressMode == 1;
       this.rbAddressGamePort.Checked = opt.ShowAddressMode == 2;
       this.cbRefreshSelectedServer.Checked = opt.RefreshSelected;
-      this.spinRefreshInterval.EditValue = (decimal)opt.RefreshInterval;
+      this.spinRefreshInterval.EditValue = (decimal) opt.RefreshInterval;
       this.rbUpdateListAndStatus.Checked = opt.AutoUpdateList;
       this.rbUpdateStatusOnly.Checked = opt.AutoUpdateInfo;
       this.cbFavServersOnTop.Checked = opt.KeepFavServersOnTop;
       this.cbRememberColumnLayout.Checked = opt.ColumnLayoutPerTab;
 
       // load favorite servers
-      this.favServers.Clear();
       foreach (var server in opt.FavServers.Split(','))
       {
         if (server == "") continue;
         var parts = server.Split(':');
-        this.favServers.Add(new IPEndPoint(IPAddress.Parse(parts[0]), int.Parse(parts[1])));
+        var endpoint = new IPEndPoint(IPAddress.Parse(parts[0]), int.Parse(parts[1]));
+        this.favServers.Add(endpoint, endpoint.ToString());
       }
-
-      // select tab page
-      var idx = opt.TabIndex < this.tabControl.TabPages.Count ? opt.TabIndex : 0;
-      this.SetViewModel((TabViewModel)this.tabControl.TabPages[idx].Tag);
-      this.tabControl.SelectedTabPageIndex = idx;
+      return opt.TabIndex;
     }
     #endregion
+
 
 
     #region OnFormClosing()
     protected override void OnFormClosing(FormClosingEventArgs e)
     {
-      this.SaveViewModelsToIniFile();
-      this.SaveAppSettings();
+      var sb = new StringBuilder();
+      this.SaveAppSettings(sb);
+      this.SaveViewModelsToIniFile(sb);
+      File.WriteAllText(this.iniFile, sb.ToString());
+
       this.queryLogic.Cancel();
       this.geoIpClient.SaveCache();
       base.OnFormClosing(e);
@@ -360,48 +421,41 @@ namespace ServerBrowser
     #endregion
 
     #region SaveAppSettings()
-    protected virtual void SaveAppSettings()
+    protected virtual void SaveAppSettings(StringBuilder sb)
     {
-      var opt = Settings.Default;
-      opt.ShowOptions = this.miShowOptions.Down;
-      opt.ShowServerQuery = this.miShowServerQuery.Down;
-      opt.ShowAddressMode = this.showAddressMode;
-      opt.RefreshInterval = Convert.ToInt32(this.spinRefreshInterval.EditValue);
-      opt.RefreshSelected = this.cbRefreshSelectedServer.Checked;
-      opt.KeepFavServersOnTop = this.cbFavServersOnTop.Checked;
-      opt.AutoUpdateList = this.rbUpdateListAndStatus.Checked;
-      opt.AutoUpdateInfo = this.rbUpdateStatusOnly.Checked;
-      opt.Skin = UserLookAndFeel.Default.SkinName;
-      opt.TabIndex = this.tabControl.SelectedTabPageIndex;
-      opt.ColumnLayoutPerTab = this.cbRememberColumnLayout.Checked;
+      sb.AppendLine("[Options]");
+      sb.AppendLine($"ShowOptions={this.miShowOptions.Down}");
+      sb.AppendLine($"ShowServerQuery={this.miShowServerQuery.Down}");
+      sb.AppendLine($"ShowAddressMode={this.showAddressMode}");
+      sb.AppendLine($"RefreshInterval={Convert.ToInt32(this.spinRefreshInterval.EditValue)}");
+      sb.AppendLine($"RefreshSelected={this.cbRefreshSelectedServer.Checked}");
+      sb.AppendLine($"KeepFavServersOnTop={this.cbFavServersOnTop.Checked}");
+      sb.AppendLine($"AutoUpdateList={this.rbUpdateListAndStatus.Checked}");
+      sb.AppendLine($"AutoUpdateInfo={this.rbUpdateStatusOnly.Checked}");
+      sb.AppendLine($"Skin={UserLookAndFeel.Default.SkinName}");
+      sb.AppendLine($"TabIndex={this.tabControl.SelectedTabPageIndex}");
+      sb.AppendLine($"ColumnLayoutPerTab={this.cbRememberColumnLayout.Checked}");
 
-      var sb = new StringBuilder();
+      sb.AppendLine();
+      sb.AppendLine("[FavoriteServers]");
       foreach (var fav in this.favServers)
-      {
-        if (sb.Length > 0) sb.Append(",");
-        sb.Append(fav);
-      }
-      opt.FavServers = sb.ToString();
-      opt.Save();
+        sb.AppendLine($"{fav.Key}={fav.Value}");
     }
     #endregion
 
     #region SaveViewModelsToIniFile()
-    private void SaveViewModelsToIniFile()
+    private void SaveViewModelsToIniFile(StringBuilder sb)
     {
       this.UpdateViewModel();
 
-      var sb = new StringBuilder();
       int pageNr = 0;
       foreach (XtraTabPage page in this.tabControl.TabPages)
       {
         if (page == this.tabAdd) continue;
-        sb.AppendLine($"[Tab{++pageNr}]");
-        sb.AppendLine($"TabName={page.Text}");
+        ++pageNr;
         var opt = (TabViewModel)page.Tag;
-        opt.WriteToIni(sb);
+        opt.WriteToIni(sb, "Tab" + pageNr, page.Text);
       }
-      File.WriteAllText(this.iniFile, sb.ToString());
     }
     #endregion
 
@@ -605,6 +659,7 @@ namespace ServerBrowser
       this.gvServers.BeginDataUpdate();
 
       this.LookupGeoIps();
+      this.UpdateCachedServerNames();
 
       this.gcServers.DataSource = this.viewModel.servers;
       this.gvServers.EndDataUpdate();
@@ -638,6 +693,20 @@ namespace ServerBrowser
       var row = (ServerRow)this.gvServers.GetFocusedRow();
       if (forceUpdateDetails || row != null && row.GetAndResetIsModified())
         this.UpdateGridDataSources();
+    }
+    #endregion
+
+    #region UpdateCachedServerNames()
+    private void UpdateCachedServerNames()
+    {
+      if (this.viewModel.servers != null)
+      {
+        foreach (var server in this.viewModel.servers)
+        {
+          if (server.ServerInfo?.Name != null && this.favServers.ContainsKey(server.EndPoint))
+            this.favServers[server.EndPoint] = server.CachedName = server.ServerInfo.Name;
+        }
+      }
     }
     #endregion
 
@@ -1117,7 +1186,7 @@ namespace ServerBrowser
         {
           var server = (ServerRow) e.Row;
           if ((bool) e.Value)
-            this.favServers.Add(server.EndPoint);
+            this.favServers[server.EndPoint] = server.Name;
           else
             this.favServers.Remove(server.EndPoint);
         }
@@ -1126,7 +1195,7 @@ namespace ServerBrowser
 
       var row = (ServerRow) e.Row;
       if (e.Column == this.colFavServer)
-        e.Value = this.favServers.Contains(row.EndPoint);
+        e.Value = this.favServers.ContainsKey(row.EndPoint);
       else if (e.Column == this.colEndPoint)
         e.Value = GetServerAddress(row);
       else if (e.Column == this.colName)
@@ -1396,7 +1465,7 @@ namespace ServerBrowser
       foreach (var handle in this.gvServers.GetSelectedRows())
       {
         var row = (ServerRow)this.gvServers.GetRow(handle);
-        this.favServers.Add(row.EndPoint);
+        this.favServers.Add(row.EndPoint, row.Name);
       }
       this.UpdateViews();
     }

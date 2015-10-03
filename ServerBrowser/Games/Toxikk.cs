@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
@@ -132,12 +133,7 @@ namespace ServerBrowser
         if (res == DialogResult.No)
           return false;
         if (FindToxikkWindow() == IntPtr.Zero)
-        {
-          var hWnd = StartToxikk();
-          if (hWnd == IntPtr.Zero)
-            return false;
-          SkipIntro(hWnd);
-        }
+          StartToxikk();
         return true;
       }
         
@@ -162,17 +158,30 @@ namespace ServerBrowser
     #region ConnectInBackground()
     private bool ConnectInBackground(ServerRow server, string password, bool spectate)
     {
-      var win = FindToxikkWindow();
-      if (win == IntPtr.Zero)
+      bool mustStart = Process.GetProcessesByName("toxikk").All(p => p.MainWindowTitle.Contains("players)"));
+      if (mustStart)
+        StartToxikk();
+
+      IntPtr win = IntPtr.Zero;
+      for (int i = 0; i < SecondsToWaitForMainWindowAfterLaunch; i++)
       {
-        win = StartToxikk();
-        if (win == IntPtr.Zero)
-          return false;
-        SkipIntro(win);
+        win = FindToxikkWindow();
+        if (win != IntPtr.Zero)
+          break;
+        Thread.Sleep(1000);
       }
 
+      if (win == IntPtr.Zero)
+        return false;
+
+      if (mustStart)
+        SkipIntro(win);
+     
+      // open the console command line
       Win32.PostMessage(win, Win32.WM_KEYDOWN, (int)consoleKey, 0);
       Win32.PostMessage(win, Win32.WM_KEYUP, (int)consoleKey, 0);
+
+      Thread.Sleep(250);
 
       // hack: prevent WM_DEADCHAR quirks that might be a side-effect of the console key
       Win32.PostMessage(win, Win32.WM_CHAR, ' ', 0);
@@ -183,6 +192,7 @@ namespace ServerBrowser
         Win32.PostMessage(win, Win32.WM_KEYUP, (int)Keys.Back, 0);
       }
 
+      // send the command string
       var msg = "open " + server.EndPoint.Address + ":" + server.ServerInfo.Extra.Port;
       if (!string.IsNullOrEmpty(password))
         msg += "?password=" + password;
@@ -191,6 +201,9 @@ namespace ServerBrowser
       foreach (var c in msg)
         Win32.PostMessage(win, Win32.WM_CHAR, c, 0);
 
+      Thread.Sleep(750);
+
+      // and press Enter
       Win32.PostMessage(win, Win32.WM_KEYDOWN, (int)Keys.Return, 0);
       Win32.PostMessage(win, Win32.WM_KEYUP, (int)Keys.Return, 0);
 
@@ -198,37 +211,61 @@ namespace ServerBrowser
     }
     #endregion
 
+    #region StartToxikk()
+    private static void StartToxikk()
+    {
+      Process.Start("steam://rungameid/324810");
+    }
+    #endregion
+
     #region FindToxikkWindow()
     private static IntPtr FindToxikkWindow()
     {
-      foreach (Process proc in Process.GetProcessesByName("toxikk"))
+      // when TOXIKK is started with the "-log" option, it first creates a log window which would be returned by Process.AppMainWindow
+      // so instead we have to iterate through all top level windows in the system, and test if it is the real TOXIKK main window
+
+      // check if there is a toxikk process running and get its process id
+      var procList = Process.GetProcessesByName("toxikk");
+      if (procList.Length == 0)
+        return IntPtr.Zero;
+      int toxikkProcessId = 0;
+      foreach (var proc in procList)
       {
-        var hWnd = proc.MainWindowHandle;
+        if (!proc.MainWindowTitle.Contains("players)")) // ignore locally running dedicated servers
+        {
+          toxikkProcessId = proc.Id;
+          break;
+        }
+      }
+      if (toxikkProcessId == 0)
+        return IntPtr.Zero;
+
+      // iterate through all top level windows in the system
+      foreach (var hWnd in Win32.GetTopLevelWindows())
+      {
+        // ignore windows which don't belong to the toxikk process
+        int procId;
+        Win32.GetWindowThreadProcessId(hWnd, out procId);
+        if (procId != toxikkProcessId)
+          continue;     
+
+        // ignore the log window (only care about the main window with title "TOXIKK (32-bit, DX9)"
+        var len = Win32.GetWindowTextLength(hWnd) + 1;
+        StringBuilder winTitle = new StringBuilder(len);
+        Win32.GetWindowText(hWnd, winTitle, len);
+        if (!winTitle.ToString().StartsWith("TOXIKK (32-bit, DX"))
+          continue;
+
         Win32.RECT rect;
 
-        // wait for the main window and ignore the smaller splash screen
+        // ignore the small log window and splash screen, but return the large main window
         Win32.GetWindowRect(hWnd, out rect);
         if (rect.Height >= 600)
           return hWnd;
 
         // when the window is minimized, it can't be the splash screen
         var placement = Win32.GetWindowPlacement(hWnd);
-        if (placement.showCmd == Win32.ShowWindowCommands.Minimized)
-          return hWnd;
-      }
-      return IntPtr.Zero;
-    }
-    #endregion
-
-    #region StartToxikk()
-    private static IntPtr StartToxikk()
-    {
-      Process.Start("steam://rungameid/324810");
-      for (int i = 0; i < SecondsToWaitForMainWindowAfterLaunch; i++)
-      {
-        Thread.Sleep(1000);
-        var hWnd = FindToxikkWindow();
-        if (hWnd != IntPtr.Zero)
+        if (placement.showCmd == Win32.ShowWindowCommands.Minimized && rect.Width > 160)
           return hWnd;
       }
       return IntPtr.Zero;

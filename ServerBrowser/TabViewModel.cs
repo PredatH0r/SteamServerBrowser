@@ -66,7 +66,7 @@ namespace ServerBrowser
     #endregion
 
     #region LoadFromIni()
-    public void LoadFromIni(IniFile.Section ini, GameExtensionPool pool)
+    public void LoadFromIni(IniFile iniFile, IniFile.Section ini, GameExtensionPool pool)
     {
       this.Source = (SourceType) ini.GetInt("Type");
       this.MasterServer = ini.GetString("MasterServer") ?? "hl2master.steampowered.com:27011";
@@ -89,38 +89,62 @@ namespace ServerBrowser
       if (this.Source == SourceType.CustomList)
       {
         this.servers = new List<ServerRow>();
-        foreach (var server in ini.GetString("Servers").Split('\n', ' '))
+
+        // new config format
+        var sec = iniFile.GetSection(ini.Name + "_Servers");
+        if (sec != null)
         {
-          var s = server.Trim();
-          if (s == "") continue;
-          this.servers.Add(new ServerRow(Ip4Utils.ParseEndpoint(s), this.gameExtension));
+          foreach (var key in sec.Keys)
+          {
+            var row = new ServerRow(Ip4Utils.ParseEndpoint(key), this.gameExtension);
+            row.CachedName = sec.GetString(key);
+            this.servers.Add(row);
+          }
+        }
+        else
+        {
+          // old config format
+          var oldSetting = ini.GetString("Servers") ?? "";
+          foreach (var server in oldSetting.Split('\n', ' '))
+          {
+            var s = server.Trim();
+            if (s == "") continue;
+            this.servers.Add(new ServerRow(Ip4Utils.ParseEndpoint(s), this.gameExtension));
+          }
         }
       }
     }
     #endregion
 
     #region WriteToIni()
-    public void WriteToIni(StringBuilder ini)
+    public void WriteToIni(StringBuilder ini, string sectionName, string tabName)
     {
+      ini.AppendLine();
+      ini.AppendLine($"[{sectionName}]");
+      ini.Append("TabName=").AppendLine(tabName);
       ini.Append("Type=").Append((int) this.Source).AppendLine();
-      ini.Append("MasterServer=").AppendLine(this.MasterServer);
-      ini.Append("InitialGameID=").Append(this.InitialGameID).AppendLine();
-      ini.Append("FilterMod=").AppendLine(this.FilterMod);
-      ini.Append("FilterMap=").AppendLine(this.FilterMap);
-      ini.Append("TagsInclude=").AppendLine(this.TagsInclude);
-      ini.Append("TagsExclude=").AppendLine(this.TagsExclude);
-      ini.Append("GetEmptyServers=").AppendLine(this.GetEmptyServers ? "1" : "0");
-      ini.Append("GetFullServers=").AppendLine(this.GetFullServers ? "1" : "0");
-      ini.Append("MasterServerQueryLimit=").Append(this.MasterServerQueryLimit).AppendLine();
+      if (this.Source == SourceType.MasterServer)
+      {
+        ini.Append("MasterServer=").AppendLine(this.MasterServer);
+        ini.Append("InitialGameID=").Append(this.InitialGameID).AppendLine();
+        ini.Append("FilterMod=").AppendLine(this.FilterMod);
+        ini.Append("FilterMap=").AppendLine(this.FilterMap);
+        ini.Append("TagsInclude=").AppendLine(this.TagsInclude);
+        ini.Append("TagsExclude=").AppendLine(this.TagsExclude);
+        ini.Append("GetEmptyServers=").AppendLine(this.GetEmptyServers ? "1" : "0");
+        ini.Append("GetFullServers=").AppendLine(this.GetFullServers ? "1" : "0");
+        ini.Append("MasterServerQueryLimit=").Append(this.MasterServerQueryLimit).AppendLine();
+      }
       ini.Append("GridFilter=").AppendLine(this.GridFilter);
       if (this.ServerGridLayout != null)
         ini.Append("GridLayout=").AppendLine(Convert.ToBase64String(this.ServerGridLayout.GetBuffer(), 0, (int) this.ServerGridLayout.Length));
+
       if (this.Source == SourceType.CustomList)
       {
-        ini.Append("Servers=");
-        foreach (var row in this.servers)
-          ini.Append("\\\n ").Append(row.EndPoint);
         ini.AppendLine();
+        ini.AppendLine($"[{sectionName}_Servers]");
+        foreach (var row in this.servers)
+          ini.AppendLine($"{row.EndPoint}={row.ServerInfo?.Name}");
       }
     }
     #endregion

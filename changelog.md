@@ -2,6 +2,10 @@
 ---
 - moved the more important options to the left
 - Quake Live: removing "^1" color codes from player names
+- TOXIKK: fixed connecting to servers when Toxikk is started with "-log" parameter and has 2 windows
+- TOXIKK: fixed connecting to servers when there is also a local dedicated server running
+- remember server names for all favorite and static list servers
+- moved all config settings to a INI file
 
 2.1
 ---

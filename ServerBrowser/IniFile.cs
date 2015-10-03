@@ -58,7 +58,6 @@ namespace ChanSort.Api
       #endregion
 
       #region GetBytes()
-
       public byte[] GetBytes(string key)
       {
         string value;
@@ -84,6 +83,18 @@ namespace ChanSort.Api
         if (val == null) return defaultValue;
         val = val.ToLower();
         return val == "1" || val == "true" || val == "yes" || val == "on";
+      }
+      #endregion
+
+      #region GetDecimal()
+      public decimal GetDecimal(string key)
+      {
+        string value = this.GetString(key);
+        if (value == null)
+          return 0;
+        decimal val;
+        decimal.TryParse(value, out val);
+        return val;
       }
       #endregion
 
