@@ -25,6 +25,14 @@ namespace ServerBrowser
 
     private static readonly Regex NameColors = new Regex("\\^[0-9]");
 
+    #region ctor()
+    public QuakeLive()
+    {
+      this.BotsIncludedInPlayerCount = true;
+      this.BotsIncludedInPlayerList = true;
+    }
+    #endregion
+
     #region CustomizeServerGridColumns
     public override void CustomizeServerGridColumns(GridView view)
     {

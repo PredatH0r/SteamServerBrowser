@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
@@ -196,6 +197,9 @@ namespace ServerBrowser
     {      
     }
 
+    public bool BotsIncludedInPlayerCount { get; set; }
+
+    public bool BotsIncludedInPlayerList { get; set; }
   }
   #endregion
 
@@ -216,10 +220,9 @@ namespace ServerBrowser
   #endregion
 
   #region class GameExtensionPool
-  public class GameExtensionPool
+  public class GameExtensionPool : IEnumerable<KeyValuePair<Game, GameExtension>>
   {
     private readonly Dictionary<Game, GameExtension> extensions = new Dictionary<Game, GameExtension>();
-    private readonly GameExtension defaultExtension = new GameExtension();
 
     public void Add(Game game, GameExtension extension)
     {
@@ -229,9 +232,22 @@ namespace ServerBrowser
     public GameExtension Get(Game game)
     {
       GameExtension extension;
-      if (this.extensions.TryGetValue(game, out extension))
-        return extension;
-      return defaultExtension;
+      if (!this.extensions.TryGetValue(game, out extension))
+      {
+        extension = new GameExtension();
+        this.extensions.Add(game, extension);
+      }
+      return extension;
+    }
+
+    IEnumerator<KeyValuePair<Game, GameExtension>> IEnumerable<KeyValuePair<Game, GameExtension>>.GetEnumerator()
+    {
+      return extensions.GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+      return ((IEnumerable) extensions).GetEnumerator();
     }
   }
   #endregion

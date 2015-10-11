@@ -1,3 +1,7 @@
+2.3
+---
+- added heuristic to detect whether a game counts bots as players and/or shows them in the player list
+
 2.2
 ---
 - moved the more important options to the left

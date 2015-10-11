@@ -32,15 +32,37 @@ namespace ServerBrowser
         Bots = row.GameExtension.GetBotCount(row);
         MaxPlayers = row.ServerInfo.MaxPlayers;
         RealPlayers = row.ServerInfo.Players;
+
+        // some games count bots as players, others don't
+        if (RealPlayers >= Bots)
+        {
+          if (RealPlayers + Bots > MaxPlayers && RealPlayers - Bots <= MaxPlayers)
+            row.GameExtension.BotsIncludedInPlayerCount = true; // heuristic
+          if (row.GameExtension.BotsIncludedInPlayerCount)
+            RealPlayers -= Bots;
+        }
       }
 
       if (row.Players != null)
       {
         // CS:GO with default server settings returns a single fake "Max Players" entry with score=MaxPlayers and time=server up-time
-        if (row.ServerInfo != null && row.ServerInfo.Players != row.Players.Count && row.Players.Count == 1 && row.Players[0].Name == "Max Players")
-          RealPlayers = row.ServerInfo.Players;
-        else
-          RealPlayers = row.Players.Count(p => !string.IsNullOrEmpty(p.Name));
+        if (row.Players.Count == 1 && row.Players[0].Name == "Max Players")
+        {          
+        }
+        else if (row.Players.Count > 0) // some games always return an empty list
+        {
+          int? count = row.Players.Count(p => !string.IsNullOrEmpty(p.Name));
+
+          // some games (CS:GO, TF2, QuakeLive) return bots in the player list
+          if (count >= Bots)
+          {
+            if (count > RealPlayers && count - Bots <= RealPlayers)
+              row.GameExtension.BotsIncludedInPlayerList = true; // heuristic
+            if (row.GameExtension.BotsIncludedInPlayerList)
+              count -= Bots;
+          }
+          RealPlayers = count;
+        }
       }
     }
 

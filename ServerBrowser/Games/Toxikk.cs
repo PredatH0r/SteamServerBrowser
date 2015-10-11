@@ -35,6 +35,8 @@ namespace ServerBrowser
       this.supportsPlayersQuery = true;
       this.supportsRulesQuery = true;
       this.supportsConnectAsSpectator = true;
+      this.BotsIncludedInPlayerCount = false;
+      this.BotsIncludedInPlayerList = false;
     }
 
     #region CustomizeServerGridColumns()

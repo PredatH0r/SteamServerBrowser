@@ -7,6 +7,8 @@ namespace ServerBrowser
     public CounterStrikeGO()
     {
       this.supportsRulesQuery = false;
+      this.BotsIncludedInPlayerCount = false;
+      this.BotsIncludedInPlayerList = true;
     }
 
     public override void CustomizeServerFilter(IpFilter filter)

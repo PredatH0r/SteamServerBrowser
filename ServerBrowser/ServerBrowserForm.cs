@@ -91,6 +91,14 @@ namespace ServerBrowser
       extenders.Add(Game.Reflex, new Reflex());
       extenders.Add(Game.QuakeLive_Testing, new QuakeLive());
       extenders.Add(Game.CounterStrike_Global_Offensive, new CounterStrikeGO());
+
+      // some games include bot count also in players count. This hardcoded list can be extended through the INI
+      foreach (var game in new[] {Game.Team_Fortress_2})
+        extenders.Get(game).BotsIncludedInPlayerCount = true;
+
+      // some games include bots also in player list. This hardcoded list can be extended through the INI
+      foreach (var game in new[] { Game.Team_Fortress_2})
+        extenders.Get(game).BotsIncludedInPlayerList = true;
     }
 
     #endregion
@@ -106,7 +114,6 @@ namespace ServerBrowser
       ++this.ignoreUiEvents;
       this.FillCountryFlags();
       this.FillGameCombo();
-      this.InitGameInfoExtenders();
       this.InitBranding();
       LoadBonusSkins(this.BonusSkinDllPath);
 
@@ -115,6 +122,7 @@ namespace ServerBrowser
       IniFile ini = File.Exists(this.iniFile) ? new IniFile(this.iniFile) : null;
       this.LoadViewModelsFromIniFile(ini);
       this.ApplyAppSettings(ini);
+      this.ApplyGameSettings(ini);
 
       LookAndFeel_StyleChanged(null, null);
       --this.ignoreUiEvents;
@@ -404,6 +412,27 @@ namespace ServerBrowser
     }
     #endregion
 
+    #region ApplyGameSettings()
+    protected virtual void ApplyGameSettings(IniFile ini)
+    {
+      var sec = ini.GetSection("GameSpecific");
+      if (sec == null) return;
+
+      foreach (var appId in (sec.GetString("BotsIncludedInPlayerCount") ?? "").Split(' ', ','))
+      {
+        int id;
+        if (int.TryParse(appId.Trim(), out id))
+          this.extenders.Get((Game)id).BotsIncludedInPlayerCount = true;
+      }
+
+      foreach (var appId in (sec.GetString("BotsIncludedInPlayerList") ?? "").Split(' ', ','))
+      {
+        int id;
+        if (int.TryParse(appId.Trim(), out id))
+          this.extenders.Get((Game)id).BotsIncludedInPlayerList = true;
+      }
+    }
+    #endregion
 
 
     #region OnFormClosing()
@@ -411,6 +440,7 @@ namespace ServerBrowser
     {
       var sb = new StringBuilder();
       this.SaveAppSettings(sb);
+      this.SaveGameSettings(sb);
       this.SaveViewModelsToIniFile(sb);
       File.WriteAllText(this.iniFile, sb.ToString());
 
@@ -443,6 +473,27 @@ namespace ServerBrowser
     }
     #endregion
 
+    #region SaveGameSettings()
+    private void SaveGameSettings(StringBuilder sb)
+    {
+      var sbCount = new StringBuilder();
+      var sbList = new StringBuilder();
+
+      foreach (var entry in this.extenders)
+      {
+        if (entry.Value.BotsIncludedInPlayerCount)
+          sbCount.Append((int)entry.Key).Append(' ');
+        if (entry.Value.BotsIncludedInPlayerList)
+          sbList.Append((int)entry.Key).Append(' ');
+      }
+
+      sb.AppendLine();
+      sb.AppendLine("[GameSpecific]");
+      sb.Append("BotsIncludedInPlayerCount=").AppendLine(sbCount.ToString());
+      sb.Append("BotsIncludedInPlayerList=").AppendLine(sbList.ToString());
+    }
+    #endregion
+
     #region SaveViewModelsToIniFile()
     private void SaveViewModelsToIniFile(StringBuilder sb)
     {
@@ -458,6 +509,7 @@ namespace ServerBrowser
       }
     }
     #endregion
+
 
 
     #region UpdateViewModel()
