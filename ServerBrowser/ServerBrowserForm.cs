@@ -31,9 +31,9 @@ namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.2";
+    private const string Version = "2.4";
     private const string DevExpressVersion = "v15.1";
-    private const string CustomNumericRuleColumnPrefix = "castRule.";
+    private const string CustomNumericRuleColumnPrefix = "custRule.";
 
     private readonly GameExtensionPool extenders = new GameExtensionPool();
     private readonly GameExtension unknownGame = new GameExtension();
@@ -66,7 +66,7 @@ namespace ServerBrowser
       this.iniFile = Path.Combine(Application.LocalUserAppDataPath, "ServerBrowser.ini");
 
       this.queryLogic.UpdateStatus += (s, e) => this.BeginInvoke((Action)(() => queryLogic_SetStatusMessage(s, e)));
-      this.queryLogic.ServerListReceived += (s, e) => this.BeginInvoke((Action) (() => queryLogic_ServerListReceived()));
+      this.queryLogic.ServerListReceived += (s, e) => this.BeginInvoke((Action) queryLogic_ServerListReceived);
       this.queryLogic.ReloadServerListComplete += (s, e) => this.BeginInvoke((Action)(() => { queryLogic_ReloadServerListComplete(e.Rows); }));
       this.queryLogic.RefreshSingleServerComplete += (s, e) => this.BeginInvoke((Action)(() => { queryLogic_RefreshSingleServerComplete(e); }));
 
@@ -89,7 +89,8 @@ namespace ServerBrowser
     {
       extenders.Add(Game.Toxikk, new Toxikk());
       extenders.Add(Game.Reflex, new Reflex());
-      extenders.Add(Game.QuakeLive_Testing, new QuakeLive());
+      extenders.Add(Game.QuakeLive_Testing, new QuakeLive(Game.QuakeLive_Testing));
+      extenders.Add(Game.QuakeLive, new QuakeLive(Game.QuakeLive));
       extenders.Add(Game.CounterStrike_Global_Offensive, new CounterStrikeGO());
 
       // some games include bot count also in players count. This hardcoded list can be extended through the INI
@@ -326,15 +327,13 @@ namespace ServerBrowser
     protected virtual void ApplyAppSettings(IniFile ini)
     {
       string[] masterServers;
-      int tabIndex;
 
       this.favServers.Clear();
 
       var options = ini?.GetSection("Options");
-      if (options != null)
-        tabIndex = ApplyAppSettingsFromIni(ini, options, out masterServers);
-      else
-        tabIndex = ApplyAppSettingsFromXml(out masterServers);
+      var tabIndex = options != null 
+        ? ApplyAppSettingsFromIni(ini, options, out masterServers) 
+        : ApplyAppSettingsFromXml(out masterServers);
 
       // fill master server combobox
       this.comboMasterServer.Properties.Items.Clear();

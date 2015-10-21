@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
@@ -9,8 +8,12 @@ using DevExpress.Data;
 using DevExpress.XtraGrid.Columns;
 using DevExpress.XtraGrid.Views.Grid;
 using QueryMaster;
+
+#if ZMQ
+using System.Net;
 using ZeroMQ;
 using ZeroMQ.Monitoring;
+#endif
 
 namespace ServerBrowser
 {
@@ -18,22 +21,38 @@ namespace ServerBrowser
   {
     private const int SecondsToWaitForMainWindowAfterLaunch = 20;
 
-    private static readonly Dictionary<int,string> gameTypeName = new Dictionary<int, string>
+    private static readonly Dictionary<int, string> gameTypeName = new Dictionary<int, string>
     {
-      { 0, "FFA" },{ 1, "Duel" },{ 2, "Race" },{ 3, "TDM" },{ 4, "CA" },{ 5, "CTF" },{ 6, "1Flag" },{ 8, "Harv" },{ 9, "FT" },{ 10, "Dom" },{ 11, "A&D" },{ 12, "RR" }
+      {0, "FFA"},
+      {1, "Duel"},
+      {2, "Race"},
+      {3, "TDM"},
+      {4, "CA"},
+      {5, "CTF"},
+      {6, "1Flag"},
+      {8, "Harv"},
+      {9, "FT"},
+      {10, "Dom"},
+      {11, "A&D"},
+      {12, "RR"}
     };
 
     private static readonly Regex NameColors = new Regex("\\^[0-9]");
+    private readonly Game steamAppId;
 
     #region ctor()
-    public QuakeLive()
+
+    public QuakeLive(Game steamAppId)
     {
+      this.steamAppId = steamAppId;
       this.BotsIncludedInPlayerCount = true;
       this.BotsIncludedInPlayerList = true;
     }
+
     #endregion
 
     #region CustomizeServerGridColumns
+
     public override void CustomizeServerGridColumns(GridView view)
     {
       var colDescription = view.Columns["ServerInfo.Description"];
@@ -48,9 +67,11 @@ namespace ServerBrowser
       AddColumn(view, "timelimit", "TL", "Time Limit", 30, ++idx, UnboundColumnType.Integer);
       AddColumn(view, "g_instagib", "Insta", "Instagib", 35, ++idx, UnboundColumnType.Boolean);
     }
+
     #endregion
 
     #region GetServerCellValue()
+
     public override object GetServerCellValue(ServerRow row, string fieldName)
     {
       switch (fieldName)
@@ -71,21 +92,23 @@ namespace ServerBrowser
         case "_gametype":
         {
           var gt = row.GetRule("g_gametype");
-          string instaPrefix = row.GetRule("g_instagib") == "1" ? "i" : "";
+          var instaPrefix = row.GetRule("g_instagib") == "1" ? "i" : "";
           int num;
           string name;
           if (int.TryParse(gt, out num) && gameTypeName.TryGetValue(num, out name))
             return instaPrefix + name;
           return instaPrefix + gt;
         }
-        case "g_instagib": 
+        case "g_instagib":
           return row.GetRule(fieldName) == "1";
       }
       return base.GetServerCellValue(row, fieldName);
     }
+
     #endregion
 
     #region CustomizePlayerGridColumns()
+
     public override void CustomizePlayerGridColumns(GridView view)
     {
       var col = view.Columns["Name"];
@@ -95,15 +118,18 @@ namespace ServerBrowser
       col = this.AddColumn(view, "NameWithoutColorCodes", "Name", "Name", 150, 0);
       col.FieldName = "NameWithoutColorCodes";
     }
+
     #endregion
 
     #region GetPlayerCellValue()
+
     public override object GetPlayerCellValue(ServerRow server, Player player, string fieldName)
     {
       if (fieldName == "NameWithoutColorCodes")
         return NameColors.Replace(player.Name, "");
       return base.GetPlayerCellValue(server, player, fieldName);
     }
+
     #endregion
 
     #region Connect()
@@ -112,10 +138,13 @@ namespace ServerBrowser
     {
       ThreadPool.QueueUserWorkItem(context => ConnectInBackground(server, password, spectate), null);
       return true;
+      //return base.Connect(server, password, spectate);
     }
+
     #endregion
 
     #region ConnectInBackground()
+
     private bool ConnectInBackground(ServerRow server, string password, bool spectate)
     {
       var win = FindQuakeWindow();
@@ -143,30 +172,34 @@ namespace ServerBrowser
         Thread.Sleep(10);
       }
 
-      Win32.PostMessage(win, Win32.WM_KEYDOWN, (int)Keys.Return, 0x1C << 16);
-      Win32.PostMessage(win, Win32.WM_KEYUP, (int)Keys.Return, 0x1C << 16);
+      Win32.PostMessage(win, Win32.WM_KEYDOWN, (int) Keys.Return, 0x1C << 16);
+      Win32.PostMessage(win, Win32.WM_KEYUP, (int) Keys.Return, 0x1C << 16);
 
       return true;
     }
+
     #endregion
 
     #region FindQuakeWindow()
+
     private static IntPtr FindQuakeWindow()
     {
-      foreach (Process proc in Process.GetProcessesByName("quakelive_steam"))
+      foreach (var proc in Process.GetProcessesByName("quakelive_steam"))
       {
         var hWnd = proc.MainWindowHandle;
         return hWnd;
       }
       return IntPtr.Zero;
     }
+
     #endregion
 
     #region StartQuakeLive()
-    private static IntPtr StartQuakeLive()
+
+    private IntPtr StartQuakeLive()
     {
-      Process.Start("steam://rungameid/344320");
-      for (int i = 0; i < SecondsToWaitForMainWindowAfterLaunch; i++)
+      Process.Start("steam://rungameid/" + (int) steamAppId);
+      for (var i = 0; i < SecondsToWaitForMainWindowAfterLaunch; i++)
       {
         Thread.Sleep(1000);
         var hWnd = FindQuakeWindow();
@@ -176,25 +209,25 @@ namespace ServerBrowser
       return IntPtr.Zero;
     }
 
-
     #endregion
 
     #region SkipIntro()
+
     private void SkipIntro(IntPtr win)
     {
-      for (int i = 0; i < 3; i++)
+      for (var i = 0; i < 3; i++)
       {
         Thread.Sleep(500);
         Win32.PostMessage(win, Win32.WM_LBUTTONDOWN, 1, 0);
         Win32.PostMessage(win, Win32.WM_LBUTTONUP, 0, 0);
       }
     }
+
     #endregion
 
-
     // ZeroMQ rcon stuff
-
-    #region Rcon()
+#if ZMQ
+#region Rcon()
 
     public override void Rcon(ServerRow row, int port, string password, string command)
     {
@@ -246,9 +279,9 @@ namespace ServerBrowser
         }
       }
     }
-    #endregion
+#endregion
 
-    #region CreateClientAndMonitorSockets()
+#region CreateClientAndMonitorSockets()
     private void CreateClientAndMonitorSockets(ZContext ctx, IPEndPoint endPoint, string password, out ZSocket client, out ZSocket monitor)
     {
       client = new ZSocket(ctx, ZSocketType.DEALER);
@@ -268,9 +301,9 @@ namespace ServerBrowser
       client.SetOption(ZSocketOption.IDENTITY, ident);
       client.Connect("tcp://" + endPoint);      
     }
-    #endregion
+#endregion
 
-    #region CheckMonitor()
+#region CheckMonitor()
     private Tuple<ZMonitorEvents,object> CheckMonitor(ZSocket monitor)
     {
       try
@@ -294,6 +327,7 @@ namespace ServerBrowser
         return null;
       }
     }
-    #endregion
+#endregion
+#endif
   }
 }

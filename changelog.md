@@ -1,3 +1,7 @@
+2.4
+---
+- added support for official version of Steam-Exlucsive QuakeLive 
+
 2.3
 ---
 - added heuristic to detect whether a game counts bots as players and/or shows them in the player list
