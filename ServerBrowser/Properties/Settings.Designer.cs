@@ -37,7 +37,7 @@ namespace ServerBrowser.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("324810")]
+        [global::System.Configuration.DefaultSettingValueAttribute("730")]
         public int InitialGameID {
             get {
                 return ((int)(this["InitialGameID"]));
@@ -49,7 +49,7 @@ namespace ServerBrowser.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("324810,328070,440")]
+        [global::System.Configuration.DefaultSettingValueAttribute("730,440,282440,328070,324810")]
         public string FavGameIDs {
             get {
                 return ((string)(this["FavGameIDs"]));
@@ -230,7 +230,7 @@ namespace ServerBrowser.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool KeepFavServersOnTop {
             get {
                 return ((bool)(this["KeepFavServersOnTop"]));

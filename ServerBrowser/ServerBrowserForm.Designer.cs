@@ -150,6 +150,7 @@ namespace ServerBrowser
       this.linkFilter1 = new DevExpress.XtraEditors.HyperlinkLabelControl();
       this.timerUpdateServerList = new System.Windows.Forms.Timer(this.components);
       this.panelOptions = new DevExpress.XtraEditors.PanelControl();
+      this.cbHideUnresponsiveServers = new DevExpress.XtraEditors.CheckEdit();
       this.btnApplyFilter = new DevExpress.XtraEditors.SimpleButton();
       this.comboMaxPing = new DevExpress.XtraEditors.ComboBoxEdit();
       this.labelControl3 = new DevExpress.XtraEditors.LabelControl();
@@ -230,6 +231,7 @@ namespace ServerBrowser
       this.tabControl.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.panelOptions)).BeginInit();
       this.panelOptions.SuspendLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.cbHideUnresponsiveServers.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.comboMaxPing.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbMinPlayersBots.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.spinMinPlayers.Properties)).BeginInit();
@@ -1516,7 +1518,7 @@ namespace ServerBrowser
       // 
       this.btnSkin.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
       this.btnSkin.Appearance.Options.UseFont = true;
-      this.btnSkin.Location = new System.Drawing.Point(745, 61);
+      this.btnSkin.Location = new System.Drawing.Point(1130, 9);
       this.btnSkin.Name = "btnSkin";
       this.btnSkin.Size = new System.Drawing.Size(115, 25);
       this.btnSkin.TabIndex = 16;
@@ -1526,7 +1528,7 @@ namespace ServerBrowser
       // cbRefreshSelectedServer
       // 
       this.cbRefreshSelectedServer.EditValue = true;
-      this.cbRefreshSelectedServer.Location = new System.Drawing.Point(745, 7);
+      this.cbRefreshSelectedServer.Location = new System.Drawing.Point(745, 10);
       this.cbRefreshSelectedServer.Name = "cbRefreshSelectedServer";
       this.cbRefreshSelectedServer.Properties.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
       this.cbRefreshSelectedServer.Properties.Appearance.Options.UseFont = true;
@@ -1861,6 +1863,7 @@ namespace ServerBrowser
       // panelOptions
       // 
       this.panelOptions.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.NoBorder;
+      this.panelOptions.Controls.Add(this.cbHideUnresponsiveServers);
       this.panelOptions.Controls.Add(this.btnApplyFilter);
       this.panelOptions.Controls.Add(this.comboMaxPing);
       this.panelOptions.Controls.Add(this.labelControl3);
@@ -1888,6 +1891,19 @@ namespace ServerBrowser
       this.panelOptions.Size = new System.Drawing.Size(1658, 106);
       this.panelOptions.TabIndex = 1;
       this.panelOptions.Visible = false;
+      // 
+      // cbHideUnresponsiveServers
+      // 
+      this.cbHideUnresponsiveServers.EditValue = true;
+      this.cbHideUnresponsiveServers.Location = new System.Drawing.Point(745, 49);
+      this.cbHideUnresponsiveServers.Name = "cbHideUnresponsiveServers";
+      this.cbHideUnresponsiveServers.Properties.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
+      this.cbHideUnresponsiveServers.Properties.Appearance.Options.UseFont = true;
+      this.cbHideUnresponsiveServers.Properties.AutoWidth = true;
+      this.cbHideUnresponsiveServers.Properties.Caption = "Hide unresponsive servers";
+      this.cbHideUnresponsiveServers.Size = new System.Drawing.Size(159, 19);
+      this.cbHideUnresponsiveServers.TabIndex = 21;
+      this.cbHideUnresponsiveServers.CheckedChanged += new System.EventHandler(this.cbHideUnresponsiveServers_CheckedChanged);
       // 
       // btnApplyFilter
       // 
@@ -1984,7 +2000,7 @@ namespace ServerBrowser
       // 
       // cbRememberColumnLayout
       // 
-      this.cbRememberColumnLayout.Location = new System.Drawing.Point(745, 42);
+      this.cbRememberColumnLayout.Location = new System.Drawing.Point(745, 68);
       this.cbRememberColumnLayout.Name = "cbRememberColumnLayout";
       this.cbRememberColumnLayout.Properties.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
       this.cbRememberColumnLayout.Properties.Appearance.Options.UseFont = true;
@@ -2010,7 +2026,8 @@ namespace ServerBrowser
       // 
       // cbFavServersOnTop
       // 
-      this.cbFavServersOnTop.Location = new System.Drawing.Point(745, 25);
+      this.cbFavServersOnTop.EditValue = true;
+      this.cbFavServersOnTop.Location = new System.Drawing.Point(745, 30);
       this.cbFavServersOnTop.Name = "cbFavServersOnTop";
       this.cbFavServersOnTop.Properties.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
       this.cbFavServersOnTop.Properties.Appearance.Options.UseFont = true;
@@ -2022,7 +2039,7 @@ namespace ServerBrowser
       // 
       // rbAddressGamePort
       // 
-      this.rbAddressGamePort.Location = new System.Drawing.Point(1040, 68);
+      this.rbAddressGamePort.Location = new System.Drawing.Point(1013, 68);
       this.rbAddressGamePort.Name = "rbAddressGamePort";
       this.rbAddressGamePort.Properties.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
       this.rbAddressGamePort.Properties.Appearance.Options.UseFont = true;
@@ -2037,7 +2054,7 @@ namespace ServerBrowser
       // 
       // rbAddressQueryPort
       // 
-      this.rbAddressQueryPort.Location = new System.Drawing.Point(1040, 49);
+      this.rbAddressQueryPort.Location = new System.Drawing.Point(1013, 49);
       this.rbAddressQueryPort.Name = "rbAddressQueryPort";
       this.rbAddressQueryPort.Properties.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
       this.rbAddressQueryPort.Properties.Appearance.Options.UseFont = true;
@@ -2053,7 +2070,7 @@ namespace ServerBrowser
       // labelControl10
       // 
       this.labelControl10.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
-      this.labelControl10.Location = new System.Drawing.Point(1039, 9);
+      this.labelControl10.Location = new System.Drawing.Point(1013, 12);
       this.labelControl10.Name = "labelControl10";
       this.labelControl10.Size = new System.Drawing.Size(80, 15);
       this.labelControl10.TabIndex = 17;
@@ -2062,7 +2079,7 @@ namespace ServerBrowser
       // labelControl9
       // 
       this.labelControl9.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
-      this.labelControl9.Location = new System.Drawing.Point(548, 9);
+      this.labelControl9.Location = new System.Drawing.Point(548, 8);
       this.labelControl9.Name = "labelControl9";
       this.labelControl9.Size = new System.Drawing.Size(109, 15);
       this.labelControl9.TabIndex = 8;
@@ -2087,7 +2104,7 @@ namespace ServerBrowser
       // 
       // rbAddressHidden
       // 
-      this.rbAddressHidden.Location = new System.Drawing.Point(1040, 30);
+      this.rbAddressHidden.Location = new System.Drawing.Point(1013, 30);
       this.rbAddressHidden.Name = "rbAddressHidden";
       this.rbAddressHidden.Properties.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
       this.rbAddressHidden.Properties.Appearance.Options.UseFont = true;
@@ -2343,6 +2360,7 @@ namespace ServerBrowser
       ((System.ComponentModel.ISupportInitialize)(this.panelOptions)).EndInit();
       this.panelOptions.ResumeLayout(false);
       this.panelOptions.PerformLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.cbHideUnresponsiveServers.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.comboMaxPing.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbMinPlayersBots.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.spinMinPlayers.Properties)).EndInit();
@@ -2525,5 +2543,6 @@ namespace ServerBrowser
     protected CheckEdit cbMinPlayersBots;
     protected SpinEdit spinMinPlayers;
     private DevExpress.LookAndFeel.DefaultLookAndFeel defaultLookAndFeel1;
+    protected CheckEdit cbHideUnresponsiveServers;
   }
 }

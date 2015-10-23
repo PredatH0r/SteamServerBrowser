@@ -6,10 +6,10 @@
       <Value Profile="(Default)">Office 2010 Black</Value>
     </Setting>
     <Setting Name="InitialGameID" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">324810</Value>
+      <Value Profile="(Default)">730</Value>
     </Setting>
     <Setting Name="FavGameIDs" Type="System.String" Scope="User">
-      <Value Profile="(Default)">324810,328070,440</Value>
+      <Value Profile="(Default)">730,440,282440,328070,324810</Value>
     </Setting>
     <Setting Name="MasterServer" Type="System.String" Scope="User">
       <Value Profile="(Default)">hl2master.steampowered.com:27011</Value>
@@ -54,7 +54,7 @@
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="KeepFavServersOnTop" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
+      <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="MasterServerQueryLimit" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">500</Value>

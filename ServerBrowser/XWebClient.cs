@@ -20,7 +20,7 @@ namespace ServerBrowser
     public Encoding Encoding { get; set; }
     public event DownloadStringCompletedEventHandler DownloadStringCompleted;
     public event DownloadDataCompletedEventHandler DownloadDataCompleted;
-
+    public Exception Error { get; private set; }
     #region ctor, Dispose
 
     public XWebClient() : this(1000)
@@ -49,9 +49,8 @@ namespace ServerBrowser
     {
       var request = new AsyncRequest(url, null);
       this.DownloadStringWithTimeout(request);
-      if (request.StringResult.Error != null)
-        throw request.StringResult.Error;
-      return request.StringResult.Result;
+      this.Error = request.StringResult.Error;
+      return this.Error != null ? null : request.StringResult?.Result;
     }
 
     public void DownloadStringAsync(Uri url, object state = null)
@@ -67,23 +66,17 @@ namespace ServerBrowser
       var request = (AsyncRequest)asyncRequest;
       using (request)
       {
-        try
-        {
-          ThreadPool.QueueUserWorkItem(context => request.DownloadStringAsync(this.Encoding));
-          if (!request.WaitHandle.WaitOne(this.Timeout))
-             throw new TimeoutException("Request timed out");
-        }
-        catch (Exception ex)
+        ThreadPool.QueueUserWorkItem(context => request.DownloadStringAsync(this.Encoding));
+        if (!request.WaitHandle.WaitOne(this.Timeout))
         {
           var internalCtor = typeof(DownloadStringCompletedEventArgs).GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, null,
             new[] { typeof(string), typeof(Exception), typeof(bool), typeof(object) }, null);
-          request.StringResult = (DownloadStringCompletedEventArgs)internalCtor.Invoke(new[] { null, ex, false, request.State });
+          request.StringResult = (DownloadStringCompletedEventArgs)internalCtor.Invoke(new[] { null, new TimeoutException("Request timed out"), false, request.State });
         }
       }
 
       var handler = this.DownloadStringCompleted;
-      if (handler != null)
-        handler(this, request.StringResult);
+      handler?.Invoke(this, request.StringResult);
     }
     #endregion
 

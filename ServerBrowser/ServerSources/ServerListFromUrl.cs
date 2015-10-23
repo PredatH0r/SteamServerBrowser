@@ -22,6 +22,12 @@ namespace ServerBrowser
         using (var client = new XWebClient())
         {
           var text = client.DownloadString(this.url);
+          if (text == null)
+          {
+            callback(null);
+            return;
+          }
+
           var lines = text.Split('\n');
           var endpoints = new List<IPEndPoint>(lines.Length);
           int i = 0;

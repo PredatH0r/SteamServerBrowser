@@ -1,3 +1,9 @@
+2.5
+---
+- fixed error when launching Steam Server Browser for the first time
+- added option to hide unresponsive servers (activated by default)
+- imporved geo-ip lookup
+
 2.4
 ---
 - added support for official version of Steam-Exlucsive QuakeLive 

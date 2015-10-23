@@ -82,7 +82,7 @@ namespace QueryMaster
                 onTimeout(attempt);
 
               if (attempt >= maxTries)
-                throw new TimeoutException("Request timed out", ex);
+                return default(T);
             }
           }
         }

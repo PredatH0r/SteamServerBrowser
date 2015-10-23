@@ -73,6 +73,11 @@ namespace QueryMaster
           {
             var curSeed = nextSeed;
             var endpoints = Util.RunWithRetries(() => SendAndReceive(udpSocket, recvData, region, filter, curSeed), this.Retries);
+            if (endpoints == null)
+            {
+              callback(null);
+              break;
+            }
             ThreadPool.QueueUserWorkItem(y => callback(endpoints));
             totalCount += endpoints.Count;
             nextSeed = endpoints.Last();

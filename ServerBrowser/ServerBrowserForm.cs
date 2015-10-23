@@ -31,7 +31,7 @@ namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.4";
+    private const string Version = "2.5";
     private const string DevExpressVersion = "v15.1";
     private const string CustomNumericRuleColumnPrefix = "custRule.";
 
@@ -357,11 +357,12 @@ namespace ServerBrowser
       this.rbAddressHidden.Checked = options.GetInt("ShowAddressMode") == 0;
       this.rbAddressQueryPort.Checked = options.GetInt("ShowAddressMode") == 1;
       this.rbAddressGamePort.Checked = options.GetInt("ShowAddressMode") == 2;
-      this.cbRefreshSelectedServer.Checked = options.GetBool("RefreshSelected");
+      this.cbRefreshSelectedServer.Checked = options.GetBool("RefreshSelected", true);
       this.spinRefreshInterval.EditValue = options.GetDecimal("RefreshInterval");
-      this.rbUpdateListAndStatus.Checked = options.GetBool("AutoUpdateList");
+      this.rbUpdateListAndStatus.Checked = options.GetBool("AutoUpdateList", true);
       this.rbUpdateStatusOnly.Checked = options.GetBool("AutoUpdateInfo");
-      this.cbFavServersOnTop.Checked = options.GetBool("KeepFavServersOnTop");
+      this.cbFavServersOnTop.Checked = options.GetBool("KeepFavServersOnTop", true);
+      this.cbHideUnresponsiveServers.Checked = options.GetBool("HideUnresponsiveServers", true);
       this.cbRememberColumnLayout.Checked = options.GetBool("ColumnLayoutPerTab");
 
       // load favorite servers
@@ -414,7 +415,7 @@ namespace ServerBrowser
     #region ApplyGameSettings()
     protected virtual void ApplyGameSettings(IniFile ini)
     {
-      var sec = ini.GetSection("GameSpecific");
+      var sec = ini?.GetSection("GameSpecific");
       if (sec == null) return;
 
       foreach (var appId in (sec.GetString("BotsIncludedInPlayerCount") ?? "").Split(' ', ','))
@@ -459,6 +460,7 @@ namespace ServerBrowser
       sb.AppendLine($"RefreshInterval={Convert.ToInt32(this.spinRefreshInterval.EditValue)}");
       sb.AppendLine($"RefreshSelected={this.cbRefreshSelectedServer.Checked}");
       sb.AppendLine($"KeepFavServersOnTop={this.cbFavServersOnTop.Checked}");
+      sb.AppendLine($"HideUnresponsiveServers={this.cbHideUnresponsiveServers.Checked}");
       sb.AppendLine($"AutoUpdateList={this.rbUpdateListAndStatus.Checked}");
       sb.AppendLine($"AutoUpdateInfo={this.rbUpdateStatusOnly.Checked}");
       sb.AppendLine($"Skin={UserLookAndFeel.Default.SkinName}");
@@ -712,13 +714,14 @@ namespace ServerBrowser
       this.LookupGeoIps();
       this.UpdateCachedServerNames();
 
-      this.gcServers.DataSource = this.viewModel.servers;
+      var dataSource = this.cbHideUnresponsiveServers.Checked ? this.viewModel.servers?.Where(s => s.ServerInfo?.Ping != null).ToList() : this.viewModel.servers;
+      this.gcServers.DataSource = dataSource;
       this.gvServers.EndDataUpdate();
 
       if (this.viewModel.lastSelectedServer != null)
       {
         int i = 0;
-        foreach (var server in this.viewModel.servers)
+        foreach (var server in dataSource)
         {
           if (server.EndPoint.Equals(this.viewModel.lastSelectedServer.EndPoint))
           {
@@ -1145,6 +1148,13 @@ namespace ServerBrowser
         this.timerReloadServers.Interval = mins * 60000;
         this.timerReloadServers.Start();
       }
+    }
+    #endregion
+
+    #region cbHideUnresponsiveServers_CheckedChanged
+    private void cbHideUnresponsiveServers_CheckedChanged(object sender, EventArgs e)
+    {
+      this.UpdateViews();
     }
     #endregion
 
@@ -1707,6 +1717,7 @@ namespace ServerBrowser
       }
 
       this.UpdateViewModel();
+      this.geoIpClient.CancelPendingRequests();
     }
     #endregion
 

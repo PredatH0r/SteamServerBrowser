@@ -331,6 +331,8 @@ namespace ServerBrowser
       bool ok = ExecuteUpdate(request, row, server, retryCallback =>
       {
         row.ServerInfo = server.GetInfo(retryCallback);
+        if (row.ServerInfo == null)
+          return false;
         var gameId = row.ServerInfo.Extra?.GameId ?? 0;
         if (gameId == 0) gameId = row.ServerInfo.Id;
         if (gameId == 0) gameId = (int)request.AppId;
@@ -338,6 +340,7 @@ namespace ServerBrowser
         row.GameExtension = extension;
         row.QueryPlayers = extension.SupportsPlayersQuery(row);
         row.QueryRules = extension.SupportsRulesQuery(row);
+        return true;
       });
       if (!ok)
         row.ServerInfo = null;
@@ -353,7 +356,9 @@ namespace ServerBrowser
       bool ok = ExecuteUpdate(request, row, server, retryCallback =>
       {
         var players = server.GetPlayers(retryCallback);
-        row.Players = players == null ? null : new List<Player>(players);
+        if (players == null) return false;
+        row.Players =new List<Player>(players);
+        return true;
       });
       if (!ok)
       {
@@ -370,7 +375,10 @@ namespace ServerBrowser
         return;
       bool ok = ExecuteUpdate(request, row, server, retryCallback =>
       {
-        row.Rules = new List<Rule>(server.GetRules(retryCallback));
+        var rules = server.GetRules(retryCallback);
+        if (rules == null) return false;
+        row.Rules = new List<Rule>(rules);
+        return true;
       });
       if (!ok)
       {
@@ -384,7 +392,7 @@ namespace ServerBrowser
     /// <summary>
     /// Template method for common code needed in UpdateServerInfo, UpdatePlayers and UpdateRules
     /// </summary>
-    private bool ExecuteUpdate(UpdateRequest request, ServerRow row, Server server, Action<Action<int>> updater)
+    private bool ExecuteUpdate(UpdateRequest request, ServerRow row, Server server, Func<Action<int>, bool> updater)
     {
       if (request.IsCancelled)
         return false;
@@ -393,7 +401,7 @@ namespace ServerBrowser
       {
         row.Status = "updating " + row.Retries;
         request.SetDataModified();
-        updater(retry =>
+        bool ok = updater(retry =>
         {
           if (request.IsCancelled)
             throw new OperationCanceledException();
@@ -402,17 +410,14 @@ namespace ServerBrowser
           row.Status = "updating " + (++row.Retries + 1);
           request.SetDataModified();
         });
-        return true;
-      }
-      catch (TimeoutException)
-      {
+        if (ok)
+          return true;
         Interlocked.Increment(ref request.TasksWithTimeout);
-        return false;
       }
       catch
       {
-        return true;
       }
+      return false;
     }
     #endregion
   }

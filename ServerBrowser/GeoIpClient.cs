@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
@@ -32,28 +33,42 @@ namespace ServerBrowser
     #region ProcessLoop()
     private void ProcessLoop()
     {
-      while (true)
+      using (var client = new XWebClient(5000))
       {
-        var ip = this.queue.Take();
-        if (ip == null)
-          break;
-        var ipInt = Ip4Utils.ToInt(ip);
-        try
+        while (true)
         {
-          var url = string.Format(this.ServiceUrlFormat, ip);
-          using (var client = new XWebClient(1000))
+          var ip = this.queue.Take();
+          if (ip == null)
+            break;
+
+          bool err = true;
+          var ipInt = Ip4Utils.ToInt(ip);
+          try
           {
+            var url = string.Format(this.ServiceUrlFormat, ip);
             var result = client.DownloadString(url);
-            var callbacks = (Action<GeoInfo>)cache[ipInt];
-            var geoInfo = this.HandleResult(ipInt, result);
-            ThreadPool.QueueUserWorkItem(ctx => callbacks(geoInfo));
+            if (result != null)
+            {
+              object o;
+              Action<GeoInfo> callbacks;
+              lock (cache)
+                callbacks = cache.TryGetValue(ipInt, out o) ? (Action<GeoInfo>)o : null;
+              var geoInfo = this.HandleResult(ipInt, result);
+              if (callbacks != null)
+                ThreadPool.QueueUserWorkItem(ctx => callbacks(geoInfo));
+              err = false;
+            }
+          }
+          catch
+          {
+          }
+
+          if (err)
+          { 
+            lock (this.cache)
+              this.cache.Remove(ipInt);
           }
         }
-        catch
-        {
-          lock (this.cache)
-            this.cache.Remove(ipInt);
-        }        
       }
     }
     #endregion
@@ -62,19 +77,17 @@ namespace ServerBrowser
     private GeoInfo HandleResult(uint ip, string result)
     {
       var parts = result.Split(',');
-      if (parts.Length >= 2)
+      if (parts.Length < 2)
+        return null;
+      decimal latitude, longitude;
+      decimal.TryParse(TryGet(parts, 8), NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, NumberFormatInfo.InvariantInfo, out latitude);
+      decimal.TryParse(TryGet(parts, 9), NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, NumberFormatInfo.InvariantInfo, out longitude);
+      var geoInfo = new GeoInfo(parts[1], TryGet(parts, 2), TryGet(parts, 3), TryGet(parts, 4), TryGet(parts, 5), latitude, longitude);
+      lock (cache)
       {
-        decimal latitude, longitude;
-        decimal.TryParse(TryGet(parts, 8), NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, NumberFormatInfo.InvariantInfo, out latitude);
-        decimal.TryParse(TryGet(parts, 9), NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, NumberFormatInfo.InvariantInfo, out longitude);
-        var geoInfo = new GeoInfo(parts[1], TryGet(parts, 2), TryGet(parts, 3), TryGet(parts, 4), TryGet(parts, 5), latitude, longitude);
-        lock (cache)
-        {
-          cache[ip] = geoInfo;
-        }
-        return geoInfo;
+        cache[ip] = geoInfo;
       }
-      return null;
+      return geoInfo;
     }
     #endregion
 
@@ -112,6 +125,26 @@ namespace ServerBrowser
     }
     #endregion
 
+    #region CancelPendingRequests()
+    public void CancelPendingRequests()
+    {
+      IPAddress item;
+      while (this.queue.TryTake(out item))
+      {        
+      }
+
+      lock (cache)
+      {
+        var keys = cache.Keys.ToList();
+        foreach (var key in keys)
+        {
+          if (!(cache[key] is GeoInfo))
+            cache.Remove(key);
+        }
+      }
+    }
+    #endregion
+
     private string CacheFile => Path.Combine(Application.LocalUserAppDataPath, "locations.txt");
 
     #region LoadCache()
@@ -130,7 +163,9 @@ namespace ServerBrowser
           foreach (var octet in octets)
             ipInt = (ipInt << 8) + uint.Parse(octet);
           var loc = parts[1].Split('|');
-          cache[ipInt] = new GeoInfo(loc[0], loc[1], loc[2], loc[3], loc[4], decimal.Parse(loc[5], NumberFormatInfo.InvariantInfo), decimal.Parse(loc[6], NumberFormatInfo.InvariantInfo));
+          var geoInfo = new GeoInfo(loc[0], loc[1], loc[2], loc[3], loc[4], decimal.Parse(loc[5], NumberFormatInfo.InvariantInfo), decimal.Parse(loc[6], NumberFormatInfo.InvariantInfo));
+          lock (cache)
+            cache[ipInt] = geoInfo;
         }
         catch
         {
@@ -167,13 +202,13 @@ namespace ServerBrowser
   #region class GeoInfo
   public class GeoInfo
   {
-    public string Iso2 { get; private set; }
-    public string Country { get; private set; }
-    public string State { get; private set; }
-    public string Region { get; private set; }
-    public string City { get; private set; }
-    public decimal Longitude { get; private set; }
-    public decimal Latitude { get; private set; }
+    public string Iso2 { get; }
+    public string Country { get; }
+    public string State { get; }
+    public string Region { get; }
+    public string City { get; }
+    public decimal Longitude { get; }
+    public decimal Latitude { get; }
 
     public GeoInfo(string iso2, string country, string state, string region, string city, decimal latitude, decimal longitude)
     {
