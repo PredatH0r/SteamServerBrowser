@@ -1,8 +1,12 @@
+2.5.1
+---
+- fixed error when adding a favorite which is already in the favorites
+
 2.5
 ---
 - fixed error when launching Steam Server Browser for the first time
 - added option to hide unresponsive servers (activated by default)
-- imporved geo-ip lookup
+- improved geo-ip lookup
 
 2.4
 ---

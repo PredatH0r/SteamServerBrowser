@@ -31,7 +31,7 @@ namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.5";
+    private const string Version = "2.5.1";
     private const string DevExpressVersion = "v15.1";
     private const string CustomNumericRuleColumnPrefix = "custRule.";
 
@@ -1526,7 +1526,7 @@ namespace ServerBrowser
       foreach (var handle in this.gvServers.GetSelectedRows())
       {
         var row = (ServerRow)this.gvServers.GetRow(handle);
-        this.favServers.Add(row.EndPoint, row.Name);
+        this.favServers[row.EndPoint] = row.Name;
       }
       this.UpdateViews();
     }
