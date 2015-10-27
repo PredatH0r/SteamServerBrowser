@@ -1,3 +1,8 @@
+2.5.2
+---
+- fixed occational error when loading / quitting
+- fixed errors after waking the computer up from hibernation (and internet connection is not available yet)
+
 2.5.1
 ---
 - fixed error when adding a favorite which is already in the favorites

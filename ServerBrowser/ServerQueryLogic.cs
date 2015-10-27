@@ -281,12 +281,12 @@ namespace ServerBrowser
     #region UpdateServerAndDetails()
     private void UpdateServerAndDetails(UpdateRequest request, ServerRow row, bool fireRefreshSingleServerComplete)
     {
+      string status = "";
       try
       {
         if (request.IsCancelled)
           return;
 
-        string status;
         using (Server server = ServerQuery.GetServerInstance(EngineType.Source, row.EndPoint, false, request.Timeout, request.Timeout))
         {
           row.Retries = 0;
@@ -310,15 +310,21 @@ namespace ServerBrowser
 
         if (row.Retries > 0)
           status += " (" + row.Retries + ")";
+      }
+      catch
+      {
+        // this happens when you hibernate windows and the program resumes before the network connection has be reestablished
+        status = "network error";
+      }
+      finally
+      {
         row.Status = status;
         row.Update();
         request.SetDataModified();
 
         if (fireRefreshSingleServerComplete)
-          this.RefreshSingleServerComplete?.Invoke(this, new ServerEventArgs(row));          
-      }
-      finally
-      {
+          this.RefreshSingleServerComplete?.Invoke(this, new ServerEventArgs(row));
+
         if (!request.PendingTasks.IsSet)
           request.PendingTasks.Signal();
       }

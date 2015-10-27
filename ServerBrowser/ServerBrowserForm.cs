@@ -31,7 +31,7 @@ namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.5.1";
+    private const string Version = "2.5.2";
     private const string DevExpressVersion = "v15.1";
     private const string CustomNumericRuleColumnPrefix = "custRule.";
 
@@ -517,6 +517,8 @@ namespace ServerBrowser
     protected virtual void UpdateViewModel()
     {
       var vm = this.viewModel;
+      if (vm == null)
+        return;
       vm.MasterServer = this.comboMasterServer.Text;
 
       if (this.comboGames.SelectedIndex < 0)
@@ -708,6 +710,8 @@ namespace ServerBrowser
     #region UpdateViews()
     protected void UpdateViews(bool forceUpdateDetails = false)
     {
+      if (this.viewModel == null) return;
+
       ++ignoreUiEvents;
       this.gvServers.BeginDataUpdate();
 
@@ -753,7 +757,7 @@ namespace ServerBrowser
     #region UpdateCachedServerNames()
     private void UpdateCachedServerNames()
     {
-      if (this.viewModel.servers != null)
+      if (this.viewModel?.servers != null)
       {
         foreach (var server in this.viewModel.servers)
         {
@@ -914,7 +918,7 @@ namespace ServerBrowser
     #region LookupGeoIps()
     private void LookupGeoIps()
     {
-      if (this.viewModel.servers == null) return;
+      if (this.viewModel?.servers == null) return;
       foreach (var server in this.viewModel.servers)
       {
         if (server.GeoInfo != null)
