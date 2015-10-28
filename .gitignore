@@ -21,3 +21,4 @@ packages/*
 ServerBrowser/amd64/
 ServerBrowser/i386/
 _ReSharper.Caches/
+workshop/

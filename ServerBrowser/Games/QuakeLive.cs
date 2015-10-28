@@ -57,7 +57,10 @@ namespace ServerBrowser
     {
       var colDescription = view.Columns["ServerInfo.Description"];
       var idx = colDescription.VisibleIndex;
-      //colDescription.Visible = false;
+      colDescription.Visible = false;
+      AddColumn(view, "g_factoryTitle", "Factory", "g_factoryTitle", 100, idx)
+        .OptionsFilter.AutoFilterCondition = AutoFilterCondition.Default;
+
       AddColumn(view, "_gametype", "GT", "Gametype", 40, idx)
         .OptionsFilter.AutoFilterCondition = AutoFilterCondition.Default;
 
@@ -76,6 +79,11 @@ namespace ServerBrowser
     {
       switch (fieldName)
       {
+        case "g_factoryTitle":
+        {
+          var factory = row.GetRule("g_factoryTitle");
+          return string.IsNullOrEmpty(factory) ? row.ServerInfo?.Description : factory;
+        }
         case "_goalscore":
         {
           var gt = row.GetRule("g_gametype");

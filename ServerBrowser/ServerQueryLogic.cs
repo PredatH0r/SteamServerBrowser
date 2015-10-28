@@ -348,8 +348,8 @@ namespace ServerBrowser
         row.QueryRules = extension.SupportsRulesQuery(row);
         return true;
       });
-      if (!ok)
-        row.ServerInfo = null;
+      //if (!ok)
+      //  row.ServerInfo = null;
       return ok;
     }
     #endregion
