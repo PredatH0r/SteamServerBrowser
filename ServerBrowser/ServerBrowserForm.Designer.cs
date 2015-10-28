@@ -32,6 +32,9 @@ namespace ServerBrowser
     {
       this.components = new System.ComponentModel.Container();
       System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ServerBrowserForm));
+      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject7 = new DevExpress.Utils.SerializableAppearanceObject();
+      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject8 = new DevExpress.Utils.SerializableAppearanceObject();
+      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject9 = new DevExpress.Utils.SerializableAppearanceObject();
       this.riCheckEdit = new DevExpress.XtraEditors.Repository.RepositoryItemCheckEdit();
       this.gcDetails = new DevExpress.XtraGrid.GridControl();
       this.gvDetails = new DevExpress.XtraGrid.Views.Grid.GridView();
@@ -40,7 +43,7 @@ namespace ServerBrowser
       this.gcPlayers = new DevExpress.XtraGrid.GridControl();
       this.dsPlayer = new System.Windows.Forms.BindingSource(this.components);
       this.gvPlayers = new DevExpress.XtraGrid.Views.Grid.GridView();
-      this.colName1 = new DevExpress.XtraGrid.Columns.GridColumn();
+      this.colPlayerName = new DevExpress.XtraGrid.Columns.GridColumn();
       this.colScore = new DevExpress.XtraGrid.Columns.GridColumn();
       this.colTime = new DevExpress.XtraGrid.Columns.GridColumn();
       this.gcServers = new DevExpress.XtraGrid.GridControl();
@@ -49,6 +52,7 @@ namespace ServerBrowser
       this.colLocation = new DevExpress.XtraGrid.Columns.GridColumn();
       this.riCountryFlagEdit = new DevExpress.XtraEditors.Repository.RepositoryItemImageComboBox();
       this.imgFlags = new DevExpress.Utils.ImageCollection(this.components);
+      this.colBuddyCount = new DevExpress.XtraGrid.Columns.GridColumn();
       this.colFavServer = new DevExpress.XtraGrid.Columns.GridColumn();
       this.riFavServer = new DevExpress.XtraEditors.Repository.RepositoryItemCheckEdit();
       this.imageCollection = new DevExpress.Utils.ImageCollection(this.components);
@@ -97,6 +101,8 @@ namespace ServerBrowser
       this.miFindServers = new DevExpress.XtraBars.BarButtonItem();
       this.miQuickRefresh = new DevExpress.XtraBars.BarButtonItem();
       this.miUpdateServerInfo = new DevExpress.XtraBars.BarButtonItem();
+      this.miFindPlayer = new DevExpress.XtraBars.BarEditItem();
+      this.riFindPlayer = new DevExpress.XtraEditors.Repository.RepositoryItemComboBox();
       this.barDockControlTop = new DevExpress.XtraBars.BarDockControl();
       this.barDockControlBottom = new DevExpress.XtraBars.BarDockControl();
       this.barDockControlLeft = new DevExpress.XtraBars.BarDockControl();
@@ -200,6 +206,7 @@ namespace ServerBrowser
       this.controlContainer3.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.txtRconPort.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.barManager1)).BeginInit();
+      ((System.ComponentModel.ISupportInitialize)(this.riFindPlayer)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.txtRconConsole.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.txtRconCommand.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.txtRconPassword.Properties)).BeginInit();
@@ -323,7 +330,7 @@ namespace ServerBrowser
       // gvPlayers
       // 
       this.gvPlayers.Columns.AddRange(new DevExpress.XtraGrid.Columns.GridColumn[] {
-            this.colName1,
+            this.colPlayerName,
             this.colScore,
             this.colTime});
       this.gvPlayers.GridControl = this.gcPlayers;
@@ -334,14 +341,16 @@ namespace ServerBrowser
       this.gvPlayers.MouseDown += new System.Windows.Forms.MouseEventHandler(this.gvPlayers_MouseDown);
       this.gvPlayers.DoubleClick += new System.EventHandler(this.gvPlayers_DoubleClick);
       // 
-      // colName1
+      // colPlayerName
       // 
-      this.colName1.FieldName = "Name";
-      this.colName1.Name = "colName1";
-      this.colName1.OptionsColumn.ReadOnly = true;
-      this.colName1.Visible = true;
-      this.colName1.VisibleIndex = 0;
-      this.colName1.Width = 131;
+      this.colPlayerName.Caption = "Name";
+      this.colPlayerName.FieldName = "CleanName";
+      this.colPlayerName.Name = "colPlayerName";
+      this.colPlayerName.OptionsColumn.ReadOnly = true;
+      this.colPlayerName.UnboundType = DevExpress.Data.UnboundColumnType.String;
+      this.colPlayerName.Visible = true;
+      this.colPlayerName.VisibleIndex = 0;
+      this.colPlayerName.Width = 131;
       // 
       // colScore
       // 
@@ -388,6 +397,7 @@ namespace ServerBrowser
       // 
       this.gvServers.Columns.AddRange(new DevExpress.XtraGrid.Columns.GridColumn[] {
             this.colLocation,
+            this.colBuddyCount,
             this.colFavServer,
             this.colEndPoint,
             this.colName,
@@ -433,7 +443,7 @@ namespace ServerBrowser
       this.colLocation.OptionsColumn.AllowEdit = false;
       this.colLocation.ToolTip = "Country";
       this.colLocation.Visible = true;
-      this.colLocation.VisibleIndex = 1;
+      this.colLocation.VisibleIndex = 2;
       this.colLocation.Width = 49;
       // 
       // riCountryFlagEdit
@@ -688,6 +698,18 @@ namespace ServerBrowser
       this.imgFlags.Images.SetKeyName(239, "zm.png");
       this.imgFlags.Images.SetKeyName(240, "zw.png");
       // 
+      // colBuddyCount
+      // 
+      this.colBuddyCount.Caption = "Bdy";
+      this.colBuddyCount.FieldName = "BuddyCount";
+      this.colBuddyCount.Name = "colBuddyCount";
+      this.colBuddyCount.OptionsColumn.AllowEdit = false;
+      this.colBuddyCount.ToolTip = "Number of players which you have in your \"Find Buddy\" list.";
+      this.colBuddyCount.UnboundType = DevExpress.Data.UnboundColumnType.Integer;
+      this.colBuddyCount.Visible = true;
+      this.colBuddyCount.VisibleIndex = 1;
+      this.colBuddyCount.Width = 30;
+      // 
       // colFavServer
       // 
       this.colFavServer.Caption = "Favorite";
@@ -742,7 +764,7 @@ namespace ServerBrowser
       this.colEndPoint.OptionsColumn.ReadOnly = true;
       this.colEndPoint.UnboundType = DevExpress.Data.UnboundColumnType.String;
       this.colEndPoint.Visible = true;
-      this.colEndPoint.VisibleIndex = 2;
+      this.colEndPoint.VisibleIndex = 3;
       this.colEndPoint.Width = 132;
       // 
       // colName
@@ -754,7 +776,7 @@ namespace ServerBrowser
       this.colName.OptionsFilter.AutoFilterCondition = DevExpress.XtraGrid.Columns.AutoFilterCondition.Contains;
       this.colName.UnboundType = DevExpress.Data.UnboundColumnType.String;
       this.colName.Visible = true;
-      this.colName.VisibleIndex = 3;
+      this.colName.VisibleIndex = 4;
       this.colName.Width = 260;
       // 
       // colDedicated
@@ -765,7 +787,7 @@ namespace ServerBrowser
       this.colDedicated.ToolTip = "Dedicated";
       this.colDedicated.UnboundType = DevExpress.Data.UnboundColumnType.Boolean;
       this.colDedicated.Visible = true;
-      this.colDedicated.VisibleIndex = 4;
+      this.colDedicated.VisibleIndex = 5;
       this.colDedicated.Width = 35;
       // 
       // colPrivate
@@ -776,7 +798,7 @@ namespace ServerBrowser
       this.colPrivate.Name = "colPrivate";
       this.colPrivate.OptionsColumn.AllowEdit = false;
       this.colPrivate.Visible = true;
-      this.colPrivate.VisibleIndex = 5;
+      this.colPrivate.VisibleIndex = 6;
       this.colPrivate.Width = 45;
       // 
       // colDescription
@@ -787,7 +809,7 @@ namespace ServerBrowser
       this.colDescription.OptionsColumn.AllowEdit = false;
       this.colDescription.OptionsFilter.AutoFilterCondition = DevExpress.XtraGrid.Columns.AutoFilterCondition.Contains;
       this.colDescription.Visible = true;
-      this.colDescription.VisibleIndex = 6;
+      this.colDescription.VisibleIndex = 7;
       this.colDescription.Width = 101;
       // 
       // colTags
@@ -798,7 +820,7 @@ namespace ServerBrowser
       this.colTags.OptionsColumn.AllowEdit = false;
       this.colTags.OptionsFilter.AutoFilterCondition = DevExpress.XtraGrid.Columns.AutoFilterCondition.Contains;
       this.colTags.Visible = true;
-      this.colTags.VisibleIndex = 7;
+      this.colTags.VisibleIndex = 8;
       this.colTags.Width = 127;
       // 
       // colPlayerCount
@@ -809,7 +831,7 @@ namespace ServerBrowser
       this.colPlayerCount.OptionsColumn.AllowEdit = false;
       this.colPlayerCount.SortMode = DevExpress.XtraGrid.ColumnSortMode.Value;
       this.colPlayerCount.Visible = true;
-      this.colPlayerCount.VisibleIndex = 8;
+      this.colPlayerCount.VisibleIndex = 9;
       // 
       // colHumanPlayers
       // 
@@ -819,7 +841,7 @@ namespace ServerBrowser
       this.colHumanPlayers.OptionsColumn.AllowEdit = false;
       this.colHumanPlayers.ToolTip = "Human Players";
       this.colHumanPlayers.Visible = true;
-      this.colHumanPlayers.VisibleIndex = 9;
+      this.colHumanPlayers.VisibleIndex = 10;
       this.colHumanPlayers.Width = 30;
       // 
       // colBots
@@ -829,7 +851,7 @@ namespace ServerBrowser
       this.colBots.Name = "colBots";
       this.colBots.OptionsColumn.AllowEdit = false;
       this.colBots.Visible = true;
-      this.colBots.VisibleIndex = 10;
+      this.colBots.VisibleIndex = 11;
       this.colBots.Width = 30;
       // 
       // colTotalPlayers
@@ -840,7 +862,7 @@ namespace ServerBrowser
       this.colTotalPlayers.OptionsColumn.AllowEdit = false;
       this.colTotalPlayers.ToolTip = "Total Players (Humans + Bots)";
       this.colTotalPlayers.Visible = true;
-      this.colTotalPlayers.VisibleIndex = 11;
+      this.colTotalPlayers.VisibleIndex = 12;
       this.colTotalPlayers.Width = 30;
       // 
       // colMaxPlayers
@@ -851,7 +873,7 @@ namespace ServerBrowser
       this.colMaxPlayers.OptionsColumn.AllowEdit = false;
       this.colMaxPlayers.ToolTip = "Maximum Players";
       this.colMaxPlayers.Visible = true;
-      this.colMaxPlayers.VisibleIndex = 12;
+      this.colMaxPlayers.VisibleIndex = 13;
       this.colMaxPlayers.Width = 30;
       // 
       // colMap
@@ -862,7 +884,7 @@ namespace ServerBrowser
       this.colMap.OptionsColumn.AllowEdit = false;
       this.colMap.OptionsFilter.AutoFilterCondition = DevExpress.XtraGrid.Columns.AutoFilterCondition.Contains;
       this.colMap.Visible = true;
-      this.colMap.VisibleIndex = 13;
+      this.colMap.VisibleIndex = 14;
       this.colMap.Width = 110;
       // 
       // colPing
@@ -874,7 +896,7 @@ namespace ServerBrowser
       this.colPing.Name = "colPing";
       this.colPing.OptionsColumn.AllowEdit = false;
       this.colPing.Visible = true;
-      this.colPing.VisibleIndex = 14;
+      this.colPing.VisibleIndex = 15;
       this.colPing.Width = 32;
       // 
       // colStatus
@@ -884,7 +906,7 @@ namespace ServerBrowser
       this.colStatus.Name = "colStatus";
       this.colStatus.OptionsColumn.AllowEdit = false;
       this.colStatus.Visible = true;
-      this.colStatus.VisibleIndex = 15;
+      this.colStatus.VisibleIndex = 16;
       this.colStatus.Width = 61;
       // 
       // toolTipController
@@ -1013,8 +1035,11 @@ namespace ServerBrowser
             this.mnuView,
             this.mnuTabs,
             this.mnuServer,
-            this.mnuUpdate});
-      this.barManager1.MaxItemId = 25;
+            this.mnuUpdate,
+            this.miFindPlayer});
+      this.barManager1.MaxItemId = 26;
+      this.barManager1.RepositoryItems.AddRange(new DevExpress.XtraEditors.Repository.RepositoryItem[] {
+            this.riFindPlayer});
       // 
       // barMenu
       // 
@@ -1037,7 +1062,8 @@ namespace ServerBrowser
             new DevExpress.XtraBars.LinkPersistInfo(this.miDelete),
             new DevExpress.XtraBars.LinkPersistInfo(this.mnuUpdate, true),
             new DevExpress.XtraBars.LinkPersistInfo(DevExpress.XtraBars.BarLinkUserDefines.PaintStyle, this.miFindServers, DevExpress.XtraBars.BarItemPaintStyle.CaptionGlyph),
-            new DevExpress.XtraBars.LinkPersistInfo(DevExpress.XtraBars.BarLinkUserDefines.PaintStyle, this.miQuickRefresh, DevExpress.XtraBars.BarItemPaintStyle.CaptionGlyph)});
+            new DevExpress.XtraBars.LinkPersistInfo(DevExpress.XtraBars.BarLinkUserDefines.PaintStyle, this.miQuickRefresh, DevExpress.XtraBars.BarItemPaintStyle.CaptionGlyph),
+            new DevExpress.XtraBars.LinkPersistInfo(this.miFindPlayer, true)});
       this.barMenu.OptionsBar.AllowQuickCustomization = false;
       this.barMenu.OptionsBar.DisableClose = true;
       this.barMenu.OptionsBar.DisableCustomization = true;
@@ -1172,7 +1198,7 @@ namespace ServerBrowser
       this.miConnect.CategoryGuid = new System.Guid("b1e08833-8d08-415c-9522-c31e9bf3c2de");
       this.miConnect.Id = 0;
       this.miConnect.ImageIndex = 7;
-      this.miConnect.ItemShortcut = new DevExpress.XtraBars.BarShortcut((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Enter));
+      this.miConnect.ItemShortcut = new DevExpress.XtraBars.BarShortcut((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Return));
       this.miConnect.Name = "miConnect";
       this.miConnect.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miConnect_ItemClick);
       // 
@@ -1181,7 +1207,7 @@ namespace ServerBrowser
       this.miConnectSpectator.Caption = "Connect as Spectator";
       this.miConnectSpectator.CategoryGuid = new System.Guid("b1e08833-8d08-415c-9522-c31e9bf3c2de");
       this.miConnectSpectator.Id = 1;
-      this.miConnectSpectator.ItemShortcut = new DevExpress.XtraBars.BarShortcut((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.Enter));
+      this.miConnectSpectator.ItemShortcut = new DevExpress.XtraBars.BarShortcut((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.Return));
       this.miConnectSpectator.Name = "miConnectSpectator";
       this.miConnectSpectator.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miConnectSpectator_ItemClick);
       // 
@@ -1277,6 +1303,30 @@ namespace ServerBrowser
       this.miUpdateServerInfo.ItemShortcut = new DevExpress.XtraBars.BarShortcut(System.Windows.Forms.Keys.F6);
       this.miUpdateServerInfo.Name = "miUpdateServerInfo";
       this.miUpdateServerInfo.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miUpdateServerInfo_ItemClick);
+      // 
+      // miFindPlayer
+      // 
+      this.miFindPlayer.Caption = "Find Buddy:";
+      this.miFindPlayer.Edit = this.riFindPlayer;
+      this.miFindPlayer.Id = 25;
+      this.miFindPlayer.ItemShortcut = new DevExpress.XtraBars.BarShortcut(System.Windows.Forms.Keys.F3);
+      this.miFindPlayer.Name = "miFindPlayer";
+      this.miFindPlayer.PaintStyle = DevExpress.XtraBars.BarItemPaintStyle.CaptionGlyph;
+      this.miFindPlayer.Width = 244;
+      // 
+      // riFindPlayer
+      // 
+      this.riFindPlayer.AutoHeight = false;
+      this.riFindPlayer.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo),
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Plus, "", -1, true, true, false, DevExpress.XtraEditors.ImageLocation.MiddleCenter, null, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), serializableAppearanceObject7, "Add to list", null, null, true),
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Minus, "", -1, true, true, false, DevExpress.XtraEditors.ImageLocation.MiddleCenter, null, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), serializableAppearanceObject8, "Remove from list", null, null, true),
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Search, "", -1, true, true, false, DevExpress.XtraEditors.ImageLocation.MiddleCenter, null, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), serializableAppearanceObject9, "Find", null, null, true)});
+      this.riFindPlayer.Name = "riFindPlayer";
+      this.riFindPlayer.NullValuePrompt = "min 3 chars, * as placeholder";
+      this.riFindPlayer.NullValuePromptShowForEmptyValue = true;
+      this.riFindPlayer.ButtonPressed += new DevExpress.XtraEditors.Controls.ButtonPressedEventHandler(this.riFindPlayer_ButtonPressed);
+      this.riFindPlayer.KeyDown += new System.Windows.Forms.KeyEventHandler(this.riFindPlayer_KeyDown);
       // 
       // barDockControlTop
       // 
@@ -2327,6 +2377,7 @@ namespace ServerBrowser
       this.controlContainer3.PerformLayout();
       ((System.ComponentModel.ISupportInitialize)(this.txtRconPort.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.barManager1)).EndInit();
+      ((System.ComponentModel.ISupportInitialize)(this.riFindPlayer)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.txtRconConsole.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.txtRconCommand.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.txtRconPassword.Properties)).EndInit();
@@ -2413,7 +2464,7 @@ namespace ServerBrowser
     protected DevExpress.XtraGrid.Columns.GridColumn colMap;
     protected DevExpress.XtraGrid.Columns.GridColumn colDescription;
     protected System.Windows.Forms.BindingSource dsPlayer;
-    protected DevExpress.XtraGrid.Columns.GridColumn colName1;
+    protected DevExpress.XtraGrid.Columns.GridColumn colPlayerName;
     protected DevExpress.XtraGrid.Columns.GridColumn colScore;
     protected DevExpress.XtraGrid.Columns.GridColumn colTime;
     protected DevExpress.XtraGrid.Columns.GridColumn colStatus;
@@ -2544,5 +2595,8 @@ namespace ServerBrowser
     protected SpinEdit spinMinPlayers;
     private DevExpress.LookAndFeel.DefaultLookAndFeel defaultLookAndFeel1;
     protected CheckEdit cbHideUnresponsiveServers;
+    private DevExpress.XtraBars.BarEditItem miFindPlayer;
+    private DevExpress.XtraEditors.Repository.RepositoryItemComboBox riFindPlayer;
+    private DevExpress.XtraGrid.Columns.GridColumn colBuddyCount;
   }
 }

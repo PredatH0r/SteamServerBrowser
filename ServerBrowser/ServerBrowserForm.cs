@@ -31,7 +31,7 @@ namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.5.2";
+    private const string Version = "2.7";
     private const string DevExpressVersion = "v15.1";
     private const string CustomNumericRuleColumnPrefix = "custRule.";
 
@@ -344,6 +344,15 @@ namespace ServerBrowser
       var idx = tabIndex < this.tabControl.TabPages.Count - 1 ? tabIndex : 0;
       this.SetViewModel((TabViewModel)this.tabControl.TabPages[idx].Tag);
       this.tabControl.SelectedTabPageIndex = idx;
+
+      // fill FindPlayers list
+      var sec = ini?.GetSection("FindPlayers");
+      if (sec != null)
+      {
+        this.riFindPlayer.Items.Clear();
+        foreach (var key in sec.Keys)
+          this.riFindPlayer.Items.Add(sec.GetString(key));
+      }
     }
     #endregion
 
@@ -451,6 +460,7 @@ namespace ServerBrowser
     #endregion
 
     #region SaveAppSettings()
+
     protected virtual void SaveAppSettings(StringBuilder sb)
     {
       sb.AppendLine("[Options]");
@@ -471,7 +481,13 @@ namespace ServerBrowser
       sb.AppendLine("[FavoriteServers]");
       foreach (var fav in this.favServers)
         sb.AppendLine($"{fav.Key}={fav.Value}");
+
+      sb.AppendLine();
+      sb.AppendLine("[FindPlayers]");
+      for (int i = 0; i < this.riFindPlayer.Items.Count; i++)
+        sb.AppendLine($"{i}={this.riFindPlayer.Items[i]}");
     }
+
     #endregion
 
     #region SaveGameSettings()
@@ -693,6 +709,34 @@ namespace ServerBrowser
     #endregion
 
 
+    #region SetClientGridFilter()
+    private void SetClientGridFilters()
+    {
+      var filter = "";
+      if (this.spinMinPlayers.Value > 0)
+      {
+        filter = this.cbMinPlayersBots.Checked ? "[PlayerCount.TotalPlayers]" : "[PlayerCount.RealPlayers]";
+        filter += ">=" + this.spinMinPlayers.Value;
+      }
+
+      int ping;
+      int.TryParse(this.comboMaxPing.Text, out ping);
+      if (ping != 0)
+      {
+        if (filter != "")
+          filter += " and ";
+        filter += "[ServerInfo.Ping]<=" + ping;
+      }
+      if (cbHideUnresponsiveServers.Checked)
+      {
+        if (filter != "")
+          filter += " and ";
+        filter += "[ServerInfo.Ping] is not null";
+      }
+      this.gvServers.ActiveFilterString = filter;
+    }
+    #endregion
+
     #region CustomizeFilter()
     protected virtual void CustomizeFilter(IpFilter filter)
     {
@@ -718,7 +762,7 @@ namespace ServerBrowser
       this.LookupGeoIps();
       this.UpdateCachedServerNames();
 
-      var dataSource = this.cbHideUnresponsiveServers.Checked ? this.viewModel.servers?.Where(s => s.ServerInfo?.Ping != null).ToList() : this.viewModel.servers;
+      var dataSource = this.viewModel.servers;
       this.gcServers.DataSource = dataSource;
       this.gvServers.EndDataUpdate();
 
@@ -787,8 +831,15 @@ namespace ServerBrowser
       this.gvDetails.EndDataUpdate();
 
       this.gvPlayers.BeginDataUpdate();
+      var curSelName = (gvPlayers.GetFocusedRow() as Player)?.Name;
       this.gcPlayers.DataSource = row?.Players;
       this.gvPlayers.EndDataUpdate();
+      if (curSelName != null)
+      {
+        int idx = row?.Players?.FindIndex(p => p.Name == curSelName) ?? -1;
+        if (idx >= 0)
+          this.gvPlayers.FocusedRowHandle = this.gvPlayers.GetRowHandle(idx);
+      }
 
       this.gvRules.BeginDataUpdate();
       this.gcRules.DataSource = row?.Rules;
@@ -886,6 +937,7 @@ namespace ServerBrowser
       var player = (Player)this.gvPlayers.GetFocusedRow();
 
       var menu = new List<PlayerContextMenuItem>();
+      menu.Add(new PlayerContextMenuItem("Add to Buddy list", () => { AddBuddy(server.GameExtension.GetCleanPlayerName(player)); this.UpdateBuddyCount(server); }));
       menu.Add(new PlayerContextMenuItem("Copy Name to Clipboard", () => { Clipboard.SetText(player.Name); }));
       server.GameExtension.CustomizePlayerContextMenu(server, player, menu);
       return menu;
@@ -938,6 +990,108 @@ namespace ServerBrowser
     }
     #endregion
 
+    #region FindNextPlayer()
+    private void FindNextPlayer(string name)
+    {
+      if (string.IsNullOrEmpty(name) || name.Length < 3 || this.gvServers.RowCount <= 1)
+        return;
+
+      int startHandle = this.gvServers.FocusedRowHandle;
+      for (var handle = startHandle + 1; handle != startHandle; )
+      {
+        var row = (ServerRow)this.gvServers.GetRow(handle);
+        if (row == null)
+        {
+          handle = 0;
+          continue;
+        }
+
+      
+        var index = row.Players?.FindIndex(NameFinder(row.GameExtension, name));
+        if (index >= 0)
+        {
+          this.gvServers.ClearSelection();
+          this.gvServers.FocusedRowHandle = handle;
+          this.gvServers.SelectRow(handle);
+          this.gvServers.MakeRowVisible(handle);
+          this.UpdateGridDataSources();
+          this.gvPlayers.FocusedRowHandle = this.gvPlayers.GetRowHandle(index.Value);
+          return;
+        }
+        ++handle;
+      }
+    }
+    #endregion
+
+    #region NameFinder()
+    private Predicate<Player> NameFinder(GameExtension game, string name)
+    {
+      bool contains = name.StartsWith("*");
+      if (contains)
+        name = name.Substring(1);
+      name = name.ToLower().TrimEnd('*');
+
+      return p => contains ? game.GetCleanPlayerName(p).ToLower().Contains(name) : game.GetCleanPlayerName(p).ToLower().StartsWith(name);
+    }
+    #endregion
+
+    #region UpdateBuddyCount()
+
+    private void UpdateBuddyCount()
+    {
+      if (this.riFindPlayer.Items.Count > 0)
+      {
+        foreach (var row in this.queryLogic.Servers)
+          UpdateBuddyCount(row);
+      }
+    }
+
+    private void UpdateBuddyCount(ServerRow row)
+    {
+      if (row.Players == null)
+        return;
+      int count = 0;
+
+      long bitmask = 0; // this 64bit bitmask is used to prevent players from being counted multiple times when they match multiple filters
+
+      foreach (string buddy in this.riFindPlayer.Items)
+      {
+        var nf = NameFinder(row.GameExtension, buddy);
+        for (int i = 0, n = row.Players.Count; i < n; i++)
+        {
+          if ((bitmask & (1L << i)) == 0 && nf(row.Players[i]))
+          {
+            ++count;
+            bitmask |= (1L << i);
+          }
+        }
+          
+      }
+
+      int? buddyCount = count == 0 ? null : (int?)count;
+      if (row.BuddyCount != buddyCount)
+      {
+        row.BuddyCount = buddyCount;
+        row.SetModified();
+      }
+    }
+    #endregion
+
+    #region AddBuddy()
+    private void AddBuddy(string text)
+    {
+      if (!this.riFindPlayer.Items.Contains(text))
+      {
+        var list = this.riFindPlayer.Items.OfType<string>().ToList();
+        list.Add(text);
+        list.Sort();
+        this.riFindPlayer.Items.Clear();
+        this.riFindPlayer.Items.AddRange(list);
+        this.miFindPlayer.EditValue = text;
+      }
+    }
+    #endregion
+
     // general components
 
     #region queryLogic_SetStatusMessage
@@ -958,6 +1112,7 @@ namespace ServerBrowser
     #region queryLogic_ReloadServerListComplete()
     protected virtual void queryLogic_ReloadServerListComplete(List<ServerRow> rows)
     {
+      this.UpdateBuddyCount();
       this.UpdateViews();
       this.SetStatusMessage("Update of " + this.viewModel.servers.Count + " servers complete");
       if (this.gvServers.RowCount > 0 && this.cbAlert.Checked)
@@ -973,13 +1128,14 @@ namespace ServerBrowser
     #region queryLogic_RefreshSingleServerComplete()
     protected virtual void queryLogic_RefreshSingleServerComplete(ServerEventArgs e)
     {
+      this.UpdateBuddyCount(e.Server);
+
       if (this.gvServers.GetFocusedRow() == e.Server)
       {
         if (this.gvServers.SelectedRowsCount <= 1)
           this.gvServers.RefreshRow(this.gvServers.FocusedRowHandle);
         else
           this.gvServers.RefreshData();
-        //this.gvServers.SelectRow(this.gvServers.FocusedRowHandle);
         this.UpdateGridDataSources();
       }
     }
@@ -1158,7 +1314,7 @@ namespace ServerBrowser
     #region cbHideUnresponsiveServers_CheckedChanged
     private void cbHideUnresponsiveServers_CheckedChanged(object sender, EventArgs e)
     {
-      this.UpdateViews();
+      this.SetClientGridFilters();
     }
     #endregion
 
@@ -1185,22 +1341,7 @@ namespace ServerBrowser
     #region btnApplyFilter_Click
     private void btnApplyFilter_Click(object sender, EventArgs e)
     {
-      var filter = "";
-      if (this.spinMinPlayers.Value > 0)
-      {
-        filter = this.cbMinPlayersBots.Checked ? "[PlayerCount.TotalPlayers]" : "[PlayerCount.RealPlayers]";
-        filter += ">=" + this.spinMinPlayers.Value;
-      }
-
-      int ping;
-      int.TryParse(this.comboMaxPing.Text, out ping);
-      if (ping != 0)
-      {
-        if (filter != "")
-          filter += " and ";
-        filter += "[ServerInfo.Ping]<=" + ping;
-      }
-      this.gvServers.ActiveFilterString = filter;
+      SetClientGridFilters();
     }
     #endregion
 
@@ -1347,7 +1488,8 @@ namespace ServerBrowser
     #region gvServers_ColumnFilterChanged
     private void gvServers_ColumnFilterChanged(object sender, EventArgs e)
     {
-      this.UpdateGridDataSources();
+      if (ignoreUiEvents == 0)
+        this.UpdateGridDataSources();
     }
     #endregion
 
@@ -1556,7 +1698,9 @@ namespace ServerBrowser
       if (!e.IsGetData) return;
       var server = (ServerRow) this.gvServers.GetFocusedRow();
       var player = (Player) e.Row;
-      if (server != null && player != null)
+      if (e.Column.FieldName == "CleanName")
+        e.Value = server.GameExtension.GetCleanPlayerName(player);
+      else if (server != null && player != null)
         e.Value = server.GameExtension.GetPlayerCellValue(server, player, e.Column.FieldName);
     }
     #endregion
@@ -1676,6 +1820,37 @@ namespace ServerBrowser
         if (dlg.ShowDialog(this) == DialogResult.OK)
           this.tabControl.SelectedTabPage.Text = dlg.Caption;
       }
+    }
+    #endregion
+
+    #region riFindPlayer_ButtonPressed
+    private void riFindPlayer_ButtonPressed(object sender, ButtonPressedEventArgs e)
+    {
+      var text = (barManager1.ActiveEditor as ComboBoxEdit)?.EditValue as string;
+
+      if (e.Button.Kind == ButtonPredefines.Plus)
+      {
+        AddBuddy(text);
+      }
+      else if (e.Button.Kind == ButtonPredefines.Minus)
+      {
+        var list = this.riFindPlayer.Items.OfType<string>().Where(i => i != text).ToList();
+        this.riFindPlayer.Items.Clear();
+        this.riFindPlayer.Items.AddRange(list);
+        this.miFindPlayer.EditValue = "";
+      }
+      else if (e.Button.Kind == ButtonPredefines.Search)
+        this.FindNextPlayer(text);
+    }
+    #endregion
+
+    #region riFindPlayer_KeyDown
+
+    private void riFindPlayer_KeyDown(object sender, KeyEventArgs e)
+    {
+      if (e.KeyCode == Keys.Enter || e.KeyCode == Keys.Return)
+        this.FindNextPlayer((barManager1.ActiveEditor as ComboBoxEdit)?.EditValue as string);
+
     }
     #endregion
 

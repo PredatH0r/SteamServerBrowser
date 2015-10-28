@@ -1,3 +1,8 @@
+2.7
+---
+- added Buddy list, Buddy Count per server and player search functions
+- fixed jumping of rows when option "hide unresponsive servers" was enabled
+
 2.5.2
 ---
 - fixed occational error when loading / quitting

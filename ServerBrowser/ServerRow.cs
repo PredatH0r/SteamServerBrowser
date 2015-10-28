@@ -15,6 +15,7 @@ namespace ServerBrowser
     public long RequestTimestamp { get; set; }
     public ServerInfo ServerInfo { get; set; }
     public PlayerCountInfo PlayerCount { get; private set; }
+    public int? BuddyCount { get; set; }
     internal int Retries { get; set; }
     public string Status { get; set; }
     public bool Dedicated => ServerInfo != null && ServerInfo.ServerType == "Dedicated";
@@ -70,6 +71,11 @@ namespace ServerBrowser
     {
       var mod = Interlocked.Exchange(ref this.isModified, 0);
       return mod != 0;
+    }
+
+    public void SetModified()
+    {
+      Interlocked.Exchange(ref this.isModified, 1);
     }
   }
 }

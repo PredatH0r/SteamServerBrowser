@@ -114,6 +114,16 @@ namespace ServerBrowser
     }
     #endregion
 
+    #region GetCleanPlayerName()
+    /// <summary>
+    /// Remove color codes or other game specific parts of the player name which may disturb display or search
+    /// </summary>
+    public virtual string GetCleanPlayerName(Player player)
+    {
+      return player?.Name;
+    }
+    #endregion
+
     #region GetPlayerCellValue()
     /// <summary>
     /// Gets a value for a game specific column.

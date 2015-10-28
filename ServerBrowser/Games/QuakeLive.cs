@@ -115,29 +115,11 @@ namespace ServerBrowser
 
     #endregion
 
-    #region CustomizePlayerGridColumns()
-
-    public override void CustomizePlayerGridColumns(GridView view)
+    #region GetCleanPlayerName()
+    public override string GetCleanPlayerName(Player player)
     {
-      var col = view.Columns["Name"];
-      if (col != null)
-        col.Visible = false;
-
-      col = this.AddColumn(view, "NameWithoutColorCodes", "Name", "Name", 150, 0);
-      col.FieldName = "NameWithoutColorCodes";
+      return NameColors.Replace(player.Name, "");
     }
-
-    #endregion
-
-    #region GetPlayerCellValue()
-
-    public override object GetPlayerCellValue(ServerRow server, Player player, string fieldName)
-    {
-      if (fieldName == "NameWithoutColorCodes")
-        return NameColors.Replace(player.Name, "");
-      return base.GetPlayerCellValue(server, player, fieldName);
-    }
-
     #endregion
 
     #region Connect()
