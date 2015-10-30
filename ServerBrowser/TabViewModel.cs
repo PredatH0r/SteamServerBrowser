@@ -31,6 +31,8 @@ namespace ServerBrowser
     public MemoryStream ServerGridLayout { get; set; }
     public SourceType Source { get; set; }
     public int ImageIndex => Source == SourceType.Favorites ? 3 : Source == SourceType.CustomList ? 12 : -1;
+    public List<string> CustomDetailColumns { get; } = new List<string>();
+    public List<string> CustomRuleColumns { get; } = new List<string>();
 
     public TabViewModel()
     {
@@ -62,6 +64,8 @@ namespace ServerBrowser
       this.gameExtension = vm.gameExtension;
       this.GridFilter = vm.GridFilter;
       this.ServerGridLayout = vm.ServerGridLayout;
+      this.CustomDetailColumns.AddRange(vm.CustomDetailColumns);
+      this.CustomRuleColumns.AddRange(vm.CustomRuleColumns);
     }
     #endregion
 
@@ -79,6 +83,20 @@ namespace ServerBrowser
       this.GetFullServers = ini.GetBool("GetFullServers", true);
       this.MasterServerQueryLimit = ini.GetInt("MasterServerQueryLimit", 500);
       this.GridFilter = ini.GetString("GridFilter");
+
+      this.CustomDetailColumns.Clear();
+      foreach (var detail in (ini.GetString("CustomDetailColumns") ?? "").Split(','))
+      {
+        if (detail != "")
+          CustomRuleColumns.Add(detail);
+      }
+
+      this.CustomRuleColumns.Clear();
+      foreach (var rule in (ini.GetString("CustomRuleColumns") ?? "").Split(','))
+      {
+        if (rule != "")
+          CustomRuleColumns.Add(rule);
+      }
 
       var layout = ini.GetString("GridLayout");
       if (!string.IsNullOrEmpty(layout))
@@ -137,7 +155,22 @@ namespace ServerBrowser
       }
       ini.Append("GridFilter=").AppendLine(this.GridFilter);
       if (this.ServerGridLayout != null)
-        ini.Append("GridLayout=").AppendLine(Convert.ToBase64String(this.ServerGridLayout.GetBuffer(), 0, (int) this.ServerGridLayout.Length));
+      {
+        var buf = new byte[this.ServerGridLayout.Length];
+        this.ServerGridLayout.Seek(0, SeekOrigin.Begin);
+        var len = this.ServerGridLayout.Read(buf, 0, buf.Length);
+        ini.Append("GridLayout=").AppendLine(Convert.ToBase64String(buf, 0, len));
+      }
+
+      var sb = new StringBuilder();
+      foreach (var detail in this.CustomDetailColumns)
+        sb.Append(detail).Append(",");
+      ini.Append("CustomDetailColumns=").AppendLine(sb.ToString().TrimEnd(','));
+
+      sb = new StringBuilder();
+      foreach (var rule in this.CustomRuleColumns)
+        sb.Append(rule).Append(",");
+      ini.Append("CustomRuleColumns=").AppendLine(sb.ToString().TrimEnd(','));
 
       if (this.Source == SourceType.CustomList)
       {

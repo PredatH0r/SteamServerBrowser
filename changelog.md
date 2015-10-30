@@ -1,3 +1,12 @@
+2.8
+---
+- added traffic light indicator for vacant/full servers
+- Quake Live: added columns for showing teamsize and indicating full teams (assuming no specs, for which there is no data available)
+- improved display of servers which timed out (now showing all known last values)
+- improved filter to hide servers with status "timeout"
+- added context menu to "Server Details" to add fields as columns to server list
+- custom columns from "Server Details" and "Rules" are now stored per tab (if the "remember column layout for each tab" option is selected)
+
 2.7
 ---
 - added Buddy list, Buddy Count per server and player search functions

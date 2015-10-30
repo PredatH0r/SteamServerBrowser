@@ -53,6 +53,25 @@ namespace ServerBrowser
       return value;
     }
 
+    public int JoinStatus
+    {
+      get
+      {
+        var players = PlayerCount.RealPlayers;
+        if (players == null) return -1;
+        var maxPlayers = PlayerCount.MaxPlayers;
+        if (maxPlayers == null) return -1;
+
+        if (players < maxPlayers)
+          return 0;
+
+        var maxClients = PlayerCount.MaxClients;
+        if (maxClients != null && players < maxClients)
+          return 1;
+        return 2;
+      }
+    }
+
     public void Update()
     {
       this.extenderFieldCache.Clear();

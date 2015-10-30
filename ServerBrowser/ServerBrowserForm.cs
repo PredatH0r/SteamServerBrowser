@@ -31,9 +31,10 @@ namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.7";
+    private const string Version = "2.8";
     private const string DevExpressVersion = "v15.1";
-    private const string CustomNumericRuleColumnPrefix = "custRule.";
+    private const string CustomDetailColumnPrefix = "ServerInfo.";
+    private const string CustomRuleColumnPrefix = "custRule.";
 
     private readonly GameExtensionPool extenders = new GameExtensionPool();
     private readonly GameExtension unknownGame = new GameExtension();
@@ -373,6 +374,8 @@ namespace ServerBrowser
       this.cbFavServersOnTop.Checked = options.GetBool("KeepFavServersOnTop", true);
       this.cbHideUnresponsiveServers.Checked = options.GetBool("HideUnresponsiveServers", true);
       this.cbRememberColumnLayout.Checked = options.GetBool("ColumnLayoutPerTab");
+      this.spinMinPlayers.Value = options.GetInt("MinPlayers");
+      this.cbMinPlayersBots.Checked = options.GetBool("MinPlayersInclBots");
 
       // load favorite servers
       var favs = ini.GetSection("FavoriteServers");
@@ -476,6 +479,8 @@ namespace ServerBrowser
       sb.AppendLine($"Skin={UserLookAndFeel.Default.SkinName}");
       sb.AppendLine($"TabIndex={this.tabControl.SelectedTabPageIndex}");
       sb.AppendLine($"ColumnLayoutPerTab={this.cbRememberColumnLayout.Checked}");
+      sb.AppendLine($"MinPlayers={this.spinMinPlayers.Value}");
+      sb.AppendLine($"MinPlayersInclBots={this.cbMinPlayersBots.Checked}");
 
       sb.AppendLine();
       sb.AppendLine("[FavoriteServers]");
@@ -563,6 +568,16 @@ namespace ServerBrowser
       }
       vm.serverSource = this.CreateServerSource(vm.MasterServer);
       vm.gameExtension = this.extenders.Get((Game)vm.InitialGameID);
+
+      // remove no longer visible custom columns
+      foreach (GridColumn col in this.gvServers.Columns)
+      {
+        if (col.VisibleIndex >= 0) continue;
+        if (col.Tag != null && col.FieldName.StartsWith(CustomDetailColumnPrefix))
+          vm.CustomDetailColumns.Remove(col.FieldName);
+        else if (col.Tag != null && col.FieldName.StartsWith(CustomRuleColumnPrefix))
+          vm.CustomRuleColumns.Remove(col.FieldName);
+      }
     }
     #endregion
 
@@ -629,6 +644,16 @@ namespace ServerBrowser
       this.gvServers.BeginUpdate();
       this.ResetGridColumns(this.gvServers);
       this.viewModel.gameExtension.CustomizeServerGridColumns(gvServers);
+      if (this.cbRememberColumnLayout.Checked)
+      {
+        foreach (var custCol in this.viewModel.CustomDetailColumns)
+        {
+          var col = this.viewModel.gameExtension.AddColumn(this.gvServers, CustomDetailColumnPrefix + custCol, custCol, null);
+          col.UnboundType = UnboundColumnType.Bound;
+        }
+        foreach (var custCol in this.viewModel.CustomRuleColumns)
+          this.viewModel.gameExtension.AddColumn(this.gvServers, CustomRuleColumnPrefix + custCol, custCol, null);
+      }
       this.gvServers.EndUpdate();
       if (viewModel.ServerGridLayout != null && this.cbRememberColumnLayout.Checked)
       {
@@ -731,7 +756,7 @@ namespace ServerBrowser
       {
         if (filter != "")
           filter += " and ";
-        filter += "[ServerInfo.Ping] is not null";
+        filter += "[Status] not like 'Timeout%'";
       }
       this.gvServers.ActiveFilterString = filter;
     }
@@ -850,9 +875,9 @@ namespace ServerBrowser
     #endregion
 
     #region EnumerateProps()
-    private List<Tuple<string, object>> EnumerateProps(params object[] objects)
+    private List<Tuple<string, object, string>> EnumerateProps(params object[] objects)
     {
-      var result = new List<Tuple<string, object>>();
+      var result = new List<Tuple<string, object, string>>();
       foreach (var obj in objects)
       {
         if (obj == null) continue;
@@ -861,7 +886,7 @@ namespace ServerBrowser
         foreach (var prop in props)
         {
           if (prop.Name != "Extra" && prop.Name != "Item" && prop.Name != "ShipInfo")
-            result.Add(new Tuple<string, object>(prop.Name.ToLower(), prop.GetValue(obj, null)?.ToString()));
+            result.Add(new Tuple<string, object, string>(prop.Name.ToLower(), prop.GetValue(obj, null)?.ToString(), prop.Name));
         }
       }
       return result;
@@ -950,6 +975,26 @@ namespace ServerBrowser
       this.txtStatus.Text = DateTime.Now.ToString("G") + " | " + message;
     }
     #endregion
+    
+    #region AddColumnForDetailToServerGrid()
+    private void AddColumnForDetailToServerGrid()
+    {
+      var info = (Tuple<string,object,string>)this.gvDetails.GetFocusedRow();
+      var col = this.gvServers.Columns[CustomDetailColumnPrefix + info.Item3];
+      if (col == null)
+      {
+        this.viewModel.CustomDetailColumns.Add(info.Item3);
+        col = this.viewModel.gameExtension.AddColumn(this.gvServers, CustomDetailColumnPrefix + info.Item3, info.Item3, info.Item3, 70, this.gvServers.VisibleColumns.Count);
+        col.UnboundType = UnboundColumnType.Bound;
+      }
+      else
+      {
+        XtraMessageBox.Show($"Detail {info.Item1} is already shown in column {col.Caption}.", this.Text,
+          MessageBoxButtons.OK, MessageBoxIcon.Information);
+        this.gvServers.FocusedColumn = col;
+      }
+    }
+    #endregion
 
     #region AddColumnForRuleToServerGrid()
     private void AddColumnForRuleToServerGrid(string prefix, UnboundColumnType unboundColumnType)
@@ -957,7 +1002,10 @@ namespace ServerBrowser
       var rule = (Rule)this.gvRules.GetFocusedRow();
       var col = this.gvServers.Columns[prefix + rule.Name];
       if (col == null)
+      {
+        this.viewModel.CustomRuleColumns.Add(rule.Name);
         this.viewModel.gameExtension.AddColumn(this.gvServers, prefix + rule.Name, rule.Name, rule.Name, 70, this.gvServers.VisibleColumns.Count, unboundColumnType);
+      }
       else
       {
         XtraMessageBox.Show($"Rule {rule.Name} is already shown in column {col.Caption}.", this.Text,
@@ -1406,14 +1454,13 @@ namespace ServerBrowser
         e.Value = GetServerAddress(row);
       else if (e.Column == this.colName)
         e.Value = row.ServerInfo?.Name.Trim() ?? (showAddressMode == 0 ? GetServerAddress(row) : null);
-      else if (e.Column.FieldName.StartsWith(CustomNumericRuleColumnPrefix))
+      else if (e.Column.FieldName.StartsWith(CustomRuleColumnPrefix))
       {
-        var fieldName = e.Column.FieldName.Substring(CustomNumericRuleColumnPrefix.Length);
+        var fieldName = e.Column.FieldName.Substring(CustomRuleColumnPrefix.Length);
         e.Value = row.GetExtenderCellValue(fieldName);
-        try { e.Value = Convert.ToDecimal(e.Value); }
-        catch
-        {
-        }
+        decimal val;
+        if (e.Value != null && decimal.TryParse(e.Value.ToString(), out val))
+          e.Value = val;
       }
       else
         e.Value = row.GetExtenderCellValue(e.Column.FieldName);
@@ -1757,6 +1804,29 @@ namespace ServerBrowser
     }
     #endregion
 
+    // Details grid
+
+    #region gvDetails_MouseDown
+    private void gvDetails_MouseDown(object sender, MouseEventArgs e)
+    {
+      var hit = this.gvDetails.CalcHitInfo(e.Location);
+      if (hit.InDataRow && e.Button == MouseButtons.Right)
+      {
+        this.gcDetails.Focus();
+        this.gvDetails.FocusedRowHandle = hit.RowHandle;
+        this.menuDetails.ShowPopup(this.gcDetails.PointToScreen(e.Location));
+      }
+    }
+    #endregion
+
+    #region miAddDetailColumnString_ItemClick
+    private void miAddDetailColumnString_ItemClick(object sender, ItemClickEventArgs e)
+    {
+      AddColumnForDetailToServerGrid();
+    }
+    #endregion
+
+
     // Rules grid
 
     #region gvRules_MouseDown
@@ -1782,7 +1852,7 @@ namespace ServerBrowser
     #region miAddRulesColumnNumeric_ItemClick
     private void miAddRulesColumnNumeric_ItemClick(object sender, ItemClickEventArgs e)
     {
-      AddColumnForRuleToServerGrid(CustomNumericRuleColumnPrefix, UnboundColumnType.Decimal);
+      AddColumnForRuleToServerGrid(CustomRuleColumnPrefix, UnboundColumnType.Decimal);
     }
     #endregion
 
@@ -2048,5 +2118,6 @@ namespace ServerBrowser
       this.AddNewTab("New Favorites", TabViewModel.SourceType.Favorites);
     }
     #endregion
+
   }
 }

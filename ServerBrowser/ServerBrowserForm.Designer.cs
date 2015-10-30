@@ -32,9 +32,9 @@ namespace ServerBrowser
     {
       this.components = new System.ComponentModel.Container();
       System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ServerBrowserForm));
-      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject7 = new DevExpress.Utils.SerializableAppearanceObject();
-      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject8 = new DevExpress.Utils.SerializableAppearanceObject();
-      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject9 = new DevExpress.Utils.SerializableAppearanceObject();
+      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject1 = new DevExpress.Utils.SerializableAppearanceObject();
+      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject2 = new DevExpress.Utils.SerializableAppearanceObject();
+      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject3 = new DevExpress.Utils.SerializableAppearanceObject();
       this.riCheckEdit = new DevExpress.XtraEditors.Repository.RepositoryItemCheckEdit();
       this.gcDetails = new DevExpress.XtraGrid.GridControl();
       this.gvDetails = new DevExpress.XtraGrid.Views.Grid.GridView();
@@ -57,6 +57,8 @@ namespace ServerBrowser
       this.riFavServer = new DevExpress.XtraEditors.Repository.RepositoryItemCheckEdit();
       this.imageCollection = new DevExpress.Utils.ImageCollection(this.components);
       this.colEndPoint = new DevExpress.XtraGrid.Columns.GridColumn();
+      this.colJoinStatus = new DevExpress.XtraGrid.Columns.GridColumn();
+      this.riJoinStatus = new DevExpress.XtraEditors.Repository.RepositoryItemImageComboBox();
       this.colName = new DevExpress.XtraGrid.Columns.GridColumn();
       this.colDedicated = new DevExpress.XtraGrid.Columns.GridColumn();
       this.colPrivate = new DevExpress.XtraGrid.Columns.GridColumn();
@@ -109,6 +111,7 @@ namespace ServerBrowser
       this.barDockControlRight = new DevExpress.XtraBars.BarDockControl();
       this.miAddRulesColumnText = new DevExpress.XtraBars.BarButtonItem();
       this.miAddRulesColumnNumeric = new DevExpress.XtraBars.BarButtonItem();
+      this.miAddDetailColumn = new DevExpress.XtraBars.BarButtonItem();
       this.txtRconConsole = new DevExpress.XtraEditors.MemoEdit();
       this.txtRconCommand = new DevExpress.XtraEditors.ButtonEdit();
       this.labelControl14 = new DevExpress.XtraEditors.LabelControl();
@@ -188,6 +191,7 @@ namespace ServerBrowser
       this.txtGameServer = new DevExpress.XtraEditors.ButtonEdit();
       this.menuAddTab = new DevExpress.XtraBars.PopupMenu(this.components);
       this.defaultLookAndFeel1 = new DevExpress.LookAndFeel.DefaultLookAndFeel(this.components);
+      this.menuDetails = new DevExpress.XtraBars.PopupMenu(this.components);
       ((System.ComponentModel.ISupportInitialize)(this.riCheckEdit)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.gcDetails)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.gvDetails)).BeginInit();
@@ -201,6 +205,7 @@ namespace ServerBrowser
       ((System.ComponentModel.ISupportInitialize)(this.imgFlags)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.riFavServer)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.imageCollection)).BeginInit();
+      ((System.ComponentModel.ISupportInitialize)(this.riJoinStatus)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.dockManager1)).BeginInit();
       this.panelRcon.SuspendLayout();
       this.controlContainer3.SuspendLayout();
@@ -263,6 +268,7 @@ namespace ServerBrowser
       this.panelStaticList.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.txtGameServer.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.menuAddTab)).BeginInit();
+      ((System.ComponentModel.ISupportInitialize)(this.menuDetails)).BeginInit();
       this.SuspendLayout();
       // 
       // riCheckEdit
@@ -291,6 +297,7 @@ namespace ServerBrowser
       this.gvDetails.OptionsBehavior.Editable = false;
       this.gvDetails.OptionsView.ShowGroupPanel = false;
       this.gvDetails.OptionsView.ShowIndicator = false;
+      this.gvDetails.MouseDown += new System.Windows.Forms.MouseEventHandler(this.gvDetails_MouseDown);
       // 
       // colKey
       // 
@@ -382,7 +389,8 @@ namespace ServerBrowser
       this.gcServers.Name = "gcServers";
       this.gcServers.RepositoryItems.AddRange(new DevExpress.XtraEditors.Repository.RepositoryItem[] {
             this.riCountryFlagEdit,
-            this.riFavServer});
+            this.riFavServer,
+            this.riJoinStatus});
       this.gcServers.Size = new System.Drawing.Size(1288, 405);
       this.gcServers.TabIndex = 0;
       this.gcServers.ToolTipController = this.toolTipController;
@@ -400,6 +408,7 @@ namespace ServerBrowser
             this.colBuddyCount,
             this.colFavServer,
             this.colEndPoint,
+            this.colJoinStatus,
             this.colName,
             this.colDedicated,
             this.colPrivate,
@@ -420,6 +429,7 @@ namespace ServerBrowser
       this.gvServers.OptionsSelection.MultiSelect = true;
       this.gvServers.OptionsView.ColumnAutoWidth = false;
       this.gvServers.OptionsView.ShowAutoFilterRow = true;
+      this.gvServers.OptionsView.ShowFooter = true;
       this.gvServers.OptionsView.ShowGroupPanel = false;
       this.gvServers.OptionsView.ShowIndicator = false;
       this.gvServers.SortInfo.AddRange(new DevExpress.XtraGrid.Columns.GridColumnSortInfo[] {
@@ -704,6 +714,8 @@ namespace ServerBrowser
       this.colBuddyCount.FieldName = "BuddyCount";
       this.colBuddyCount.Name = "colBuddyCount";
       this.colBuddyCount.OptionsColumn.AllowEdit = false;
+      this.colBuddyCount.Summary.AddRange(new DevExpress.XtraGrid.GridSummaryItem[] {
+            new DevExpress.XtraGrid.GridColumnSummaryItem(DevExpress.Data.SummaryItemType.Sum, "BuddyCount", "{0:d}")});
       this.colBuddyCount.ToolTip = "Number of players which you have in your \"Find Buddy\" list.";
       this.colBuddyCount.UnboundType = DevExpress.Data.UnboundColumnType.Integer;
       this.colBuddyCount.Visible = true;
@@ -755,6 +767,10 @@ namespace ServerBrowser
       this.imageCollection.Images.SetKeyName(16, "016.png");
       this.imageCollection.Images.SetKeyName(17, "017.png");
       this.imageCollection.Images.SetKeyName(18, "018.png");
+      this.imageCollection.Images.SetKeyName(19, "019.png");
+      this.imageCollection.Images.SetKeyName(20, "020.png");
+      this.imageCollection.Images.SetKeyName(21, "021.png");
+      this.imageCollection.Images.SetKeyName(22, "022.png");
       // 
       // colEndPoint
       // 
@@ -767,6 +783,30 @@ namespace ServerBrowser
       this.colEndPoint.VisibleIndex = 3;
       this.colEndPoint.Width = 132;
       // 
+      // colJoinStatus
+      // 
+      this.colJoinStatus.Caption = " Jn";
+      this.colJoinStatus.ColumnEdit = this.riJoinStatus;
+      this.colJoinStatus.FieldName = "JoinStatus";
+      this.colJoinStatus.Name = "colJoinStatus";
+      this.colJoinStatus.OptionsColumn.AllowEdit = false;
+      this.colJoinStatus.ToolTip = "Joinable";
+      this.colJoinStatus.Visible = true;
+      this.colJoinStatus.VisibleIndex = 4;
+      this.colJoinStatus.Width = 25;
+      // 
+      // riJoinStatus
+      // 
+      this.riJoinStatus.AutoHeight = false;
+      this.riJoinStatus.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)});
+      this.riJoinStatus.Items.AddRange(new DevExpress.XtraEditors.Controls.ImageComboBoxItem[] {
+            new DevExpress.XtraEditors.Controls.ImageComboBoxItem("Vacancy", 0, 20),
+            new DevExpress.XtraEditors.Controls.ImageComboBoxItem("Full Teams", 1, 21),
+            new DevExpress.XtraEditors.Controls.ImageComboBoxItem("Full Server", 2, 22)});
+      this.riJoinStatus.Name = "riJoinStatus";
+      this.riJoinStatus.SmallImages = this.imageCollection;
+      // 
       // colName
       // 
       this.colName.FieldName = "Name";
@@ -774,9 +814,11 @@ namespace ServerBrowser
       this.colName.OptionsColumn.AllowEdit = false;
       this.colName.OptionsColumn.ReadOnly = true;
       this.colName.OptionsFilter.AutoFilterCondition = DevExpress.XtraGrid.Columns.AutoFilterCondition.Contains;
+      this.colName.Summary.AddRange(new DevExpress.XtraGrid.GridSummaryItem[] {
+            new DevExpress.XtraGrid.GridColumnSummaryItem(DevExpress.Data.SummaryItemType.Count, "Name", "Servers passing filter: {0:d}")});
       this.colName.UnboundType = DevExpress.Data.UnboundColumnType.String;
       this.colName.Visible = true;
-      this.colName.VisibleIndex = 4;
+      this.colName.VisibleIndex = 5;
       this.colName.Width = 260;
       // 
       // colDedicated
@@ -787,7 +829,7 @@ namespace ServerBrowser
       this.colDedicated.ToolTip = "Dedicated";
       this.colDedicated.UnboundType = DevExpress.Data.UnboundColumnType.Boolean;
       this.colDedicated.Visible = true;
-      this.colDedicated.VisibleIndex = 5;
+      this.colDedicated.VisibleIndex = 6;
       this.colDedicated.Width = 35;
       // 
       // colPrivate
@@ -798,7 +840,7 @@ namespace ServerBrowser
       this.colPrivate.Name = "colPrivate";
       this.colPrivate.OptionsColumn.AllowEdit = false;
       this.colPrivate.Visible = true;
-      this.colPrivate.VisibleIndex = 6;
+      this.colPrivate.VisibleIndex = 7;
       this.colPrivate.Width = 45;
       // 
       // colDescription
@@ -809,7 +851,7 @@ namespace ServerBrowser
       this.colDescription.OptionsColumn.AllowEdit = false;
       this.colDescription.OptionsFilter.AutoFilterCondition = DevExpress.XtraGrid.Columns.AutoFilterCondition.Contains;
       this.colDescription.Visible = true;
-      this.colDescription.VisibleIndex = 7;
+      this.colDescription.VisibleIndex = 8;
       this.colDescription.Width = 101;
       // 
       // colTags
@@ -820,7 +862,7 @@ namespace ServerBrowser
       this.colTags.OptionsColumn.AllowEdit = false;
       this.colTags.OptionsFilter.AutoFilterCondition = DevExpress.XtraGrid.Columns.AutoFilterCondition.Contains;
       this.colTags.Visible = true;
-      this.colTags.VisibleIndex = 8;
+      this.colTags.VisibleIndex = 9;
       this.colTags.Width = 127;
       // 
       // colPlayerCount
@@ -830,8 +872,11 @@ namespace ServerBrowser
       this.colPlayerCount.Name = "colPlayerCount";
       this.colPlayerCount.OptionsColumn.AllowEdit = false;
       this.colPlayerCount.SortMode = DevExpress.XtraGrid.ColumnSortMode.Value;
+      this.colPlayerCount.Summary.AddRange(new DevExpress.XtraGrid.GridSummaryItem[] {
+            new DevExpress.XtraGrid.GridColumnSummaryItem(DevExpress.Data.SummaryItemType.Sum, "PlayerCount.RealPlayers", "Sum: {0:d}")});
+      this.colPlayerCount.ToolTip = "Humans+Bots / MaxPlayers+Specs";
       this.colPlayerCount.Visible = true;
-      this.colPlayerCount.VisibleIndex = 9;
+      this.colPlayerCount.VisibleIndex = 10;
       // 
       // colHumanPlayers
       // 
@@ -839,9 +884,11 @@ namespace ServerBrowser
       this.colHumanPlayers.FieldName = "PlayerCount.RealPlayers";
       this.colHumanPlayers.Name = "colHumanPlayers";
       this.colHumanPlayers.OptionsColumn.AllowEdit = false;
+      this.colHumanPlayers.Summary.AddRange(new DevExpress.XtraGrid.GridSummaryItem[] {
+            new DevExpress.XtraGrid.GridColumnSummaryItem(DevExpress.Data.SummaryItemType.Sum, "PlayerCount.RealPlayers", "{0:d}")});
       this.colHumanPlayers.ToolTip = "Human Players";
       this.colHumanPlayers.Visible = true;
-      this.colHumanPlayers.VisibleIndex = 10;
+      this.colHumanPlayers.VisibleIndex = 11;
       this.colHumanPlayers.Width = 30;
       // 
       // colBots
@@ -850,8 +897,10 @@ namespace ServerBrowser
       this.colBots.FieldName = "PlayerCount.Bots";
       this.colBots.Name = "colBots";
       this.colBots.OptionsColumn.AllowEdit = false;
+      this.colBots.Summary.AddRange(new DevExpress.XtraGrid.GridSummaryItem[] {
+            new DevExpress.XtraGrid.GridColumnSummaryItem(DevExpress.Data.SummaryItemType.Sum, "PlayerCount.Bots", "{0:d}")});
       this.colBots.Visible = true;
-      this.colBots.VisibleIndex = 11;
+      this.colBots.VisibleIndex = 12;
       this.colBots.Width = 30;
       // 
       // colTotalPlayers
@@ -860,9 +909,11 @@ namespace ServerBrowser
       this.colTotalPlayers.FieldName = "PlayerCount.TotalPlayers";
       this.colTotalPlayers.Name = "colTotalPlayers";
       this.colTotalPlayers.OptionsColumn.AllowEdit = false;
+      this.colTotalPlayers.Summary.AddRange(new DevExpress.XtraGrid.GridSummaryItem[] {
+            new DevExpress.XtraGrid.GridColumnSummaryItem(DevExpress.Data.SummaryItemType.Sum, "PlayerCount.TotalPlayers", "{0:d}")});
       this.colTotalPlayers.ToolTip = "Total Players (Humans + Bots)";
       this.colTotalPlayers.Visible = true;
-      this.colTotalPlayers.VisibleIndex = 12;
+      this.colTotalPlayers.VisibleIndex = 13;
       this.colTotalPlayers.Width = 30;
       // 
       // colMaxPlayers
@@ -873,7 +924,7 @@ namespace ServerBrowser
       this.colMaxPlayers.OptionsColumn.AllowEdit = false;
       this.colMaxPlayers.ToolTip = "Maximum Players";
       this.colMaxPlayers.Visible = true;
-      this.colMaxPlayers.VisibleIndex = 13;
+      this.colMaxPlayers.VisibleIndex = 14;
       this.colMaxPlayers.Width = 30;
       // 
       // colMap
@@ -884,7 +935,7 @@ namespace ServerBrowser
       this.colMap.OptionsColumn.AllowEdit = false;
       this.colMap.OptionsFilter.AutoFilterCondition = DevExpress.XtraGrid.Columns.AutoFilterCondition.Contains;
       this.colMap.Visible = true;
-      this.colMap.VisibleIndex = 14;
+      this.colMap.VisibleIndex = 15;
       this.colMap.Width = 110;
       // 
       // colPing
@@ -896,7 +947,7 @@ namespace ServerBrowser
       this.colPing.Name = "colPing";
       this.colPing.OptionsColumn.AllowEdit = false;
       this.colPing.Visible = true;
-      this.colPing.VisibleIndex = 15;
+      this.colPing.VisibleIndex = 16;
       this.colPing.Width = 32;
       // 
       // colStatus
@@ -906,7 +957,7 @@ namespace ServerBrowser
       this.colStatus.Name = "colStatus";
       this.colStatus.OptionsColumn.AllowEdit = false;
       this.colStatus.Visible = true;
-      this.colStatus.VisibleIndex = 16;
+      this.colStatus.VisibleIndex = 17;
       this.colStatus.Width = 61;
       // 
       // toolTipController
@@ -1036,8 +1087,9 @@ namespace ServerBrowser
             this.mnuTabs,
             this.mnuServer,
             this.mnuUpdate,
-            this.miFindPlayer});
-      this.barManager1.MaxItemId = 26;
+            this.miFindPlayer,
+            this.miAddDetailColumn});
+      this.barManager1.MaxItemId = 27;
       this.barManager1.RepositoryItems.AddRange(new DevExpress.XtraEditors.Repository.RepositoryItem[] {
             this.riFindPlayer});
       // 
@@ -1198,7 +1250,7 @@ namespace ServerBrowser
       this.miConnect.CategoryGuid = new System.Guid("b1e08833-8d08-415c-9522-c31e9bf3c2de");
       this.miConnect.Id = 0;
       this.miConnect.ImageIndex = 7;
-      this.miConnect.ItemShortcut = new DevExpress.XtraBars.BarShortcut((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Return));
+      this.miConnect.ItemShortcut = new DevExpress.XtraBars.BarShortcut((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Enter));
       this.miConnect.Name = "miConnect";
       this.miConnect.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miConnect_ItemClick);
       // 
@@ -1207,7 +1259,7 @@ namespace ServerBrowser
       this.miConnectSpectator.Caption = "Connect as Spectator";
       this.miConnectSpectator.CategoryGuid = new System.Guid("b1e08833-8d08-415c-9522-c31e9bf3c2de");
       this.miConnectSpectator.Id = 1;
-      this.miConnectSpectator.ItemShortcut = new DevExpress.XtraBars.BarShortcut((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.Return));
+      this.miConnectSpectator.ItemShortcut = new DevExpress.XtraBars.BarShortcut((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.Enter));
       this.miConnectSpectator.Name = "miConnectSpectator";
       this.miConnectSpectator.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miConnectSpectator_ItemClick);
       // 
@@ -1319,9 +1371,9 @@ namespace ServerBrowser
       this.riFindPlayer.AutoHeight = false;
       this.riFindPlayer.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
             new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo),
-            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Plus, "", -1, true, true, false, DevExpress.XtraEditors.ImageLocation.MiddleCenter, null, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), serializableAppearanceObject7, "Add to list", null, null, true),
-            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Minus, "", -1, true, true, false, DevExpress.XtraEditors.ImageLocation.MiddleCenter, null, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), serializableAppearanceObject8, "Remove from list", null, null, true),
-            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Search, "", -1, true, true, false, DevExpress.XtraEditors.ImageLocation.MiddleCenter, null, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), serializableAppearanceObject9, "Find", null, null, true)});
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Plus, "", -1, true, true, false, DevExpress.XtraEditors.ImageLocation.MiddleCenter, null, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), serializableAppearanceObject1, "Add to list", null, null, true),
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Minus, "", -1, true, true, false, DevExpress.XtraEditors.ImageLocation.MiddleCenter, null, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), serializableAppearanceObject2, "Remove from list", null, null, true),
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Search, "", -1, true, true, false, DevExpress.XtraEditors.ImageLocation.MiddleCenter, null, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), serializableAppearanceObject3, "Find", null, null, true)});
       this.riFindPlayer.Name = "riFindPlayer";
       this.riFindPlayer.NullValuePrompt = "min 3 chars, * as placeholder";
       this.riFindPlayer.NullValuePromptShowForEmptyValue = true;
@@ -1371,6 +1423,13 @@ namespace ServerBrowser
       this.miAddRulesColumnNumeric.Id = 6;
       this.miAddRulesColumnNumeric.Name = "miAddRulesColumnNumeric";
       this.miAddRulesColumnNumeric.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miAddRulesColumnNumeric_ItemClick);
+      // 
+      // miAddDetailColumn
+      // 
+      this.miAddDetailColumn.Caption = "Add as column to server list";
+      this.miAddDetailColumn.Id = 26;
+      this.miAddDetailColumn.Name = "miAddDetailColumn";
+      this.miAddDetailColumn.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miAddDetailColumnString_ItemClick);
       // 
       // txtRconConsole
       // 
@@ -1950,8 +2009,8 @@ namespace ServerBrowser
       this.cbHideUnresponsiveServers.Properties.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
       this.cbHideUnresponsiveServers.Properties.Appearance.Options.UseFont = true;
       this.cbHideUnresponsiveServers.Properties.AutoWidth = true;
-      this.cbHideUnresponsiveServers.Properties.Caption = "Hide unresponsive servers";
-      this.cbHideUnresponsiveServers.Size = new System.Drawing.Size(159, 19);
+      this.cbHideUnresponsiveServers.Properties.Caption = "Hide timed out servers";
+      this.cbHideUnresponsiveServers.Size = new System.Drawing.Size(141, 19);
       this.cbHideUnresponsiveServers.TabIndex = 21;
       this.cbHideUnresponsiveServers.CheckedChanged += new System.EventHandler(this.cbHideUnresponsiveServers_CheckedChanged);
       // 
@@ -2337,6 +2396,13 @@ namespace ServerBrowser
       // 
       this.defaultLookAndFeel1.LookAndFeel.SkinName = "Office 2010 Black";
       // 
+      // menuDetails
+      // 
+      this.menuDetails.LinksPersistInfo.AddRange(new DevExpress.XtraBars.LinkPersistInfo[] {
+            new DevExpress.XtraBars.LinkPersistInfo(this.miAddDetailColumn)});
+      this.menuDetails.Manager = this.barManager1;
+      this.menuDetails.Name = "menuDetails";
+      // 
       // ServerBrowserForm
       // 
       this.Appearance.Options.UseFont = true;
@@ -2371,6 +2437,7 @@ namespace ServerBrowser
       ((System.ComponentModel.ISupportInitialize)(this.imgFlags)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.riFavServer)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.imageCollection)).EndInit();
+      ((System.ComponentModel.ISupportInitialize)(this.riJoinStatus)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.dockManager1)).EndInit();
       this.panelRcon.ResumeLayout(false);
       this.controlContainer3.ResumeLayout(false);
@@ -2438,6 +2505,7 @@ namespace ServerBrowser
       this.panelStaticList.PerformLayout();
       ((System.ComponentModel.ISupportInitialize)(this.txtGameServer.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.menuAddTab)).EndInit();
+      ((System.ComponentModel.ISupportInitialize)(this.menuDetails)).EndInit();
       this.ResumeLayout(false);
       this.PerformLayout();
 
@@ -2598,5 +2666,9 @@ namespace ServerBrowser
     private DevExpress.XtraBars.BarEditItem miFindPlayer;
     private DevExpress.XtraEditors.Repository.RepositoryItemComboBox riFindPlayer;
     private DevExpress.XtraGrid.Columns.GridColumn colBuddyCount;
+    private DevExpress.XtraBars.BarButtonItem miAddDetailColumn;
+    private DevExpress.XtraBars.PopupMenu menuDetails;
+    private DevExpress.XtraGrid.Columns.GridColumn colJoinStatus;
+    private DevExpress.XtraEditors.Repository.RepositoryItemImageComboBox riJoinStatus;
   }
 }

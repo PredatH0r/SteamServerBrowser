@@ -14,8 +14,9 @@ namespace ServerBrowser
 
     public int? RealPlayers { get; private set; }
     public int? Bots { get; private set; }
-    public int? TotalPlayers { get { return RealPlayers + Bots; } }
+    public int? TotalPlayers => RealPlayers + Bots;
     public int? MaxPlayers { get; private set; }
+    public int? MaxClients { get; private set; }
 
     public PlayerCountInfo(ServerRow row)
     {
@@ -26,11 +27,12 @@ namespace ServerBrowser
     public void Update()
     {
       if (row.ServerInfo == null)
-        RealPlayers = Bots = MaxPlayers = null;
+        RealPlayers = Bots = MaxPlayers = MaxClients = null;
       else
       {
         Bots = row.GameExtension.GetBotCount(row);
-        MaxPlayers = row.ServerInfo.MaxPlayers;
+        MaxPlayers = row.GameExtension.GetMaxPlayers(row);
+        MaxClients = row.GameExtension.GetMaxClients(row);
         RealPlayers = row.ServerInfo.Players;
 
         // some games count bots as players, others don't
@@ -90,8 +92,13 @@ namespace ServerBrowser
       sb.Append(this.RealPlayers);
       if (this.Bots > 0)
         sb.Append('+').Append(this.Bots);
+
       if (this.MaxPlayers > 0)
+      {
         sb.Append(" / ").Append(this.MaxPlayers);
+        if (this.MaxClients > this.MaxPlayers)
+          sb.Append('+').Append(this.MaxClients - this.MaxPlayers);
+      }
       return sb.ToString();
     }
   }

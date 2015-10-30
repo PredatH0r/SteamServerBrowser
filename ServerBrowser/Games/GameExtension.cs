@@ -210,6 +210,16 @@ namespace ServerBrowser
     public bool BotsIncludedInPlayerCount { get; set; }
 
     public bool BotsIncludedInPlayerList { get; set; }
+
+    public virtual int? GetMaxPlayers(ServerRow row)
+    {
+      return row?.ServerInfo?.MaxPlayers;
+    }
+
+    public virtual int? GetMaxClients(ServerRow row)
+    {
+      return row?.ServerInfo?.MaxPlayers;
+    }
   }
   #endregion
 

@@ -336,11 +336,12 @@ namespace ServerBrowser
     {
       bool ok = ExecuteUpdate(request, row, server, retryCallback =>
       {
-        row.ServerInfo = server.GetInfo(retryCallback);
-        if (row.ServerInfo == null)
+        var si = server.GetInfo(retryCallback);
+        if (si == null)
           return false;
-        var gameId = row.ServerInfo.Extra?.GameId ?? 0;
-        if (gameId == 0) gameId = row.ServerInfo.Id;
+        row.ServerInfo = si;
+        var gameId = si.Extra?.GameId ?? 0;
+        if (gameId == 0) gameId = si.Id;
         if (gameId == 0) gameId = (int)request.AppId;
         var extension = this.gameExtensions.Get((Game)gameId);
         row.GameExtension = extension;

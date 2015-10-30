@@ -64,6 +64,10 @@ namespace ServerBrowser
       AddColumn(view, "_gametype", "GT", "Gametype", 40, idx)
         .OptionsFilter.AutoFilterCondition = AutoFilterCondition.Default;
 
+      idx = view.Columns["PlayerCount"].VisibleIndex;
+      AddColumn(view, "_teamsize", "TS", "Team Size", 30, ++idx, UnboundColumnType.Integer);
+      idx = view.Columns["JoinStatus"].VisibleIndex;
+      AddColumn(view, "_fullTeams", "FT", "Full Teams", 30, ++idx, UnboundColumnType.Boolean);
 
       idx = view.Columns["ServerInfo.Ping"].VisibleIndex;
       AddColumn(view, "_goalscore", "SL", "Score Limit", 30, idx, UnboundColumnType.Integer);
@@ -107,6 +111,18 @@ namespace ServerBrowser
             return instaPrefix + name;
           return instaPrefix + gt;
         }
+        case "_teamsize":
+        {
+          int ts;
+          int.TryParse(row.GetRule("teamsize") ?? "0", out ts);
+          return ts == 0 ? null : (object) ts;
+        }
+        case "_fullTeams":
+        {
+          int ts;
+          int.TryParse(row.GetRule("teamsize") ?? "0", out ts);
+          return row.PlayerCount.RealPlayers >= row.PlayerCount.MaxPlayers || ts != 0 && row.PlayerCount.RealPlayers >= ts*2;
+        }
         case "g_instagib":
           return row.GetRule(fieldName) == "1";
       }
@@ -119,6 +135,34 @@ namespace ServerBrowser
     public override string GetCleanPlayerName(Player player)
     {
       return NameColors.Replace(player.Name, "");
+    }
+    #endregion
+
+    #region GetMaxClients()
+    public override int? GetMaxClients(ServerRow row)
+    {
+      var cli = row.GetRule("sv_maxclients");
+      if (!string.IsNullOrEmpty(cli))
+        return int.Parse(cli);
+
+      // QL currently returns the sv_maxclients in MaxPlayers (instead of teamsize * 2)
+      return row.ServerInfo?.MaxPlayers;
+    }
+    #endregion
+
+    #region GetMaxPlayers()
+    public override int? GetMaxPlayers(ServerRow row)
+    {
+      var ts = row.GetRule("teamsize");
+      if (!string.IsNullOrEmpty(ts))
+      {
+        var n = int.Parse(ts);
+        if (n != 0)
+          return n*2;
+      }
+
+      // QL currently returns the sv_maxclients in MaxPlayers (instead of teamsize * 2)
+      return row.ServerInfo?.MaxPlayers;
     }
     #endregion
 
