@@ -159,6 +159,7 @@ namespace ServerBrowser
       this.linkFilter1 = new DevExpress.XtraEditors.HyperlinkLabelControl();
       this.timerUpdateServerList = new System.Windows.Forms.Timer(this.components);
       this.panelOptions = new DevExpress.XtraEditors.PanelControl();
+      this.cbNoUpdateWhilePlaying = new DevExpress.XtraEditors.CheckEdit();
       this.cbHideUnresponsiveServers = new DevExpress.XtraEditors.CheckEdit();
       this.btnApplyFilter = new DevExpress.XtraEditors.SimpleButton();
       this.comboMaxPing = new DevExpress.XtraEditors.ComboBoxEdit();
@@ -243,6 +244,7 @@ namespace ServerBrowser
       this.tabControl.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.panelOptions)).BeginInit();
       this.panelOptions.SuspendLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.cbNoUpdateWhilePlaying.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbHideUnresponsiveServers.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.comboMaxPing.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbMinPlayersBots.Properties)).BeginInit();
@@ -1972,6 +1974,7 @@ namespace ServerBrowser
       // panelOptions
       // 
       this.panelOptions.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.NoBorder;
+      this.panelOptions.Controls.Add(this.cbNoUpdateWhilePlaying);
       this.panelOptions.Controls.Add(this.cbHideUnresponsiveServers);
       this.panelOptions.Controls.Add(this.btnApplyFilter);
       this.panelOptions.Controls.Add(this.comboMaxPing);
@@ -2000,6 +2003,19 @@ namespace ServerBrowser
       this.panelOptions.Size = new System.Drawing.Size(1658, 106);
       this.panelOptions.TabIndex = 1;
       this.panelOptions.Visible = false;
+      // 
+      // cbNoUpdateWhilePlaying
+      // 
+      this.cbNoUpdateWhilePlaying.EditValue = true;
+      this.cbNoUpdateWhilePlaying.Location = new System.Drawing.Point(604, 68);
+      this.cbNoUpdateWhilePlaying.Name = "cbNoUpdateWhilePlaying";
+      this.cbNoUpdateWhilePlaying.Properties.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
+      this.cbNoUpdateWhilePlaying.Properties.Appearance.Options.UseFont = true;
+      this.cbNoUpdateWhilePlaying.Properties.AutoWidth = true;
+      this.cbNoUpdateWhilePlaying.Properties.Caption = "off while in-game";
+      this.cbNoUpdateWhilePlaying.Size = new System.Drawing.Size(116, 19);
+      this.cbNoUpdateWhilePlaying.TabIndex = 22;
+      this.cbNoUpdateWhilePlaying.ToolTip = "Disable Auto-Update while you are in a game.\r\n(This looks at your Steam status)";
       // 
       // cbHideUnresponsiveServers
       // 
@@ -2478,6 +2494,7 @@ namespace ServerBrowser
       ((System.ComponentModel.ISupportInitialize)(this.panelOptions)).EndInit();
       this.panelOptions.ResumeLayout(false);
       this.panelOptions.PerformLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.cbNoUpdateWhilePlaying.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbHideUnresponsiveServers.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.comboMaxPing.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbMinPlayersBots.Properties)).EndInit();
@@ -2670,5 +2687,6 @@ namespace ServerBrowser
     private DevExpress.XtraBars.PopupMenu menuDetails;
     private DevExpress.XtraGrid.Columns.GridColumn colJoinStatus;
     private DevExpress.XtraEditors.Repository.RepositoryItemImageComboBox riJoinStatus;
+    protected CheckEdit cbNoUpdateWhilePlaying;
   }
 }

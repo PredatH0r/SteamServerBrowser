@@ -24,6 +24,7 @@ using DevExpress.XtraGrid.Views.Grid;
 using DevExpress.XtraGrid.Views.Grid.ViewInfo;
 using DevExpress.XtraTab;
 using DevExpress.XtraTab.ViewInfo;
+using ExtraQL;
 using QueryMaster;
 using ServerBrowser.Properties;
 
@@ -31,7 +32,7 @@ namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.8";
+    private const string Version = "2.9";
     private const string DevExpressVersion = "v15.1";
     private const string CustomDetailColumnPrefix = "ServerInfo.";
     private const string CustomRuleColumnPrefix = "custRule.";
@@ -129,7 +130,7 @@ namespace ServerBrowser
       LookAndFeel_StyleChanged(null, null);
       --this.ignoreUiEvents;
 
-      this.ReloadServerList();      
+      this.ReloadServerList();
     }
     #endregion  
    
@@ -371,6 +372,7 @@ namespace ServerBrowser
       this.spinRefreshInterval.EditValue = options.GetDecimal("RefreshInterval");
       this.rbUpdateListAndStatus.Checked = options.GetBool("AutoUpdateList", true);
       this.rbUpdateStatusOnly.Checked = options.GetBool("AutoUpdateInfo");
+      this.cbNoUpdateWhilePlaying.Checked = !options.GetBool("AutoUpdateWhilePlaying");
       this.cbFavServersOnTop.Checked = options.GetBool("KeepFavServersOnTop", true);
       this.cbHideUnresponsiveServers.Checked = options.GetBool("HideUnresponsiveServers", true);
       this.cbRememberColumnLayout.Checked = options.GetBool("ColumnLayoutPerTab");
@@ -476,6 +478,7 @@ namespace ServerBrowser
       sb.AppendLine($"HideUnresponsiveServers={this.cbHideUnresponsiveServers.Checked}");
       sb.AppendLine($"AutoUpdateList={this.rbUpdateListAndStatus.Checked}");
       sb.AppendLine($"AutoUpdateInfo={this.rbUpdateStatusOnly.Checked}");
+      sb.AppendLine($"AutoUpdateWhilePlaying={!this.cbNoUpdateWhilePlaying.Checked}");
       sb.AppendLine($"Skin={UserLookAndFeel.Default.SkinName}");
       sb.AppendLine($"TabIndex={this.tabControl.SelectedTabPageIndex}");
       sb.AppendLine($"ColumnLayoutPerTab={this.cbRememberColumnLayout.Checked}");
@@ -1404,6 +1407,16 @@ namespace ServerBrowser
       // CS:GO and other huge games may return more data than can be queried in one interval
       if (this.queryLogic.IsUpdating)
         return;
+
+      if (this.cbNoUpdateWhilePlaying.Checked)
+      {
+        using (var steam = new Steamworks())
+        {
+          steam.Init();
+          if (steam.IsInGame())
+            return;
+        }
+      }
 
       if (this.rbUpdateListAndStatus.Checked)
         this.ReloadServerList();

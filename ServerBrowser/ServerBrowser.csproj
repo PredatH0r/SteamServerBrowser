@@ -177,6 +177,7 @@
     <Compile Include="Games\QuakeLive.cs" />
     <Compile Include="Games\Toxikk.cs" />
     <Compile Include="Ip4Utils.cs" />
+    <Compile Include="Steamworks.cs" />
     <Compile Include="TabViewModel.cs" />
     <Compile Include="Win32.cs" />
     <Compile Include="XWebClient.cs" />

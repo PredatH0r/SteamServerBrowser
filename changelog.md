@@ -1,3 +1,9 @@
+2.9
+---
+- added option to disable auto-update while you are in-game, which is turned on by default. This should prevent performance issues while playing.
+- reduced thread number for concurrent server queries from 100 to 50
+- a few smaller optimizations to get a more accurate ping (but still work in progress)
+
 2.8
 ---
 - added traffic light indicator for vacant/full servers
