@@ -107,7 +107,7 @@ namespace ServerBrowser
       this.gameExtensions = gameExtensions;
 
       // fake a completed request
-      this.currentRequest = new UpdateRequest(0, 0, 500, gameExtensions.Get(0));
+      this.currentRequest = new UpdateRequest(0, 0, 750, gameExtensions.Get(0));
       this.currentRequest.PendingTasks = new CountdownEvent(1);
       this.currentRequest.PendingTasks.Signal();
     }
@@ -253,9 +253,9 @@ namespace ServerBrowser
     #region ReloadServerListFinished()
     private void ReloadServerListFinished(UpdateRequest request)
     {
-      if (request.TasksWithTimeout > request.TaskCount/4)
+      if (request.TasksWithTimeout < request.TaskCount/4)
         this.sendFirstUdpPacketTwice = false;
-      else if (request.TasksWithRetries > request.TaskCount / 3)
+      else if (request.TasksWithRetries > request.TaskCount/2)
         this.sendFirstUdpPacketTwice = true;
 
       this.ReloadServerListComplete?.Invoke(this, new ServerListEventArgs(request.Servers));

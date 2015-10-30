@@ -32,8 +32,8 @@ namespace ServerBrowser
       Application.EnableVisualStyles();
       Application.SetCompatibleTextRenderingDefault(false);
 
-      ThreadPool.SetMinThreads(100, 90);
-      ThreadPool.SetMaxThreads(100, 90);
+      ThreadPool.SetMinThreads(50, 100);
+      ThreadPool.SetMaxThreads(50, 100);
 
       AppearanceObject.DefaultFont = uiFont;
       UserLookAndFeel.Default.SkinName = skinName;

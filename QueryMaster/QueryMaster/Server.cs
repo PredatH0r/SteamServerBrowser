@@ -95,9 +95,9 @@ namespace QueryMaster
       if (IsObsolete)
         Query = QueryMsg.ObsoleteInfoQuery;
 
-      var sw = Stopwatch.StartNew();
-      var recvData = socket.GetResponse(Query, Type);
-      sw.Stop();
+
+      var sw = new Stopwatch();
+      var recvData = socket.GetResponse(Query, Type, sw);
       Latency = sw.ElapsedMilliseconds;
       try
       {

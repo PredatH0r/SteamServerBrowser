@@ -717,7 +717,7 @@ namespace ServerBrowser
       }
       this.CustomizeFilter(filter);
 
-      queryLogic.ReloadServerList(this.viewModel.serverSource, 500, this.viewModel.MasterServerQueryLimit, QueryMaster.Region.Rest_of_the_world, filter);
+      queryLogic.ReloadServerList(this.viewModel.serverSource, 750, this.viewModel.MasterServerQueryLimit, QueryMaster.Region.Rest_of_the_world, filter);
     }
     #endregion
 
@@ -757,6 +757,7 @@ namespace ServerBrowser
         if (filter != "")
           filter += " and ";
         filter += "[Status] not like 'Timeout%'";
+        filter += " and [ServerInfo.Ping] is not null";
       }
       this.gvServers.ActiveFilterString = filter;
     }
