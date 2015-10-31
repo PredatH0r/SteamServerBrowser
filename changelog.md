@@ -1,3 +1,13 @@
+2.10
+---
+- cleaned up menu (only most important function are directly in the menu bar, other items are in the drop downs)
+- cleaned up option pane (moved quick filters and alert to a separate pane)
+- added option dialogs for Quake Live, Reflex and TOXIKK
+- show a splash screen when connecting to a server
+- bring existing game window to front of screen when connecting
+- option "hide timed out servers" is now applied without setting up table filters
+- fixed UI not being updated after a refresh of the current server list
+
 2.9
 ---
 - added option to disable auto-update while you are in-game, which is turned on by default. This should prevent performance issues while playing.

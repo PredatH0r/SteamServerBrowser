@@ -213,7 +213,6 @@ namespace QueryMaster
         Toxikk = 324810,
         Reflex = 328070,
         QuakeLive = 282440,
-        QuakeLive_Testing = 344320,
         DayZ = 221100,
         Arma_3 = 107410,
         Arma_3_dedicated_server = 233780,

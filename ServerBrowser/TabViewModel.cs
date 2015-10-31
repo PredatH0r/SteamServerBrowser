@@ -2,12 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using ChanSort.Api;
 using QueryMaster;
 
 namespace ServerBrowser
 {
-  class TabViewModel : IViewModel
+  class TabViewModel
   {
     internal List<ServerRow> servers;
     internal ServerRow lastSelectedServer;
@@ -38,11 +37,11 @@ namespace ServerBrowser
     {
       this.GetEmptyServers = true;
       this.GetFullServers = true;
-      this.MasterServerQueryLimit = 500;
+      this.MasterServerQueryLimit = 1000;
     }
 
     #region AssignFrom()
-    public void AssignFrom(IViewModel opt)
+    public void AssignFrom(TabViewModel opt)
     {
       this.MasterServer = opt.MasterServer;
       this.InitialGameID = opt.InitialGameID;
@@ -54,18 +53,14 @@ namespace ServerBrowser
       this.GetFullServers = opt.GetFullServers;
       this.MasterServerQueryLimit = opt.MasterServerQueryLimit;
 
-      var vm = opt as TabViewModel;
-      if (vm == null)
-        return;
-
-      this.Source = vm.Source;
-      this.serverSource = vm.serverSource;
-      this.servers = vm.servers;
-      this.gameExtension = vm.gameExtension;
-      this.GridFilter = vm.GridFilter;
-      this.ServerGridLayout = vm.ServerGridLayout;
-      this.CustomDetailColumns.AddRange(vm.CustomDetailColumns);
-      this.CustomRuleColumns.AddRange(vm.CustomRuleColumns);
+      this.Source = opt.Source;
+      this.serverSource = opt.serverSource;
+      this.servers = opt.servers;
+      this.gameExtension = opt.gameExtension;
+      this.GridFilter = opt.GridFilter;
+      this.ServerGridLayout = opt.ServerGridLayout;
+      this.CustomDetailColumns.AddRange(opt.CustomDetailColumns);
+      this.CustomRuleColumns.AddRange(opt.CustomRuleColumns);
     }
     #endregion
 
@@ -81,7 +76,7 @@ namespace ServerBrowser
       this.TagsExclude = ini.GetString("TagsExclude");
       this.GetEmptyServers = ini.GetBool("GetEmptyServers", true);
       this.GetFullServers = ini.GetBool("GetFullServers", true);
-      this.MasterServerQueryLimit = ini.GetInt("MasterServerQueryLimit", 500);
+      this.MasterServerQueryLimit = ini.GetInt("MasterServerQueryLimit", this.MasterServerQueryLimit);
       this.GridFilter = ini.GetString("GridFilter");
 
       this.CustomDetailColumns.Clear();

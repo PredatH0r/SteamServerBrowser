@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
@@ -8,6 +9,7 @@ using DevExpress.Data;
 using DevExpress.XtraGrid.Columns;
 using DevExpress.XtraGrid.Views.Grid;
 using QueryMaster;
+using ServerBrowser.Games;
 
 #if ZMQ
 using System.Net;
@@ -39,6 +41,7 @@ namespace ServerBrowser
 
     private static readonly Regex NameColors = new Regex("\\^[0-9]");
     private readonly Game steamAppId;
+    private bool useKeystrokesToConnect;
 
     #region ctor()
 
@@ -47,8 +50,39 @@ namespace ServerBrowser
       this.steamAppId = steamAppId;
       this.BotsIncludedInPlayerCount = true;
       this.BotsIncludedInPlayerList = true;
+      this.OptionMenuCaption = "Quake Live...";
     }
 
+    #endregion
+
+    #region LoadConfig()
+    public override void LoadConfig(IniFile ini)
+    {
+      var sec = ini.GetSection("QuakeLive", true);
+      this.useKeystrokesToConnect = sec.GetBool("useKeystrokesToConnect");
+    }
+    #endregion
+
+    #region SaveConfig()
+    public override void SaveConfig(StringBuilder ini)
+    {
+      ini.AppendLine();
+      ini.AppendLine("[QuakeLive]");
+      ini.AppendLine($"useKeystrokesToConnect={this.useKeystrokesToConnect}");
+    }
+    #endregion
+
+    #region OnOptionMenuClick()
+    public override void OnOptionMenuClick()
+    {
+      using (var dlg = new QuakeLiveOptionsDialog())
+      {
+        dlg.UseKeystrokes = this.useKeystrokesToConnect;
+        if (dlg.ShowDialog(Form.ActiveForm) != DialogResult.OK)
+          return;
+        this.useKeystrokesToConnect = dlg.UseKeystrokes;
+      }
+    }
     #endregion
 
     #region CustomizeServerGridColumns
@@ -170,29 +204,34 @@ namespace ServerBrowser
 
     public override bool Connect(ServerRow server, string password, bool spectate)
     {
-      ThreadPool.QueueUserWorkItem(context => ConnectInBackground(server, password, spectate), null);
-      return true;
-      //return base.Connect(server, password, spectate);
+      if (useKeystrokesToConnect)
+      {
+        // don't use the ThreadPool b/c it might be full with waiting server update requests
+        new Thread(ctx => { ConnectInBackground(server, password, spectate); }).Start();       
+        return true;
+      }
+
+      return base.Connect(server, password, spectate);
     }
 
     #endregion
 
     #region ConnectInBackground()
 
-    private bool ConnectInBackground(ServerRow server, string password, bool spectate)
+    private void ConnectInBackground(ServerRow server, string password, bool spectate)
     {
-      var win = FindQuakeWindow();
-      if (win == IntPtr.Zero)
+      var hWnd = FindGameWindow();
+      if (hWnd == IntPtr.Zero)
       {
-        win = StartQuakeLive();
-        if (win == IntPtr.Zero)
-          return false;
-        SkipIntro(win);
+        hWnd = StartQuakeLive();
+        if (hWnd == IntPtr.Zero)
+          return;
+        SkipIntro(hWnd);
       }
 
       // console key
-      Win32.PostMessage(win, Win32.WM_KEYDOWN, 0, 0x29 << 16);
-      Win32.PostMessage(win, Win32.WM_KEYUP, 0, 0x29 << 16);
+      Win32.PostMessage(hWnd, Win32.WM_KEYDOWN, 0, 0x29 << 16);
+      Win32.PostMessage(hWnd, Win32.WM_KEYUP, 0, 0x29 << 16);
 
       Thread.Sleep(100);
 
@@ -202,21 +241,21 @@ namespace ServerBrowser
       msg += "connect " + server.EndPoint.Address + ":" + server.ServerInfo.Extra.Port;
       foreach (var c in msg)
       {
-        Win32.PostMessage(win, Win32.WM_CHAR, c, 0);
+        Win32.PostMessage(hWnd, Win32.WM_CHAR, c, 0);
         Thread.Sleep(10);
       }
 
-      Win32.PostMessage(win, Win32.WM_KEYDOWN, (int) Keys.Return, 0x1C << 16);
-      Win32.PostMessage(win, Win32.WM_KEYUP, (int) Keys.Return, 0x1C << 16);
+      Win32.PostMessage(hWnd, Win32.WM_KEYDOWN, (int) Keys.Return, 0x1C << 16);
+      Win32.PostMessage(hWnd, Win32.WM_KEYUP, (int) Keys.Return, 0x1C << 16);
 
-      return true;
+      this.ActivateGameWindow(hWnd);
     }
 
     #endregion
 
-    #region FindQuakeWindow()
+    #region FindGameWindow()
 
-    private static IntPtr FindQuakeWindow()
+    protected override IntPtr FindGameWindow()
     {
       foreach (var proc in Process.GetProcessesByName("quakelive_steam"))
       {
@@ -236,7 +275,7 @@ namespace ServerBrowser
       for (var i = 0; i < SecondsToWaitForMainWindowAfterLaunch; i++)
       {
         Thread.Sleep(1000);
-        var hWnd = FindQuakeWindow();
+        var hWnd = FindGameWindow();
         if (hWnd != IntPtr.Zero)
           return hWnd;
       }

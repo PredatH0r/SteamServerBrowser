@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Text;
 using System.Threading;
 using System.Windows.Forms;
-using DevExpress.XtraEditors;
 using DevExpress.XtraGrid.Columns;
 using DevExpress.XtraGrid.Views.Grid;
+using ServerBrowser.Games;
 
 namespace ServerBrowser
 {
@@ -13,13 +14,48 @@ namespace ServerBrowser
     private const int SecondsToWaitForMainWindowAfterLaunch = 45;
     private const Keys ConsoleKey = Keys.Space; // dummy value. Real value would be OEM5 on German keybaords, OEM3 on US keyboards
     private const int ConsoleKeyScanCode = 0x29 << 16; // upper left key on keyboard
+    private bool useKeystrokesToConnect;
+
 
     public Reflex()
     {
       // Reflex doesn't reply to A2S_GETRULES queries and would thus show "timeout" for all servers.
       this.supportsRulesQuery = false;
+      this.OptionMenuCaption = "Reflex...";
     }
 
+    #region LoadConfig()
+    public override void LoadConfig(IniFile ini)
+    {
+      var sec = ini.GetSection("Reflex", true);
+      this.useKeystrokesToConnect = sec.GetBool("useKeystrokesToConnect", true);
+    }
+    #endregion
+
+    #region SaveConfig()
+    public override void SaveConfig(StringBuilder ini)
+    {
+      ini.AppendLine();
+      ini.AppendLine("[Reflex]");
+      ini.AppendLine($"useKeystrokesToConnect={this.useKeystrokesToConnect}");
+    }
+    #endregion
+
+    #region OnOptionMenuClick()
+    public override void OnOptionMenuClick()
+    {
+      using (var dlg = new QuakeLiveOptionsDialog())
+      {
+        dlg.Text = "Options for Reflex";
+        dlg.UseKeystrokes = this.useKeystrokesToConnect;
+        if (dlg.ShowDialog(Form.ActiveForm) != DialogResult.OK)
+          return;
+        this.useKeystrokesToConnect = dlg.UseKeystrokes;
+      }
+    }
+    #endregion
+
+    #region CustomizeServerGridColumns()
     public override void CustomizeServerGridColumns(GridView view)
     {
       var colDescription = view.Columns["ServerInfo.Description"];
@@ -29,7 +65,9 @@ namespace ServerBrowser
         .OptionsFilter.AutoFilterCondition = AutoFilterCondition.Default;
       AddColumn(view, "_location", "Loc", "Location", 40, ++idx);
     }
+    #endregion
 
+    #region GetServerCellValue()
     public override object GetServerCellValue(ServerRow row, string fieldName)
     {
       if (fieldName == "_gametype")
@@ -49,50 +87,56 @@ namespace ServerBrowser
 
       return base.GetServerCellValue(row, fieldName);
     }
+    #endregion
 
     #region Connect()
 
     public override bool Connect(ServerRow server, string password, bool spectate)
     {
-      ThreadPool.QueueUserWorkItem(context => ConnectInBackground(server, password, spectate), null);
-      return true;
+      if (useKeystrokesToConnect)
+      {
+        // don't use the ThreadPool b/c it might be full with waiting server update requests
+        new Thread(ctx => { ConnectInBackground(server, password, spectate); }).Start();
+        return true;
+      }
+      return base.Connect(server, password, spectate);
     }
     #endregion
 
     #region ConnectInBackground()
-    private bool ConnectInBackground(ServerRow server, string password, bool spectate)
+    private void ConnectInBackground(ServerRow server, string password, bool spectate)
     {
-      var win = FindReflexWindow();
-      if (win == IntPtr.Zero)
+      var hWnd = FindGameWindow();
+      if (hWnd == IntPtr.Zero)
       {
-        win = StartReflex();
-        if (win == IntPtr.Zero)
-          return false;
-        SkipIntro(win);
+        hWnd = StartReflex();
+        if (hWnd == IntPtr.Zero)
+          return;
+        SkipIntro(hWnd);
       }
 
-      Win32.PostMessage(win, Win32.WM_KEYDOWN, (int)ConsoleKey, ConsoleKeyScanCode);
-      Win32.PostMessage(win, Win32.WM_KEYUP, (int)ConsoleKey, ConsoleKeyScanCode);
+      Win32.PostMessage(hWnd, Win32.WM_KEYDOWN, (int)ConsoleKey, ConsoleKeyScanCode);
+      Win32.PostMessage(hWnd, Win32.WM_KEYUP, (int)ConsoleKey, ConsoleKeyScanCode);
       Thread.Sleep(500);
 
       var msg = "connect " + server.EndPoint.Address + ":" + server.ServerInfo.Extra.Port;
       if (!string.IsNullOrEmpty(password)) // no idea if this is correct
         msg += " " + password;
       foreach (var c in msg)
-        Win32.PostMessage(win, Win32.WM_CHAR, c, 0);
+        Win32.PostMessage(hWnd, Win32.WM_CHAR, c, 0);
 
-      Win32.PostMessage(win, Win32.WM_KEYDOWN, (int)Keys.Return, 0);
-      Win32.PostMessage(win, Win32.WM_KEYUP, (int)Keys.Return, 0);
+      Win32.PostMessage(hWnd, Win32.WM_KEYDOWN, (int)Keys.Return, 0);
+      Win32.PostMessage(hWnd, Win32.WM_KEYUP, (int)Keys.Return, 0);
 
-      Win32.PostMessage(win, Win32.WM_KEYDOWN, (int)ConsoleKey, ConsoleKeyScanCode);
-      Win32.PostMessage(win, Win32.WM_KEYUP, (int)ConsoleKey, ConsoleKeyScanCode);
+      Win32.PostMessage(hWnd, Win32.WM_KEYDOWN, (int)ConsoleKey, ConsoleKeyScanCode);
+      Win32.PostMessage(hWnd, Win32.WM_KEYUP, (int)ConsoleKey, ConsoleKeyScanCode);
 
-      return true;
+      this.ActivateGameWindow(hWnd);
     }
     #endregion
 
-    #region FindReflexWindow()
-    private static IntPtr FindReflexWindow()
+    #region FindGameWindow()
+    protected override IntPtr FindGameWindow()
     {
       foreach (Process proc in Process.GetProcessesByName("reflex"))
       {
@@ -114,13 +158,13 @@ namespace ServerBrowser
     #endregion
 
     #region StartReflex()
-    private static IntPtr StartReflex()
+    private IntPtr StartReflex()
     {
       Process.Start("steam://rungameid/328070");
       for (int i = 0; i < SecondsToWaitForMainWindowAfterLaunch; i++)
       {
         Thread.Sleep(1000);
-        var hWnd = FindReflexWindow();
+        var hWnd = FindGameWindow();
         if (hWnd != IntPtr.Zero)
           return hWnd;
       }

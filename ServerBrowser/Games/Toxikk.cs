@@ -11,6 +11,7 @@ using DevExpress.XtraEditors;
 using DevExpress.XtraGrid.Columns;
 using DevExpress.XtraGrid.Views.Grid;
 using QueryMaster;
+using ServerBrowser.Games;
 
 namespace ServerBrowser
 {
@@ -23,6 +24,7 @@ namespace ServerBrowser
     private const string IsOfficial = "s15";
 
     private const int SecondsToWaitForMainWindowAfterLaunch = 45;
+    private bool useKeystrokesToConnect;
     private Keys consoleKey;
     private ServerRow serverForPlayerInfos;
     private long dataTimestamp;
@@ -31,13 +33,47 @@ namespace ServerBrowser
 
     public Toxikk()
     {
-      consoleKey = (Keys)Properties.Settings.Default.ToxikkConsoleKey;
       this.supportsPlayersQuery = true;
       this.supportsRulesQuery = true;
       this.supportsConnectAsSpectator = true;
       this.BotsIncludedInPlayerCount = false;
       this.BotsIncludedInPlayerList = false;
+      this.OptionMenuCaption = "TOXIKK...";
     }
+
+    #region LoadConfig()
+    public override void LoadConfig(IniFile ini)
+    {
+      var sec = ini.GetSection("Toxikk", true);
+      this.useKeystrokesToConnect = sec.GetBool("useKeystrokesToConnect", true);
+      this.consoleKey = (Keys) sec.GetInt("consoleKey");
+    }
+    #endregion
+
+    #region SaveConfig()
+    public override void SaveConfig(StringBuilder ini)
+    {
+      ini.AppendLine();
+      ini.AppendLine("[Toxikk]");
+      ini.AppendLine($"useKeystrokesToConnect={this.useKeystrokesToConnect}");
+      ini.AppendLine($"consoleKey={(int) this.consoleKey}");
+    }
+    #endregion
+
+    #region OnOptionMenuClick()
+    public override void OnOptionMenuClick()
+    {
+      using (var dlg = new ToxikkOptionsDialog())
+      {
+        dlg.UseKeystrokes = this.useKeystrokesToConnect;
+        dlg.ConsoleKey = this.consoleKey;
+        if (dlg.ShowDialog(Form.ActiveForm) != DialogResult.OK)
+          return;
+        this.useKeystrokesToConnect = dlg.UseKeystrokes;
+        this.consoleKey = dlg.ConsoleKey;
+      }
+    }
+    #endregion
 
     #region CustomizeServerGridColumns()
     public override void CustomizeServerGridColumns(GridView view)
@@ -135,64 +171,68 @@ namespace ServerBrowser
           "Toxikk Server", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation);
         if (res == DialogResult.No)
           return false;
-        if (FindToxikkWindow() == IntPtr.Zero)
+        if (FindGameWindow() == IntPtr.Zero)
           StartToxikk();
         return true;
       }
         
 
-      if (consoleKey == Keys.None)
+      if (consoleKey == Keys.None && (this.useKeystrokesToConnect || spectate))
       {
-        using (var dlg = new KeyBindForm("Please press your Toxikk console key..."))
+        using (var dlg = new KeyBindForm("Please press your TOXIKK console key..."))
         {
           if (dlg.ShowDialog(Application.OpenForms[0]) == DialogResult.Cancel)
             return false;
-          consoleKey = dlg.Key;
-          Properties.Settings.Default.ToxikkConsoleKey = (int) consoleKey;
-          Properties.Settings.Default.Save();
+          this.consoleKey = dlg.Key;
         }
       }
 
-      ThreadPool.QueueUserWorkItem(context => ConnectInBackground(server, password, spectate), null);
-      return true;
+      if (this.useKeystrokesToConnect || spectate)
+      {
+        // don't use the ThreadPool b/c it might be full with waiting server update requests
+        new Thread(ctx => { ConnectInBackground(server, password, spectate); }).Start();
+        return true;
+      }
+
+      return base.Connect(server, password, false);
     }
     #endregion
 
     #region ConnectInBackground()
-    private bool ConnectInBackground(ServerRow server, string password, bool spectate)
+    private void ConnectInBackground(ServerRow server, string password, bool spectate)
     {
       bool mustStart = Process.GetProcessesByName("toxikk").All(p => p.MainWindowTitle.Contains("players)"));
       if (mustStart)
         StartToxikk();
 
-      IntPtr win = IntPtr.Zero;
+      IntPtr hWnd = IntPtr.Zero;
       for (int i = 0; i < SecondsToWaitForMainWindowAfterLaunch; i++)
       {
-        win = FindToxikkWindow();
-        if (win != IntPtr.Zero)
+        hWnd = FindGameWindow();
+        if (hWnd != IntPtr.Zero)
           break;
         Thread.Sleep(1000);
       }
 
-      if (win == IntPtr.Zero)
-        return false;
+      if (hWnd == IntPtr.Zero)
+        return;
 
       if (mustStart)
-        SkipIntro(win);
+        SkipIntro(hWnd);
      
       // open the console command line
-      Win32.PostMessage(win, Win32.WM_KEYDOWN, (int)consoleKey, 0);
-      Win32.PostMessage(win, Win32.WM_KEYUP, (int)consoleKey, 0);
+      Win32.PostMessage(hWnd, Win32.WM_KEYDOWN, (int)consoleKey, 0);
+      Win32.PostMessage(hWnd, Win32.WM_KEYUP, (int)consoleKey, 0);
 
       Thread.Sleep(250);
 
       // hack: prevent WM_DEADCHAR quirks that might be a side-effect of the console key
-      Win32.PostMessage(win, Win32.WM_CHAR, ' ', 0);
+      Win32.PostMessage(hWnd, Win32.WM_CHAR, ' ', 0);
       for (int i = 0; i < 3; i++)
       {
-        Win32.PostMessage(win, Win32.WM_KEYDOWN, (int)Keys.Back, 0);
-        Win32.PostMessage(win, Win32.WM_CHAR, 8, 0);
-        Win32.PostMessage(win, Win32.WM_KEYUP, (int)Keys.Back, 0);
+        Win32.PostMessage(hWnd, Win32.WM_KEYDOWN, (int)Keys.Back, 0);
+        Win32.PostMessage(hWnd, Win32.WM_CHAR, 8, 0);
+        Win32.PostMessage(hWnd, Win32.WM_KEYUP, (int)Keys.Back, 0);
       }
 
       // send the command string
@@ -202,15 +242,15 @@ namespace ServerBrowser
       if (spectate)
         msg += "?spectatoronly=1";
       foreach (var c in msg)
-        Win32.PostMessage(win, Win32.WM_CHAR, c, 0);
+        Win32.PostMessage(hWnd, Win32.WM_CHAR, c, 0);
 
       Thread.Sleep(750);
 
       // and press Enter
-      Win32.PostMessage(win, Win32.WM_KEYDOWN, (int)Keys.Return, 0);
-      Win32.PostMessage(win, Win32.WM_KEYUP, (int)Keys.Return, 0);
+      Win32.PostMessage(hWnd, Win32.WM_KEYDOWN, (int)Keys.Return, 0);
+      Win32.PostMessage(hWnd, Win32.WM_KEYUP, (int)Keys.Return, 0);
 
-      return true;
+      this.ActivateGameWindow(hWnd);
     }
     #endregion
 
@@ -221,8 +261,8 @@ namespace ServerBrowser
     }
     #endregion
 
-    #region FindToxikkWindow()
-    private static IntPtr FindToxikkWindow()
+    #region FindGameWindow()
+    protected override IntPtr FindGameWindow()
     {
       // when TOXIKK is started with the "-log" option, it first creates a log window which would be returned by Process.AppMainWindow
       // so instead we have to iterate through all top level windows in the system, and test if it is the real TOXIKK main window

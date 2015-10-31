@@ -20,7 +20,7 @@ namespace ServerBrowser
       System.Threading.Thread.CurrentThread.CurrentCulture = culture;
 #endif
       // change font before creating the main form to get correct auto-scaling
-      Init(new Font("Segoe UI", AppearanceObject.DefaultFont.Size + 0.75f), Properties.Settings.Default.Skin);
+      Init(new Font("Segoe UI", AppearanceObject.DefaultFont.Size + 0.75f), "Office 2010 Black");
 
       var mainForm = new ServerBrowserForm();
       Application.Run(mainForm);
@@ -32,8 +32,8 @@ namespace ServerBrowser
       Application.EnableVisualStyles();
       Application.SetCompatibleTextRenderingDefault(false);
 
-      ThreadPool.SetMinThreads(50, 100);
-      ThreadPool.SetMaxThreads(50, 100);
+      ThreadPool.SetMinThreads(50 + GeoIpClient.ThreadCount + 5, 100);
+      ThreadPool.SetMaxThreads(50 + GeoIpClient.ThreadCount + 5, 100);
 
       AppearanceObject.DefaultFont = uiFont;
       UserLookAndFeel.Default.SkinName = skinName;

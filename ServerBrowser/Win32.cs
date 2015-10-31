@@ -59,6 +59,13 @@ namespace ServerBrowser
     [DllImport("user32.dll")]
     public static extern IntPtr GetWindowThreadProcessId(IntPtr hWnd, out int hProcId);
 
+    [DllImport("user32.dll")]
+    public static extern IntPtr SetActiveWindow(IntPtr hWnd);
+
+    [DllImport("user32.dll")]
+    public static extern bool SetForegroundWindow(IntPtr hWnd);
+    [DllImport("user32.dll")]
+    public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
     public const int WM_KEYDOWN = 0x100;
     public const int WM_KEYUP = 0x101;
@@ -85,6 +92,8 @@ namespace ServerBrowser
     public const int WS_DISABLED = 0x08000000;
 
     public const int HT_CAPTION = 2;
+
+    public const int SW_RESTORE = 9;
 
     #region struct RECT
 

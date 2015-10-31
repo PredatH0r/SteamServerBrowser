@@ -30,21 +30,22 @@ namespace QueryMaster
     internal byte[] GetResponse(byte[] msg, EngineType type, Stopwatch sw = null)
     {
       Type = type;
-      byte[] recvData;
+      byte[] recvData = null;
       if (this.isFirstPacket && this.SendFirstPacketTwice)
       {
         this.isFirstPacket = false;
         SendData(msg);
       }
-      sw?.Start();
-      SendData(msg);
-      recvData = ReceiveData();
-      sw?.Stop();
-      if (sw != null)
-        Thread.Yield(); // improve accuracy of Ping for other threads
 
       try
       {
+        sw?.Start();
+        SendData(msg);
+        recvData = ReceiveData();
+        sw?.Stop();
+        if (sw != null)
+          Thread.Yield(); // improve accuracy of Ping for other threads
+
         var header = BitConverter.ToInt32(recvData, 0);
         switch (header)
         {

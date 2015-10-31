@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
+using System.Text;
 using DevExpress.Data;
 using DevExpress.Utils;
 using DevExpress.XtraGrid.Columns;
@@ -21,6 +22,16 @@ namespace ServerBrowser
     protected bool supportsRulesQuery = true;
     protected bool supportsPlayersQuery = true;
     protected bool supportsConnectAsSpectator = false;
+
+    // menu
+
+    public string OptionMenuCaption { get; protected set; } = null;
+
+    public virtual void OnOptionMenuClick() { }
+
+    public virtual void LoadConfig(IniFile ini) { }
+    public virtual void SaveConfig(StringBuilder ini) { }
+
 
     // server queries
 
@@ -167,13 +178,27 @@ namespace ServerBrowser
     /// </summary>
     public virtual bool Connect(ServerRow server, string password, bool spectate)
     {
+      this.ActivateGameWindow(this.FindGameWindow());
       var proc = Process.Start("steam://connect/" + server.EndPoint + (string.IsNullOrEmpty(password) ? "" : "/" + password));
       return proc != null;
     }
     #endregion
 
+    protected virtual IntPtr FindGameWindow() => IntPtr.Zero;
+
+    #region ActivateGameWindow()
+    protected void ActivateGameWindow(IntPtr hWnd)
+    {
+      if (hWnd != IntPtr.Zero)
+      {
+        Win32.ShowWindow(hWnd, Win32.SW_RESTORE);
+        Win32.SetForegroundWindow(hWnd);
+      }
+    }
+    #endregion
+
     // helper methods
-    
+
     #region AddColumn()
     /// <summary>
     /// Utility method for derived classes to add game specific columns to the server or player list

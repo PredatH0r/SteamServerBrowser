@@ -10,7 +10,6 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
-using ChanSort.Api;
 using DevExpress.Data;
 using DevExpress.LookAndFeel;
 using DevExpress.Utils;
@@ -24,15 +23,13 @@ using DevExpress.XtraGrid.Views.Grid;
 using DevExpress.XtraGrid.Views.Grid.ViewInfo;
 using DevExpress.XtraTab;
 using DevExpress.XtraTab.ViewInfo;
-using ExtraQL;
 using QueryMaster;
-using ServerBrowser.Properties;
 
 namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.9";
+    private const string Version = "2.10";
     private const string DevExpressVersion = "v15.1";
     private const string CustomDetailColumnPrefix = "ServerInfo.";
     private const string CustomRuleColumnPrefix = "custRule.";
@@ -48,24 +45,27 @@ namespace ServerBrowser
     private int geoIpModified;
     private readonly Dictionary<IPEndPoint, string> favServers = new Dictionary<IPEndPoint, string>();
     private TabViewModel viewModel;
-    private readonly string iniFile;
+    private readonly string iniPath;
+    private readonly IniFile iniFile;
     private XtraTabPage dragPage;
     private const int PredefinedTabCount = 2;
+    private readonly List<ServerRow> filteredServers = new List<ServerRow>();
 
     #region ctor()
     public ServerBrowserForm()
     {
       InitializeComponent();
 
-      this.InitGameInfoExtenders();
+      this.iniPath = Path.Combine(Application.LocalUserAppDataPath, "ServerBrowser.ini");
+      this.iniFile = new IniFile(iniPath);
+
+      this.InitGameInfoExtenders(this.iniFile);
       this.queryLogic = new ServerQueryLogic(this.extenders);
 
       if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
         return;
 
       base.Text += " " + Version;
-
-      this.iniFile = Path.Combine(Application.LocalUserAppDataPath, "ServerBrowser.ini");
 
       this.queryLogic.UpdateStatus += (s, e) => this.BeginInvoke((Action)(() => queryLogic_SetStatusMessage(s, e)));
       this.queryLogic.ServerListReceived += (s, e) => this.BeginInvoke((Action) queryLogic_ServerListReceived);
@@ -87,11 +87,10 @@ namespace ServerBrowser
 
     #region InitGameInfoExtenders()
 
-    private void InitGameInfoExtenders()
+    private void InitGameInfoExtenders(IniFile ini)
     {
       extenders.Add(Game.Toxikk, new Toxikk());
       extenders.Add(Game.Reflex, new Reflex());
-      extenders.Add(Game.QuakeLive_Testing, new QuakeLive(Game.QuakeLive_Testing));
       extenders.Add(Game.QuakeLive, new QuakeLive(Game.QuakeLive));
       extenders.Add(Game.CounterStrike_Global_Offensive, new CounterStrikeGO());
 
@@ -102,6 +101,17 @@ namespace ServerBrowser
       // some games include bots also in player list. This hardcoded list can be extended through the INI
       foreach (var game in new[] { Game.Team_Fortress_2})
         extenders.Get(game).BotsIncludedInPlayerList = true;
+
+      // add menu items for game specific option dialogs
+      foreach (var item in extenders.Select(item => item.Value).OrderBy(item => item.OptionMenuCaption))
+      {
+        item.LoadConfig(ini);
+        var menuCaption = item.OptionMenuCaption;
+        if (menuCaption == null) continue;
+        var menuItem = new BarButtonItem(this.barManager1, menuCaption);
+        menuItem.ItemClick += (sender, args) => item.OnOptionMenuClick();
+        this.mnuGameOptions.AddItem(menuItem);
+      }
     }
 
     #endregion
@@ -122,10 +132,9 @@ namespace ServerBrowser
 
       this.geoIpClient.LoadCache();
 
-      IniFile ini = File.Exists(this.iniFile) ? new IniFile(this.iniFile) : null;
-      this.LoadViewModelsFromIniFile(ini);
-      this.ApplyAppSettings(ini);
-      this.ApplyGameSettings(ini);
+      this.LoadViewModelsFromIniFile(iniFile);
+      this.ApplyAppSettings(iniFile);
+      this.ApplyGameSettings(iniFile);
 
       LookAndFeel_StyleChanged(null, null);
       --this.ignoreUiEvents;
@@ -213,39 +222,19 @@ namespace ServerBrowser
     private void LoadViewModelsFromIniFile(IniFile ini)
     {
       bool hasFavTab = false;
-      if (ini != null)
+      int i = 0;
+      foreach (var section in ini.Sections)
       {
-        int i = 0;
-        foreach (var section in ini.Sections)
+        if (System.Text.RegularExpressions.Regex.IsMatch(section.Name, "^Tab[0-9]+$"))
         {
-          if (System.Text.RegularExpressions.Regex.IsMatch(section.Name, "^Tab[0-9]+$"))
-          {
-            var vm = new TabViewModel();
-            vm.LoadFromIni(ini, section, this.extenders);
-            var page = new XtraTabPage();
-            page.Text = section.GetString("TabName") ?? this.GetGameCaption((Game) vm.InitialGameID);
-            page.Tag = vm;
-            page.ImageIndex = vm.ImageIndex;
-            this.tabControl.TabPages.Insert(i++, page);
-            hasFavTab |= vm.Source == TabViewModel.SourceType.Favorites;
-          }
-        }
-      }
-      else
-      {
-        // migrate favorite games from v1.16
-        int i = 0;
-        foreach (var gameId in Settings.Default.FavGameIDs.Split(','))
-        {
-          if (string.IsNullOrEmpty(gameId))
-            continue;
           var vm = new TabViewModel();
-          vm.AssignFrom(Settings.Default);
-          vm.InitialGameID = int.Parse(gameId);
+          vm.LoadFromIni(ini, section, this.extenders);
           var page = new XtraTabPage();
-          page.Text = this.GetGameCaption((Game)vm.InitialGameID);
+          page.Text = section.GetString("TabName") ?? this.GetGameCaption((Game) vm.InitialGameID);
           page.Tag = vm;
+          page.ImageIndex = vm.ImageIndex;
           this.tabControl.TabPages.Insert(i++, page);
+          hasFavTab |= vm.Source == TabViewModel.SourceType.Favorites;
         }
       }
 
@@ -328,14 +317,14 @@ namespace ServerBrowser
 
     protected virtual void ApplyAppSettings(IniFile ini)
     {
-      string[] masterServers;
+      string[] masterServers = {};
 
       this.favServers.Clear();
 
+      int tabIndex = 0;
       var options = ini?.GetSection("Options");
-      var tabIndex = options != null 
-        ? ApplyAppSettingsFromIni(ini, options, out masterServers) 
-        : ApplyAppSettingsFromXml(out masterServers);
+      if (options != null)
+        tabIndex = ApplyAppSettingsFromIni(ini, options, out masterServers);
 
       // fill master server combobox
       this.comboMasterServer.Properties.Items.Clear();
@@ -362,20 +351,21 @@ namespace ServerBrowser
     private int ApplyAppSettingsFromIni(IniFile ini, IniFile.Section options, out string[] masterServers)
     {
       masterServers = (options.GetString("ApplyAppSettingsFromXml") ?? "").Split(',');
-      this.miShowOptions.Down = options.GetBool("ShowOptions");
-      this.miShowServerQuery.Down = options.GetBool("ShowServerQuery");
-
+      this.miShowOptions.Down = options.GetBool("ShowOptions", true);
+      this.miShowServerQuery.Down = options.GetBool("ShowServerQuery", true);
+      this.miShowFilter.Down = options.GetBool("ShowFilter", true);
       this.rbAddressHidden.Checked = options.GetInt("ShowAddressMode") == 0;
       this.rbAddressQueryPort.Checked = options.GetInt("ShowAddressMode") == 1;
       this.rbAddressGamePort.Checked = options.GetInt("ShowAddressMode") == 2;
       this.cbRefreshSelectedServer.Checked = options.GetBool("RefreshSelected", true);
-      this.spinRefreshInterval.EditValue = options.GetDecimal("RefreshInterval");
+      this.spinRefreshInterval.EditValue = options.GetDecimal("RefreshInterval", 2);
+      this.rbUpdateDisabled.Checked = true;
       this.rbUpdateListAndStatus.Checked = options.GetBool("AutoUpdateList", true);
       this.rbUpdateStatusOnly.Checked = options.GetBool("AutoUpdateInfo");
       this.cbNoUpdateWhilePlaying.Checked = !options.GetBool("AutoUpdateWhilePlaying");
       this.cbFavServersOnTop.Checked = options.GetBool("KeepFavServersOnTop", true);
       this.cbHideUnresponsiveServers.Checked = options.GetBool("HideUnresponsiveServers", true);
-      this.cbRememberColumnLayout.Checked = options.GetBool("ColumnLayoutPerTab");
+      this.cbRememberColumnLayout.Checked = options.GetBool("ColumnLayoutPerTab", true);
       this.spinMinPlayers.Value = options.GetInt("MinPlayers");
       this.cbMinPlayersBots.Checked = options.GetBool("MinPlayersInclBots");
 
@@ -393,37 +383,6 @@ namespace ServerBrowser
       return options.GetInt("TabIndex");
     }
 
-    #endregion
-
-    #region ApplyAppSettingsFromXml()
-    private int ApplyAppSettingsFromXml(out string[] masterServers)
-    {
-      var opt = Settings.Default;
-      masterServers = opt.MasterServerList.Split(',');
-
-      this.miShowOptions.Down = opt.ShowOptions;
-      this.miShowServerQuery.Down = opt.ShowServerQuery;
-
-      this.rbAddressHidden.Checked = opt.ShowAddressMode == 0;
-      this.rbAddressQueryPort.Checked = opt.ShowAddressMode == 1;
-      this.rbAddressGamePort.Checked = opt.ShowAddressMode == 2;
-      this.cbRefreshSelectedServer.Checked = opt.RefreshSelected;
-      this.spinRefreshInterval.EditValue = (decimal) opt.RefreshInterval;
-      this.rbUpdateListAndStatus.Checked = opt.AutoUpdateList;
-      this.rbUpdateStatusOnly.Checked = opt.AutoUpdateInfo;
-      this.cbFavServersOnTop.Checked = opt.KeepFavServersOnTop;
-      this.cbRememberColumnLayout.Checked = opt.ColumnLayoutPerTab;
-
-      // load favorite servers
-      foreach (var server in opt.FavServers.Split(','))
-      {
-        if (server == "") continue;
-        var parts = server.Split(':');
-        var endpoint = new IPEndPoint(IPAddress.Parse(parts[0]), int.Parse(parts[1]));
-        this.favServers.Add(endpoint, endpoint.ToString());
-      }
-      return opt.TabIndex;
-    }
     #endregion
 
     #region ApplyGameSettings()
@@ -456,7 +415,8 @@ namespace ServerBrowser
       this.SaveAppSettings(sb);
       this.SaveGameSettings(sb);
       this.SaveViewModelsToIniFile(sb);
-      File.WriteAllText(this.iniFile, sb.ToString());
+      this.SaveGameOptions(sb);
+      File.WriteAllText(this.iniPath, sb.ToString());
 
       this.queryLogic.Cancel();
       this.geoIpClient.SaveCache();
@@ -471,6 +431,7 @@ namespace ServerBrowser
       sb.AppendLine("[Options]");
       sb.AppendLine($"ShowOptions={this.miShowOptions.Down}");
       sb.AppendLine($"ShowServerQuery={this.miShowServerQuery.Down}");
+      sb.AppendLine($"ShowFilter={this.miShowFilter.Down}");
       sb.AppendLine($"ShowAddressMode={this.showAddressMode}");
       sb.AppendLine($"RefreshInterval={Convert.ToInt32(this.spinRefreshInterval.EditValue)}");
       sb.AppendLine($"RefreshSelected={this.cbRefreshSelectedServer.Checked}");
@@ -535,6 +496,13 @@ namespace ServerBrowser
     }
     #endregion
 
+    #region SaveGameOptions()
+    private void SaveGameOptions(StringBuilder sb)
+    {
+      foreach (var item in this.extenders)
+        item.Value.SaveConfig(sb);
+    }
+    #endregion
 
 
     #region UpdateViewModel()
@@ -730,7 +698,8 @@ namespace ServerBrowser
       if (this.queryLogic.IsUpdating)
         return;
       this.timerReloadServers.Stop();
-      this.queryLogic.RefreshAllServers(this.viewModel.servers);
+      this.SetStatusMessage("Updating status of " + this.filteredServers.Count + " servers...");
+      this.queryLogic.RefreshAllServers(this.filteredServers);
       if (this.spinRefreshInterval.Value > 0)
         this.timerReloadServers.Start();
     }
@@ -790,15 +759,23 @@ namespace ServerBrowser
 
       this.LookupGeoIps();
       this.UpdateCachedServerNames();
-
-      var dataSource = this.viewModel.servers;
-      this.gcServers.DataSource = dataSource;
+      
+      this.filteredServers.Clear();
+      if (this.viewModel.servers != null)
+      {
+        if (this.cbHideUnresponsiveServers.Checked)
+          this.filteredServers.AddRange(this.viewModel.servers.Where(s => s.ServerInfo != null && s.ServerInfo.Ping != 0 && !s.Status.StartsWith("Timeout")));
+        else
+          this.filteredServers.AddRange(this.viewModel.servers);
+      }
+      this.gcServers.DataSource = filteredServers; // always use the same object reference, otherwise all state (top-row, focused, selected) would get lost
       this.gvServers.EndDataUpdate();
+      //this.gvServers.RefreshData();
 
       if (this.viewModel.lastSelectedServer != null)
       {
         int i = 0;
-        foreach (var server in dataSource)
+        foreach (var server in filteredServers)
         {
           if (server.EndPoint.Equals(this.viewModel.lastSelectedServer.EndPoint))
           {
@@ -943,10 +920,12 @@ namespace ServerBrowser
           return;
       }
 
-      this.Cursor = Cursors.WaitCursor;
-      this.SetStatusMessage("Connecting to game server " + row.ServerInfo.Name + " ...");
+      this.SetStatusMessage("Connecting to " + row.EndPoint + "    " + row.ServerInfo.Name);
+      this.splashScreenManager1.ShowWaitForm();
+      this.splashScreenManager1.SetWaitFormCaption("Connecting to " + row.EndPoint);
+      this.splashScreenManager1.SetWaitFormDescription(row.Name);
       row.GameExtension.Connect(row, password, spectate);
-      this.Cursor = Cursors.Default;
+      this.timerHideWaitForm.Start();
     }
     #endregion
 
@@ -1229,6 +1208,14 @@ namespace ServerBrowser
     }
     #endregion
 
+    #region timerHideWaitForm_Tick
+    private void timerHideWaitForm_Tick(object sender, EventArgs e)
+    {
+      this.timerHideWaitForm.Stop();
+      this.splashScreenManager1.CloseWaitForm();
+    }
+    #endregion
+
     // option elements
 
     #region comboGames_SelectedIndexChanged
@@ -1366,7 +1353,7 @@ namespace ServerBrowser
     #region cbHideUnresponsiveServers_CheckedChanged
     private void cbHideUnresponsiveServers_CheckedChanged(object sender, EventArgs e)
     {
-      this.SetClientGridFilters();
+      this.UpdateViews();
     }
     #endregion
 
@@ -1404,6 +1391,7 @@ namespace ServerBrowser
     {
       if (this.spinRefreshInterval.Value == 0)
         return;
+
       // CS:GO and other huge games may return more data than can be queried in one interval
       if (this.queryLogic.IsUpdating)
         return;
@@ -1418,10 +1406,18 @@ namespace ServerBrowser
         }
       }
 
-      if (this.rbUpdateListAndStatus.Checked)
-        this.ReloadServerList();
-      else if (this.rbUpdateStatusOnly.Checked)
-        this.RefreshServerInfo();
+      this.timerReloadServers.Stop();
+      try
+      {
+        if (this.rbUpdateListAndStatus.Checked)
+          this.ReloadServerList();
+        else if (this.rbUpdateStatusOnly.Checked)
+          this.RefreshServerInfo();
+      }
+      finally
+      {
+        this.timerReloadServers.Start();
+      }
     }
     #endregion
 
@@ -1439,8 +1435,7 @@ namespace ServerBrowser
       }
       finally
       {
-        if (this.spinRefreshInterval.Value > 0)
-          this.timerUpdateServerList.Start();
+        this.timerUpdateServerList.Start();
       }
     }
     #endregion
@@ -2132,6 +2127,11 @@ namespace ServerBrowser
       this.AddNewTab("New Favorites", TabViewModel.SourceType.Favorites);
     }
     #endregion
+
+    private void miShowFilter_DownChanged(object sender, ItemClickEventArgs e)
+    {
+      this.grpQuickFilter.Visible = this.miShowFilter.Down;
+    }
 
   }
 }

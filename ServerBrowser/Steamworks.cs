@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace ExtraQL
+namespace ServerBrowser
 {
   class Steamworks : IDisposable
   {

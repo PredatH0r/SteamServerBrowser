@@ -10,6 +10,7 @@ cd "%cwd%\ServerBrowser\bin\x86\debug"
 copy ServerBrowser.exe "%target%"
 copy QueryMaster.dll "%target%"
 copy Ionic.BZip2.dll "%target%"
+copy steam_api.dll "%target%"
 
 del "DevExpress*Office*"
 del "DevExpress*Rich*"

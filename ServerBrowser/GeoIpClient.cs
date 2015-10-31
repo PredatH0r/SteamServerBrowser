@@ -13,7 +13,7 @@ namespace ServerBrowser
 {
   class GeoIpClient
   {
-    private const int ThreadCount = 7;
+    internal const int ThreadCount = 7;
     private const string DefaultServiceUrlFormat = "http://freegeoip.net/csv/{0}";
     /// <summary>
     /// the cache holds either a GeoInfo object, or a multicast callback delegate waiting for a GeoInfo object

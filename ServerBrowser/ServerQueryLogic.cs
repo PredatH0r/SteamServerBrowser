@@ -173,12 +173,12 @@ namespace ServerBrowser
             return;
           if (ep.Address.Equals(IPAddress.Any))
           {
-            statusText = $"Master server returned {request.Servers.Count} servers";
+            statusText = $"Updating status of {request.Servers.Count} servers...";
             this.AllServersReceived(request);
           }
           else if (++request.receivedServerCount >= request.MaxResults)
           {
-            statusText = $"Server list limited to {request.MaxResults} entries";
+            statusText = $"Server list limited to {request.MaxResults} entries. Updating status...";
             this.AllServersReceived(request);
             break;
           }
@@ -199,6 +199,7 @@ namespace ServerBrowser
       request.Servers.AddRange(servers);
       foreach (var server in servers)
         server.Status = "updating...";
+      this.currentRequest = request;
       this.currentRequest.SetDataModified();
       ThreadPool.QueueUserWorkItem(ctx => this.AllServersReceived(request));
     }
@@ -267,6 +268,8 @@ namespace ServerBrowser
     #region RefreshSingleServer()
     public void RefreshSingleServer(ServerRow row, bool updatePing = true)
     {
+      if (this.IsUpdating)
+        return;
       row.Status = "updating...";
       var req = new UpdateRequest(this.currentRequest.AppId, 1, this.currentRequest.Timeout, this.currentRequest.GameExtension);
       req.KeepPreviousPing = !updatePing;

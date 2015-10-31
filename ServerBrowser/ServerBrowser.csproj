@@ -118,6 +118,7 @@
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Xml" />
     <Reference Include="ZeroMQ">
       <HintPath>..\packages\ZeroMQ.4.1.0.15\lib\net40\ZeroMQ.dll</HintPath>
       <Private>True</Private>
@@ -125,6 +126,18 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Games\CounterStrikeGO.cs" />
+    <Compile Include="Games\QuakeLiveOptionsDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Games\QuakeLiveOptionsDialog.Designer.cs">
+      <DependentUpon>QuakeLiveOptionsDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Games\ToxikkOptionsDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Games\ToxikkOptionsDialog.Designer.cs">
+      <DependentUpon>ToxikkOptionsDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="GeoIpClient.cs" />
     <Compile Include="IniFile.cs" />
     <Compile Include="KeyBindForm.cs">
@@ -148,12 +161,6 @@
     <Compile Include="Games\Reflex.cs" />
     <Compile Include="Games\GameExtension.cs" />
     <Compile Include="PlayerCountInfo.cs" />
-    <Compile Include="ISettings.cs" />
-    <Compile Include="Properties\Settings.Designer.cs">
-      <DependentUpon>Settings.settings</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
     <Compile Include="ServerBrowserForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -167,7 +174,6 @@
     <Compile Include="ServerQueryLogic.cs" />
     <Compile Include="ServerRow.cs" />
     <Compile Include="ServerSources\ServerListFromUrl.cs" />
-    <Compile Include="Settings.cs" />
     <Compile Include="SkinPicker.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -179,8 +185,20 @@
     <Compile Include="Ip4Utils.cs" />
     <Compile Include="Steamworks.cs" />
     <Compile Include="TabViewModel.cs" />
+    <Compile Include="ConnectingWaitForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ConnectingWaitForm.Designer.cs">
+      <DependentUpon>ConnectingWaitForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Win32.cs" />
     <Compile Include="XWebClient.cs" />
+    <EmbeddedResource Include="Games\QuakeLiveOptionsDialog.resx">
+      <DependentUpon>QuakeLiveOptionsDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Games\ToxikkOptionsDialog.resx">
+      <DependentUpon>ToxikkOptionsDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="KeyBindForm.resx">
       <DependentUpon>KeyBindForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -207,15 +225,14 @@
     <EmbeddedResource Include="SkinPicker.resx">
       <DependentUpon>SkinPicker.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="ConnectingWaitForm.resx">
+      <DependentUpon>ConnectingWaitForm.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="app.config" />
     <None Include="packages.config" />
     <None Include="Properties\DataSources\Form1.ServerRow.datasource" />
     <None Include="Properties\DataSources\QueryMaster.Player.datasource" />
     <None Include="Properties\DataSources\QueryMaster.Rule.datasource" />
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5">
