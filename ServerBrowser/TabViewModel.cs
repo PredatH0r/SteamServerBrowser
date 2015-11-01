@@ -26,6 +26,9 @@ namespace ServerBrowser
     public bool GetFullServers { get; set; }
     public int MasterServerQueryLimit { get; set; }
 
+    public int MinPlayers { get; set; }
+    public bool MinPlayersInclBots { get; set; }
+    public int MaxPing { get; set; }
     public string GridFilter { get; set; }
     public string TagsIncludeClient { get; set; }
     public string TagsExcludeClient { get; set; }
@@ -62,6 +65,9 @@ namespace ServerBrowser
       this.servers = opt.servers;
       this.gameExtension = opt.gameExtension;
       this.GridFilter = opt.GridFilter;
+      this.MinPlayers = opt.MinPlayers;
+      this.MinPlayersInclBots = opt.MinPlayersInclBots;
+      this.MaxPing = opt.MaxPing;
       this.TagsIncludeClient = opt.TagsIncludeClient;
       this.TagsExcludeClient = opt.TagsExcludeClient;
       this.ServerGridLayout = opt.ServerGridLayout;
@@ -85,6 +91,9 @@ namespace ServerBrowser
       this.GetFullServers = ini.GetBool("GetFullServers", true);
       this.MasterServerQueryLimit = ini.GetInt("MasterServerQueryLimit", this.MasterServerQueryLimit);
       this.GridFilter = ini.GetString("GridFilter");
+      this.MinPlayers = ini.GetInt("MinPlayers");
+      this.MinPlayersInclBots = ini.GetBool("MinPlayersInclBots");
+      this.MaxPing = ini.GetInt("MaxPing");
       this.TagsIncludeClient = ini.GetString("TagsIncludeClient");
       this.TagsExcludeClient = ini.GetString("TagsExcludeClient");
 
@@ -165,6 +174,9 @@ namespace ServerBrowser
         ini.Append("MasterServerQueryLimit=").Append(this.MasterServerQueryLimit).AppendLine();
       }
       ini.Append("GridFilter=").AppendLine(this.GridFilter);
+      ini.Append("MinPlayers=").AppendLine(this.MinPlayers.ToString());
+      ini.Append("MinPlayersInclBots=").AppendLine(this.MinPlayersInclBots.ToString());
+      ini.Append("MaxPing=").AppendLine(this.MaxPing.ToString());
       ini.Append("TagsIncludeClient=").AppendLine(this.TagsIncludeClient);
       ini.Append("TagsExcludeClient=").AppendLine(this.TagsExcludeClient);
       if (this.ServerGridLayout != null)

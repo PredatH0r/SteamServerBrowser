@@ -30,7 +30,7 @@ namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.12";
+    private const string Version = "2.13";
     private const string DevExpressVersion = "v15.1";
     private const string CustomDetailColumnPrefix = "ServerInfo.";
     private const string CustomRuleColumnPrefix = "custRule.";
@@ -314,6 +314,9 @@ namespace ServerBrowser
       this.comboQueryLimit.Text = vm.MasterServerQueryLimit.ToString();
 
       this.gvServers.ActiveFilterString = vm.GridFilter;
+      this.comboMinPlayers.Text = vm.MinPlayers == 0 ? "" : vm.MinPlayers.ToString();
+      this.cbMinPlayersBots.Checked = vm.MinPlayersInclBots;
+      this.comboMaxPing.Text = vm.MaxPing == 0 ? "" : vm.MaxPing.ToString();
       this.btnTagIncludeClient.Text = vm.TagsIncludeClient;
       this.btnTagExcludeClient.Text = vm.TagsExcludeClient;
 
@@ -387,10 +390,6 @@ namespace ServerBrowser
       this.cbRememberColumnLayout.Checked = options.GetBool("ColumnLayoutPerTab", true);
       this.cbShowFilterPanelInfo.Checked = options.GetBool("ShowFilterPanelInfo", true);
       this.cbShowCounts.Checked = options.GetBool("ShowServerCounts", true);
-
-      this.comboMinPlayers.Text = options.GetString("MinPlayers");
-      this.cbMinPlayersBots.Checked = options.GetBool("MinPlayersInclBots");
-      this.comboMaxPing.Text = options.GetString("MaxPing");
 
       // load favorite servers
       var favs = ini.GetSection("FavoriteServers");
@@ -468,10 +467,6 @@ namespace ServerBrowser
       sb.AppendLine($"ColumnLayoutPerTab={this.cbRememberColumnLayout.Checked}");
       sb.AppendLine($"ShowFilterPanelInfo={this.cbShowFilterPanelInfo.Checked}");
       sb.AppendLine($"ShowServerCounts={this.cbShowCounts.Checked}");
-
-      sb.AppendLine($"MinPlayers={this.comboMinPlayers.Text}");
-      sb.AppendLine($"MinPlayersInclBots={this.cbMinPlayersBots.Checked}");
-      sb.AppendLine($"MaxPing={this.comboMaxPing.Text}");
 
       sb.AppendLine();
       sb.AppendLine("[FavoriteServers]");
@@ -556,6 +551,12 @@ namespace ServerBrowser
       vm.GetEmptyServers = this.cbGetEmpty.Checked;
       vm.GetFullServers = this.cbGetFull.Checked;
       vm.MasterServerQueryLimit = Convert.ToInt32(this.comboQueryLimit.Text);
+      int num;
+      int.TryParse(this.comboMinPlayers.Text, out num);
+      vm.MinPlayers = num;
+      vm.MinPlayersInclBots = this.cbMinPlayersBots.Checked;
+      int.TryParse(this.comboMaxPing.Text, out num);
+      vm.MaxPing = num;
       vm.TagsIncludeClient = this.btnTagIncludeClient.Text;
       vm.TagsExcludeClient = this.btnTagExcludeClient.Text;
 

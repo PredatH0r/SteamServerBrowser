@@ -32,9 +32,9 @@ namespace ServerBrowser
     {
       this.components = new System.ComponentModel.Container();
       System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ServerBrowserForm));
-      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject1 = new DevExpress.Utils.SerializableAppearanceObject();
-      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject2 = new DevExpress.Utils.SerializableAppearanceObject();
-      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject3 = new DevExpress.Utils.SerializableAppearanceObject();
+      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject7 = new DevExpress.Utils.SerializableAppearanceObject();
+      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject8 = new DevExpress.Utils.SerializableAppearanceObject();
+      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject9 = new DevExpress.Utils.SerializableAppearanceObject();
       this.riCheckEdit = new DevExpress.XtraEditors.Repository.RepositoryItemCheckEdit();
       this.gcDetails = new DevExpress.XtraGrid.GridControl();
       this.gvDetails = new DevExpress.XtraGrid.Views.Grid.GridView();
@@ -179,6 +179,7 @@ namespace ServerBrowser
       this.tabAdd = new DevExpress.XtraTab.XtraTabPage();
       this.timerUpdateServerList = new System.Windows.Forms.Timer(this.components);
       this.panelOptions = new DevExpress.XtraEditors.PanelControl();
+      this.cbShowCounts = new DevExpress.XtraEditors.CheckEdit();
       this.cbShowFilterPanelInfo = new DevExpress.XtraEditors.CheckEdit();
       this.labelControl19 = new DevExpress.XtraEditors.LabelControl();
       this.cbNoUpdateWhilePlaying = new DevExpress.XtraEditors.CheckEdit();
@@ -212,7 +213,6 @@ namespace ServerBrowser
       this.menuDetails = new DevExpress.XtraBars.PopupMenu(this.components);
       this.splashScreenManager1 = new DevExpress.XtraSplashScreen.SplashScreenManager(this, typeof(global::ServerBrowser.ConnectingWaitForm), false, true);
       this.timerHideWaitForm = new System.Windows.Forms.Timer(this.components);
-      this.cbShowCounts = new DevExpress.XtraEditors.CheckEdit();
       ((System.ComponentModel.ISupportInitialize)(this.riCheckEdit)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.gcDetails)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.gvDetails)).BeginInit();
@@ -271,6 +271,7 @@ namespace ServerBrowser
       this.tabControl.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.panelOptions)).BeginInit();
       this.panelOptions.SuspendLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.cbShowCounts.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbShowFilterPanelInfo.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbNoUpdateWhilePlaying.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbHideUnresponsiveServers.Properties)).BeginInit();
@@ -296,7 +297,6 @@ namespace ServerBrowser
       ((System.ComponentModel.ISupportInitialize)(this.txtGameServer.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.menuAddTab)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.menuDetails)).BeginInit();
-      ((System.ComponentModel.ISupportInitialize)(this.cbShowCounts.Properties)).BeginInit();
       this.SuspendLayout();
       // 
       // riCheckEdit
@@ -1443,9 +1443,9 @@ namespace ServerBrowser
       this.riFindPlayer.AutoHeight = false;
       this.riFindPlayer.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
             new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo),
-            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Plus, "", -1, true, true, false, DevExpress.XtraEditors.ImageLocation.MiddleCenter, null, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), serializableAppearanceObject1, "Add to list", null, null, true),
-            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Minus, "", -1, true, true, false, DevExpress.XtraEditors.ImageLocation.MiddleCenter, null, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), serializableAppearanceObject2, "Remove from list", null, null, true),
-            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Search, "", -1, true, true, false, DevExpress.XtraEditors.ImageLocation.MiddleCenter, null, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), serializableAppearanceObject3, "Find", null, null, true)});
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Plus, "", -1, true, true, false, DevExpress.XtraEditors.ImageLocation.MiddleCenter, null, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), serializableAppearanceObject7, "Add to list", null, null, true),
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Minus, "", -1, true, true, false, DevExpress.XtraEditors.ImageLocation.MiddleCenter, null, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), serializableAppearanceObject8, "Remove from list", null, null, true),
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Search, "", -1, true, true, false, DevExpress.XtraEditors.ImageLocation.MiddleCenter, null, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), serializableAppearanceObject9, "Find", null, null, true)});
       this.riFindPlayer.Name = "riFindPlayer";
       this.riFindPlayer.NullValuePrompt = "min 3 chars, * as placeholder";
       this.riFindPlayer.NullValuePromptShowForEmptyValue = true;
@@ -1845,7 +1845,7 @@ namespace ServerBrowser
       this.linkFilter1.Size = new System.Drawing.Size(384, 19);
       this.linkFilter1.TabIndex = 0;
       this.linkFilter1.Text = "Use the top row for simple filters or the <href>filter editor</href> for advanced" +
-    " needs.";
+    " criteria.";
       this.linkFilter1.HyperlinkClick += new DevExpress.Utils.HyperlinkClickEventHandler(this.linkFilter_HyperlinkClick);
       // 
       // cbMinPlayersBots
@@ -2191,7 +2191,7 @@ namespace ServerBrowser
       this.txtTagExcludeServer.Properties.Appearance.Options.UseFont = true;
       this.txtTagExcludeServer.Properties.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
             new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Delete)});
-      this.txtTagExcludeServer.Properties.NullValuePrompt = "comma/space=AND";
+      this.txtTagExcludeServer.Properties.NullValuePrompt = "space/comma=AND";
       this.txtTagExcludeServer.Properties.NullValuePromptShowForEmptyValue = true;
       this.txtTagExcludeServer.Size = new System.Drawing.Size(133, 22);
       this.txtTagExcludeServer.TabIndex = 11;
@@ -2218,7 +2218,7 @@ namespace ServerBrowser
       this.txtTagIncludeServer.Properties.Appearance.Options.UseFont = true;
       this.txtTagIncludeServer.Properties.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
             new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Delete)});
-      this.txtTagIncludeServer.Properties.NullValuePrompt = "comma/space=AND";
+      this.txtTagIncludeServer.Properties.NullValuePrompt = "space/comma=AND";
       this.txtTagIncludeServer.Properties.NullValuePromptShowForEmptyValue = true;
       this.txtTagIncludeServer.Size = new System.Drawing.Size(133, 22);
       this.txtTagIncludeServer.TabIndex = 9;
@@ -2228,7 +2228,7 @@ namespace ServerBrowser
       // labelControl6
       // 
       this.labelControl6.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
-      this.labelControl6.Location = new System.Drawing.Point(17, 9);
+      this.labelControl6.Location = new System.Drawing.Point(17, 11);
       this.labelControl6.Name = "labelControl6";
       this.labelControl6.Size = new System.Drawing.Size(94, 15);
       this.labelControl6.TabIndex = 0;
@@ -2314,6 +2314,19 @@ namespace ServerBrowser
       this.panelOptions.Size = new System.Drawing.Size(1658, 106);
       this.panelOptions.TabIndex = 0;
       this.panelOptions.Visible = false;
+      // 
+      // cbShowCounts
+      // 
+      this.cbShowCounts.EditValue = true;
+      this.cbShowCounts.Location = new System.Drawing.Point(871, 68);
+      this.cbShowCounts.Name = "cbShowCounts";
+      this.cbShowCounts.Properties.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
+      this.cbShowCounts.Properties.Appearance.Options.UseFont = true;
+      this.cbShowCounts.Properties.AutoWidth = true;
+      this.cbShowCounts.Properties.Caption = "Show counts in the list footer";
+      this.cbShowCounts.Size = new System.Drawing.Size(176, 19);
+      this.cbShowCounts.TabIndex = 17;
+      this.cbShowCounts.CheckedChanged += new System.EventHandler(this.cbShowCounts_CheckedChanged);
       // 
       // cbShowFilterPanelInfo
       // 
@@ -2615,7 +2628,7 @@ namespace ServerBrowser
       // labelControl18
       // 
       this.labelControl18.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
-      this.labelControl18.Location = new System.Drawing.Point(17, 35);
+      this.labelControl18.Location = new System.Drawing.Point(17, 37);
       this.labelControl18.Name = "labelControl18";
       this.labelControl18.Size = new System.Drawing.Size(750, 15);
       this.labelControl18.TabIndex = 18;
@@ -2628,7 +2641,7 @@ namespace ServerBrowser
       this.btnPasteAddresses.Appearance.Options.UseFont = true;
       this.btnPasteAddresses.ImageIndex = 17;
       this.btnPasteAddresses.ImageList = this.imageCollection;
-      this.btnPasteAddresses.Location = new System.Drawing.Point(401, 4);
+      this.btnPasteAddresses.Location = new System.Drawing.Point(401, 6);
       this.btnPasteAddresses.Name = "btnPasteAddresses";
       this.btnPasteAddresses.Size = new System.Drawing.Size(213, 25);
       this.btnPasteAddresses.TabIndex = 17;
@@ -2638,7 +2651,7 @@ namespace ServerBrowser
       // 
       // txtGameServer
       // 
-      this.txtGameServer.Location = new System.Drawing.Point(117, 6);
+      this.txtGameServer.Location = new System.Drawing.Point(117, 8);
       this.txtGameServer.MenuManager = this.barManager1;
       this.txtGameServer.Name = "txtGameServer";
       this.txtGameServer.Properties.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
@@ -2679,19 +2692,6 @@ namespace ServerBrowser
       // 
       this.timerHideWaitForm.Interval = 5000;
       this.timerHideWaitForm.Tick += new System.EventHandler(this.timerHideWaitForm_Tick);
-      // 
-      // cbShowCounts
-      // 
-      this.cbShowCounts.EditValue = true;
-      this.cbShowCounts.Location = new System.Drawing.Point(871, 68);
-      this.cbShowCounts.Name = "cbShowCounts";
-      this.cbShowCounts.Properties.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
-      this.cbShowCounts.Properties.Appearance.Options.UseFont = true;
-      this.cbShowCounts.Properties.AutoWidth = true;
-      this.cbShowCounts.Properties.Caption = "Show counts in the list footer";
-      this.cbShowCounts.Size = new System.Drawing.Size(176, 19);
-      this.cbShowCounts.TabIndex = 17;
-      this.cbShowCounts.CheckedChanged += new System.EventHandler(this.cbShowCounts_CheckedChanged);
       // 
       // ServerBrowserForm
       // 
@@ -2776,6 +2776,7 @@ namespace ServerBrowser
       ((System.ComponentModel.ISupportInitialize)(this.panelOptions)).EndInit();
       this.panelOptions.ResumeLayout(false);
       this.panelOptions.PerformLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.cbShowCounts.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbShowFilterPanelInfo.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbNoUpdateWhilePlaying.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbHideUnresponsiveServers.Properties)).EndInit();
@@ -2803,7 +2804,6 @@ namespace ServerBrowser
       ((System.ComponentModel.ISupportInitialize)(this.txtGameServer.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.menuAddTab)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.menuDetails)).EndInit();
-      ((System.ComponentModel.ISupportInitialize)(this.cbShowCounts.Properties)).EndInit();
       this.ResumeLayout(false);
       this.PerformLayout();
 

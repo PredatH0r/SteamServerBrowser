@@ -1,3 +1,8 @@
+2.13
+---
+- Min Player, Max Ping are now stored per-tab
+- minor UI tweaks
+
 2.12.1
 ---
 - fixed crash/hang when Steam API could not be called (Steam not running or under a different user account)
