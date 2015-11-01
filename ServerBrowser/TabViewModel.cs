@@ -20,18 +20,22 @@ namespace ServerBrowser
     public int InitialGameID { get; set; }
     public string FilterMod { get; set; }
     public string FilterMap { get; set; }
-    public string TagsInclude { get; set; }
-    public string TagsExclude { get; set; }
+    public string TagsIncludeServer { get; set; }
+    public string TagsExcludeServer { get; set; }
     public bool GetEmptyServers { get; set; }
     public bool GetFullServers { get; set; }
     public int MasterServerQueryLimit { get; set; }
 
     public string GridFilter { get; set; }
+    public string TagsIncludeClient { get; set; }
+    public string TagsExcludeClient { get; set; }
+
     public MemoryStream ServerGridLayout { get; set; }
     public SourceType Source { get; set; }
     public int ImageIndex => Source == SourceType.Favorites ? 3 : Source == SourceType.CustomList ? 12 : -1;
     public List<string> CustomDetailColumns { get; } = new List<string>();
     public List<string> CustomRuleColumns { get; } = new List<string>();
+    public List<string> HideColumns { get; } = new List<string>();
 
     public TabViewModel()
     {
@@ -47,8 +51,8 @@ namespace ServerBrowser
       this.InitialGameID = opt.InitialGameID;
       this.FilterMod = opt.FilterMod;
       this.FilterMap = opt.FilterMap;
-      this.TagsInclude = opt.TagsInclude;
-      this.TagsExclude = opt.TagsExclude;
+      this.TagsIncludeServer = opt.TagsIncludeServer;
+      this.TagsExcludeServer = opt.TagsExcludeServer;
       this.GetEmptyServers = opt.GetEmptyServers;
       this.GetFullServers = opt.GetFullServers;
       this.MasterServerQueryLimit = opt.MasterServerQueryLimit;
@@ -58,9 +62,12 @@ namespace ServerBrowser
       this.servers = opt.servers;
       this.gameExtension = opt.gameExtension;
       this.GridFilter = opt.GridFilter;
+      this.TagsIncludeClient = opt.TagsIncludeClient;
+      this.TagsExcludeClient = opt.TagsExcludeClient;
       this.ServerGridLayout = opt.ServerGridLayout;
       this.CustomDetailColumns.AddRange(opt.CustomDetailColumns);
       this.CustomRuleColumns.AddRange(opt.CustomRuleColumns);
+      this.HideColumns.AddRange(opt.HideColumns);
     }
     #endregion
 
@@ -72,8 +79,8 @@ namespace ServerBrowser
       this.InitialGameID = ini.GetInt("InitialGameID");
       this.FilterMod = ini.GetString("FilterMod");
       this.FilterMap = ini.GetString("FilterMap");
-      this.TagsInclude = ini.GetString("TagsInclude");
-      this.TagsExclude = ini.GetString("TagsExclude");
+      this.TagsIncludeServer = ini.GetString("TagsInclude");
+      this.TagsExcludeServer = ini.GetString("TagsExclude");
       this.GetEmptyServers = ini.GetBool("GetEmptyServers", true);
       this.GetFullServers = ini.GetBool("GetFullServers", true);
       this.MasterServerQueryLimit = ini.GetInt("MasterServerQueryLimit", this.MasterServerQueryLimit);
@@ -91,6 +98,13 @@ namespace ServerBrowser
       {
         if (rule != "")
           CustomRuleColumns.Add(rule);
+      }
+
+      this.HideColumns.Clear();
+      foreach (var col in (ini.GetString("HideColumns") ?? "").Split(','))
+      {
+        if (col != "")
+          HideColumns.Add(col);
       }
 
       var layout = ini.GetString("GridLayout");
@@ -142,8 +156,8 @@ namespace ServerBrowser
         ini.Append("InitialGameID=").Append(this.InitialGameID).AppendLine();
         ini.Append("FilterMod=").AppendLine(this.FilterMod);
         ini.Append("FilterMap=").AppendLine(this.FilterMap);
-        ini.Append("TagsInclude=").AppendLine(this.TagsInclude);
-        ini.Append("TagsExclude=").AppendLine(this.TagsExclude);
+        ini.Append("TagsInclude=").AppendLine(this.TagsIncludeServer);
+        ini.Append("TagsExclude=").AppendLine(this.TagsExcludeServer);
         ini.Append("GetEmptyServers=").AppendLine(this.GetEmptyServers ? "1" : "0");
         ini.Append("GetFullServers=").AppendLine(this.GetFullServers ? "1" : "0");
         ini.Append("MasterServerQueryLimit=").Append(this.MasterServerQueryLimit).AppendLine();
@@ -166,6 +180,11 @@ namespace ServerBrowser
       foreach (var rule in this.CustomRuleColumns)
         sb.Append(rule).Append(",");
       ini.Append("CustomRuleColumns=").AppendLine(sb.ToString().TrimEnd(','));
+
+      sb = new StringBuilder();
+      foreach (var col in this.HideColumns)
+        sb.Append(col).Append(",");
+      ini.Append("HideColumns=").AppendLine(sb.ToString().TrimEnd(','));
 
       if (this.Source == SourceType.CustomList)
       {

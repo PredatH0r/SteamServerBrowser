@@ -97,6 +97,7 @@ namespace ServerBrowser
       this.miFindServers = new DevExpress.XtraBars.BarButtonItem();
       this.miQuickRefresh = new DevExpress.XtraBars.BarButtonItem();
       this.miUpdateServerInfo = new DevExpress.XtraBars.BarButtonItem();
+      this.miStopUpdate = new DevExpress.XtraBars.BarButtonItem();
       this.mnuServer = new DevExpress.XtraBars.BarSubItem();
       this.miConnect = new DevExpress.XtraBars.BarButtonItem();
       this.miConnectSpectator = new DevExpress.XtraBars.BarButtonItem();
@@ -133,6 +134,10 @@ namespace ServerBrowser
       this.panelServerList = new DevExpress.XtraBars.Docking.DockPanel();
       this.controlContainer1 = new DevExpress.XtraBars.Docking.ControlContainer();
       this.grpQuickFilter = new DevExpress.XtraEditors.GroupControl();
+      this.labelControl17 = new DevExpress.XtraEditors.LabelControl();
+      this.btnTagExcludeClient = new DevExpress.XtraEditors.ButtonEdit();
+      this.labelControl5 = new DevExpress.XtraEditors.LabelControl();
+      this.btnTagIncludeClient = new DevExpress.XtraEditors.ButtonEdit();
       this.linkFilter1 = new DevExpress.XtraEditors.HyperlinkLabelControl();
       this.cbMinPlayersBots = new DevExpress.XtraEditors.CheckEdit();
       this.btnApplyFilter = new DevExpress.XtraEditors.SimpleButton();
@@ -159,9 +164,9 @@ namespace ServerBrowser
       this.labelControl11 = new DevExpress.XtraEditors.LabelControl();
       this.cbGetEmpty = new DevExpress.XtraEditors.CheckEdit();
       this.labelControl7 = new DevExpress.XtraEditors.LabelControl();
-      this.txtTagExclude = new DevExpress.XtraEditors.ButtonEdit();
+      this.txtTagExcludeServer = new DevExpress.XtraEditors.ButtonEdit();
       this.comboMasterServer = new DevExpress.XtraEditors.ComboBoxEdit();
-      this.txtTagInclude = new DevExpress.XtraEditors.ButtonEdit();
+      this.txtTagIncludeServer = new DevExpress.XtraEditors.ButtonEdit();
       this.labelControl6 = new DevExpress.XtraEditors.LabelControl();
       this.tabControl = new DevExpress.XtraTab.XtraTabControl();
       this.tabGame = new DevExpress.XtraTab.XtraTabPage();
@@ -198,6 +203,9 @@ namespace ServerBrowser
       this.menuDetails = new DevExpress.XtraBars.PopupMenu(this.components);
       this.splashScreenManager1 = new DevExpress.XtraSplashScreen.SplashScreenManager(this, typeof(global::ServerBrowser.ConnectingWaitForm), false, true);
       this.timerHideWaitForm = new System.Windows.Forms.Timer(this.components);
+      this.barSubItem1 = new DevExpress.XtraBars.BarSubItem();
+      this.miAboutGithub = new DevExpress.XtraBars.BarButtonItem();
+      this.miAboutSteamWorkshop = new DevExpress.XtraBars.BarButtonItem();
       ((System.ComponentModel.ISupportInitialize)(this.riCheckEdit)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.gcDetails)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.gvDetails)).BeginInit();
@@ -235,6 +243,8 @@ namespace ServerBrowser
       this.controlContainer1.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.grpQuickFilter)).BeginInit();
       this.grpQuickFilter.SuspendLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.btnTagExcludeClient.Properties)).BeginInit();
+      ((System.ComponentModel.ISupportInitialize)(this.btnTagIncludeClient.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbMinPlayersBots.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.comboMaxPing.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.spinMinPlayers.Properties)).BeginInit();
@@ -247,9 +257,9 @@ namespace ServerBrowser
       ((System.ComponentModel.ISupportInitialize)(this.comboGames.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.txtMap.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbGetEmpty.Properties)).BeginInit();
-      ((System.ComponentModel.ISupportInitialize)(this.txtTagExclude.Properties)).BeginInit();
+      ((System.ComponentModel.ISupportInitialize)(this.txtTagExcludeServer.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.comboMasterServer.Properties)).BeginInit();
-      ((System.ComponentModel.ISupportInitialize)(this.txtTagInclude.Properties)).BeginInit();
+      ((System.ComponentModel.ISupportInitialize)(this.txtTagIncludeServer.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.tabControl)).BeginInit();
       this.tabControl.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.panelOptions)).BeginInit();
@@ -449,6 +459,7 @@ namespace ServerBrowser
       this.gvServers.ColumnFilterChanged += new System.EventHandler(this.gvServers_ColumnFilterChanged);
       this.gvServers.CustomColumnSort += new DevExpress.XtraGrid.Views.Base.CustomColumnSortEventHandler(this.gvServers_CustomColumnSort);
       this.gvServers.CustomUnboundColumnData += new DevExpress.XtraGrid.Views.Base.CustomColumnDataEventHandler(this.gvServers_CustomUnboundColumnData);
+      this.gvServers.CustomRowFilter += new DevExpress.XtraGrid.Views.Base.RowFilterEventHandler(this.gvServers_CustomRowFilter);
       this.gvServers.CustomColumnDisplayText += new DevExpress.XtraGrid.Views.Base.CustomColumnDisplayTextEventHandler(this.gvServers_CustomColumnDisplayText);
       this.gvServers.MouseDown += new System.Windows.Forms.MouseEventHandler(this.gvServers_MouseDown);
       this.gvServers.DoubleClick += new System.EventHandler(this.gvServers_DoubleClick);
@@ -720,6 +731,7 @@ namespace ServerBrowser
       // colBuddyCount
       // 
       this.colBuddyCount.Caption = "Bdy";
+      this.colBuddyCount.CustomizationCaption = "BuddyCount";
       this.colBuddyCount.FieldName = "BuddyCount";
       this.colBuddyCount.Name = "colBuddyCount";
       this.colBuddyCount.OptionsColumn.AllowEdit = false;
@@ -780,6 +792,7 @@ namespace ServerBrowser
       this.imageCollection.Images.SetKeyName(20, "020.png");
       this.imageCollection.Images.SetKeyName(21, "021.png");
       this.imageCollection.Images.SetKeyName(22, "022.png");
+      this.imageCollection.Images.SetKeyName(23, "023.png");
       // 
       // colEndPoint
       // 
@@ -794,8 +807,9 @@ namespace ServerBrowser
       // 
       // colJoinStatus
       // 
-      this.colJoinStatus.Caption = " Jn";
+      this.colJoinStatus.Caption = "Jn";
       this.colJoinStatus.ColumnEdit = this.riJoinStatus;
+      this.colJoinStatus.CustomizationCaption = "JoinStatus";
       this.colJoinStatus.FieldName = "JoinStatus";
       this.colJoinStatus.Name = "colJoinStatus";
       this.colJoinStatus.OptionsColumn.AllowEdit = false;
@@ -1099,8 +1113,12 @@ namespace ServerBrowser
             this.miFindPlayer,
             this.miAddDetailColumn,
             this.miShowFilter,
-            this.mnuGameOptions});
-      this.barManager1.MaxItemId = 29;
+            this.mnuGameOptions,
+            this.miStopUpdate,
+            this.barSubItem1,
+            this.miAboutGithub,
+            this.miAboutSteamWorkshop});
+      this.barManager1.MaxItemId = 33;
       this.barManager1.RepositoryItems.AddRange(new DevExpress.XtraEditors.Repository.RepositoryItem[] {
             this.riFindPlayer});
       // 
@@ -1120,9 +1138,11 @@ namespace ServerBrowser
             new DevExpress.XtraBars.LinkPersistInfo(this.mnuUpdate, true),
             new DevExpress.XtraBars.LinkPersistInfo(DevExpress.XtraBars.BarLinkUserDefines.PaintStyle, this.miFindServers, DevExpress.XtraBars.BarItemPaintStyle.CaptionGlyph),
             new DevExpress.XtraBars.LinkPersistInfo(DevExpress.XtraBars.BarLinkUserDefines.PaintStyle, this.miQuickRefresh, DevExpress.XtraBars.BarItemPaintStyle.CaptionGlyph),
+            new DevExpress.XtraBars.LinkPersistInfo(this.miStopUpdate),
             new DevExpress.XtraBars.LinkPersistInfo(this.mnuServer, true),
             new DevExpress.XtraBars.LinkPersistInfo(DevExpress.XtraBars.BarLinkUserDefines.PaintStyle, this.miConnect, DevExpress.XtraBars.BarItemPaintStyle.CaptionGlyph),
-            new DevExpress.XtraBars.LinkPersistInfo(this.miFindPlayer, true)});
+            new DevExpress.XtraBars.LinkPersistInfo(this.miFindPlayer, true),
+            new DevExpress.XtraBars.LinkPersistInfo(this.barSubItem1)});
       this.barMenu.OptionsBar.AllowQuickCustomization = false;
       this.barMenu.OptionsBar.DisableClose = true;
       this.barMenu.OptionsBar.DisableCustomization = true;
@@ -1262,7 +1282,8 @@ namespace ServerBrowser
       this.mnuUpdate.LinksPersistInfo.AddRange(new DevExpress.XtraBars.LinkPersistInfo[] {
             new DevExpress.XtraBars.LinkPersistInfo(DevExpress.XtraBars.BarLinkUserDefines.PaintStyle, this.miFindServers, DevExpress.XtraBars.BarItemPaintStyle.CaptionGlyph),
             new DevExpress.XtraBars.LinkPersistInfo(DevExpress.XtraBars.BarLinkUserDefines.PaintStyle, this.miQuickRefresh, DevExpress.XtraBars.BarItemPaintStyle.CaptionGlyph),
-            new DevExpress.XtraBars.LinkPersistInfo(this.miUpdateServerInfo)});
+            new DevExpress.XtraBars.LinkPersistInfo(this.miUpdateServerInfo),
+            new DevExpress.XtraBars.LinkPersistInfo(this.miStopUpdate)});
       this.mnuUpdate.Name = "mnuUpdate";
       // 
       // miFindServers
@@ -1296,6 +1317,15 @@ namespace ServerBrowser
       this.miUpdateServerInfo.ItemShortcut = new DevExpress.XtraBars.BarShortcut(System.Windows.Forms.Keys.F6);
       this.miUpdateServerInfo.Name = "miUpdateServerInfo";
       this.miUpdateServerInfo.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miUpdateServerInfo_ItemClick);
+      // 
+      // miStopUpdate
+      // 
+      this.miStopUpdate.Caption = "Stop Update";
+      this.miStopUpdate.Enabled = false;
+      this.miStopUpdate.Id = 29;
+      this.miStopUpdate.ImageIndex = 23;
+      this.miStopUpdate.Name = "miStopUpdate";
+      this.miStopUpdate.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miStopUpdate_ItemClick);
       // 
       // mnuServer
       // 
@@ -1650,6 +1680,10 @@ namespace ServerBrowser
       // 
       // grpQuickFilter
       // 
+      this.grpQuickFilter.Controls.Add(this.labelControl17);
+      this.grpQuickFilter.Controls.Add(this.btnTagExcludeClient);
+      this.grpQuickFilter.Controls.Add(this.labelControl5);
+      this.grpQuickFilter.Controls.Add(this.btnTagIncludeClient);
       this.grpQuickFilter.Controls.Add(this.linkFilter1);
       this.grpQuickFilter.Controls.Add(this.cbMinPlayersBots);
       this.grpQuickFilter.Controls.Add(this.btnApplyFilter);
@@ -1666,13 +1700,59 @@ namespace ServerBrowser
       this.grpQuickFilter.TabIndex = 1;
       this.grpQuickFilter.Text = "Quick Filters";
       // 
+      // labelControl17
+      // 
+      this.labelControl17.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
+      this.labelControl17.Location = new System.Drawing.Point(694, 10);
+      this.labelControl17.Name = "labelControl17";
+      this.labelControl17.Size = new System.Drawing.Size(71, 15);
+      this.labelControl17.TabIndex = 8;
+      this.labelControl17.Text = "Exclude Tags:";
+      // 
+      // btnTagExcludeClient
+      // 
+      this.btnTagExcludeClient.Location = new System.Drawing.Point(694, 29);
+      this.btnTagExcludeClient.MenuManager = this.barManager1;
+      this.btnTagExcludeClient.Name = "btnTagExcludeClient";
+      this.btnTagExcludeClient.Properties.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
+      this.btnTagExcludeClient.Properties.Appearance.Options.UseFont = true;
+      this.btnTagExcludeClient.Properties.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Delete)});
+      this.btnTagExcludeClient.Size = new System.Drawing.Size(133, 22);
+      this.btnTagExcludeClient.TabIndex = 9;
+      this.btnTagExcludeClient.ToolTip = "Use comma for AND condition; semicolon for OR condition";
+      this.btnTagExcludeClient.ButtonClick += new DevExpress.XtraEditors.Controls.ButtonPressedEventHandler(this.txtTag_ButtonClick);
+      // 
+      // labelControl5
+      // 
+      this.labelControl5.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
+      this.labelControl5.Location = new System.Drawing.Point(545, 10);
+      this.labelControl5.Name = "labelControl5";
+      this.labelControl5.Size = new System.Drawing.Size(70, 15);
+      this.labelControl5.TabIndex = 6;
+      this.labelControl5.Text = "Include Tags:";
+      // 
+      // btnTagIncludeClient
+      // 
+      this.btnTagIncludeClient.Location = new System.Drawing.Point(545, 30);
+      this.btnTagIncludeClient.MenuManager = this.barManager1;
+      this.btnTagIncludeClient.Name = "btnTagIncludeClient";
+      this.btnTagIncludeClient.Properties.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
+      this.btnTagIncludeClient.Properties.Appearance.Options.UseFont = true;
+      this.btnTagIncludeClient.Properties.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Delete)});
+      this.btnTagIncludeClient.Size = new System.Drawing.Size(133, 22);
+      this.btnTagIncludeClient.TabIndex = 7;
+      this.btnTagIncludeClient.ToolTip = "Use comma for AND condition; semicolon for OR condition";
+      this.btnTagIncludeClient.ButtonClick += new DevExpress.XtraEditors.Controls.ButtonPressedEventHandler(this.txtTag_ButtonClick);
+      // 
       // linkFilter1
       // 
       this.linkFilter1.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
       this.linkFilter1.Appearance.TextOptions.WordWrap = DevExpress.Utils.WordWrap.Wrap;
       this.linkFilter1.AutoSizeMode = DevExpress.XtraEditors.LabelAutoSizeMode.None;
       this.linkFilter1.Cursor = System.Windows.Forms.Cursors.Hand;
-      this.linkFilter1.Location = new System.Drawing.Point(10, 5);
+      this.linkFilter1.Location = new System.Drawing.Point(10, 7);
       this.linkFilter1.Name = "linkFilter1";
       this.linkFilter1.Size = new System.Drawing.Size(529, 19);
       this.linkFilter1.TabIndex = 0;
@@ -1697,10 +1777,10 @@ namespace ServerBrowser
       this.btnApplyFilter.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
       this.btnApplyFilter.Appearance.Options.UseFont = true;
       this.btnApplyFilter.ImageList = this.imageCollection;
-      this.btnApplyFilter.Location = new System.Drawing.Point(539, 28);
+      this.btnApplyFilter.Location = new System.Drawing.Point(847, 27);
       this.btnApplyFilter.Name = "btnApplyFilter";
       this.btnApplyFilter.Size = new System.Drawing.Size(98, 25);
-      this.btnApplyFilter.TabIndex = 6;
+      this.btnApplyFilter.TabIndex = 10;
       this.btnApplyFilter.Text = "Apply Filter";
       this.btnApplyFilter.ToolTip = "Get new server list from Valve master server";
       this.btnApplyFilter.Click += new System.EventHandler(this.btnApplyFilter_Click);
@@ -1783,10 +1863,10 @@ namespace ServerBrowser
       this.cbAlert.ImageList = this.imageCollection;
       this.cbAlert.ImageToTextAlignment = DevExpress.XtraEditors.ImageAlignToText.LeftCenter;
       this.cbAlert.ImageToTextIndent = 10;
-      this.cbAlert.Location = new System.Drawing.Point(741, 28);
+      this.cbAlert.Location = new System.Drawing.Point(979, 27);
       this.cbAlert.Name = "cbAlert";
       this.cbAlert.Size = new System.Drawing.Size(262, 25);
-      this.cbAlert.TabIndex = 7;
+      this.cbAlert.TabIndex = 11;
       this.cbAlert.Text = "Notify me when servers match my filters";
       this.cbAlert.CheckedChanged += new System.EventHandler(this.cbAlert_CheckedChanged);
       // 
@@ -1797,7 +1877,7 @@ namespace ServerBrowser
       this.btnSkin.Location = new System.Drawing.Point(745, 8);
       this.btnSkin.Name = "btnSkin";
       this.btnSkin.Size = new System.Drawing.Size(115, 25);
-      this.btnSkin.TabIndex = 16;
+      this.btnSkin.TabIndex = 14;
       this.btnSkin.Text = "Change Skin";
       this.btnSkin.Click += new System.EventHandler(this.btnSkin_Click);
       // 
@@ -1811,7 +1891,7 @@ namespace ServerBrowser
       this.cbRefreshSelectedServer.Properties.AutoWidth = true;
       this.cbRefreshSelectedServer.Properties.Caption = "Update status when selecting a server";
       this.cbRefreshSelectedServer.Size = new System.Drawing.Size(219, 19);
-      this.cbRefreshSelectedServer.TabIndex = 13;
+      this.cbRefreshSelectedServer.TabIndex = 6;
       this.cbRefreshSelectedServer.ToolTip = "NOTE: This may cause the row to be re-ordered when data is updated";
       // 
       // btnUpdateList
@@ -1846,14 +1926,14 @@ namespace ServerBrowser
       this.panelQuery.Controls.Add(this.labelControl11);
       this.panelQuery.Controls.Add(this.cbGetEmpty);
       this.panelQuery.Controls.Add(this.labelControl7);
-      this.panelQuery.Controls.Add(this.txtTagExclude);
+      this.panelQuery.Controls.Add(this.txtTagExcludeServer);
       this.panelQuery.Controls.Add(this.comboMasterServer);
-      this.panelQuery.Controls.Add(this.txtTagInclude);
+      this.panelQuery.Controls.Add(this.txtTagIncludeServer);
       this.panelQuery.Dock = System.Windows.Forms.DockStyle.Top;
       this.panelQuery.Location = new System.Drawing.Point(0, 172);
       this.panelQuery.Name = "panelQuery";
       this.panelQuery.Size = new System.Drawing.Size(1658, 64);
-      this.panelQuery.TabIndex = 0;
+      this.panelQuery.TabIndex = 2;
       // 
       // btnUpdateStatus
       // 
@@ -2021,19 +2101,19 @@ namespace ServerBrowser
       this.labelControl7.TabIndex = 0;
       this.labelControl7.Text = "Master server:";
       // 
-      // txtTagExclude
+      // txtTagExcludeServer
       // 
-      this.txtTagExclude.Location = new System.Drawing.Point(745, 36);
-      this.txtTagExclude.MenuManager = this.barManager1;
-      this.txtTagExclude.Name = "txtTagExclude";
-      this.txtTagExclude.Properties.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
-      this.txtTagExclude.Properties.Appearance.Options.UseFont = true;
-      this.txtTagExclude.Properties.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
+      this.txtTagExcludeServer.Location = new System.Drawing.Point(745, 36);
+      this.txtTagExcludeServer.MenuManager = this.barManager1;
+      this.txtTagExcludeServer.Name = "txtTagExcludeServer";
+      this.txtTagExcludeServer.Properties.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
+      this.txtTagExcludeServer.Properties.Appearance.Options.UseFont = true;
+      this.txtTagExcludeServer.Properties.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
             new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Delete)});
-      this.txtTagExclude.Size = new System.Drawing.Size(133, 22);
-      this.txtTagExclude.TabIndex = 11;
-      this.txtTagExclude.ToolTip = "Comma separated list of tags which must not occur in the server\'s sv_tags";
-      this.txtTagExclude.ButtonClick += new DevExpress.XtraEditors.Controls.ButtonPressedEventHandler(this.txtTag_ButtonClick);
+      this.txtTagExcludeServer.Size = new System.Drawing.Size(133, 22);
+      this.txtTagExcludeServer.TabIndex = 11;
+      this.txtTagExcludeServer.ToolTip = "Comma separated list of tags which must not occur in the server\'s sv_tags";
+      this.txtTagExcludeServer.ButtonClick += new DevExpress.XtraEditors.Controls.ButtonPressedEventHandler(this.txtTag_ButtonClick);
       // 
       // comboMasterServer
       // 
@@ -2046,19 +2126,19 @@ namespace ServerBrowser
       this.comboMasterServer.Size = new System.Drawing.Size(268, 22);
       this.comboMasterServer.TabIndex = 1;
       // 
-      // txtTagInclude
+      // txtTagIncludeServer
       // 
-      this.txtTagInclude.Location = new System.Drawing.Point(745, 7);
-      this.txtTagInclude.MenuManager = this.barManager1;
-      this.txtTagInclude.Name = "txtTagInclude";
-      this.txtTagInclude.Properties.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
-      this.txtTagInclude.Properties.Appearance.Options.UseFont = true;
-      this.txtTagInclude.Properties.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
+      this.txtTagIncludeServer.Location = new System.Drawing.Point(745, 7);
+      this.txtTagIncludeServer.MenuManager = this.barManager1;
+      this.txtTagIncludeServer.Name = "txtTagIncludeServer";
+      this.txtTagIncludeServer.Properties.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
+      this.txtTagIncludeServer.Properties.Appearance.Options.UseFont = true;
+      this.txtTagIncludeServer.Properties.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
             new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Delete)});
-      this.txtTagInclude.Size = new System.Drawing.Size(133, 22);
-      this.txtTagInclude.TabIndex = 9;
-      this.txtTagInclude.ToolTip = "Comma separated list of tags that must all be included in the server\'s sv_tags";
-      this.txtTagInclude.ButtonClick += new DevExpress.XtraEditors.Controls.ButtonPressedEventHandler(this.txtTag_ButtonClick);
+      this.txtTagIncludeServer.Size = new System.Drawing.Size(133, 22);
+      this.txtTagIncludeServer.TabIndex = 9;
+      this.txtTagIncludeServer.ToolTip = "Comma separated list of tags that must all be included in the server\'s sv_tags";
+      this.txtTagIncludeServer.ButtonClick += new DevExpress.XtraEditors.Controls.ButtonPressedEventHandler(this.txtTag_ButtonClick);
       // 
       // labelControl6
       // 
@@ -2083,7 +2163,7 @@ namespace ServerBrowser
       this.tabControl.Name = "tabControl";
       this.tabControl.SelectedTabPage = this.tabGame;
       this.tabControl.Size = new System.Drawing.Size(1658, 28);
-      this.tabControl.TabIndex = 40;
+      this.tabControl.TabIndex = 0;
       this.tabControl.TabPages.AddRange(new DevExpress.XtraTab.XtraTabPage[] {
             this.tabGame,
             this.tabFavorites,
@@ -2144,7 +2224,7 @@ namespace ServerBrowser
       this.panelOptions.Location = new System.Drawing.Point(0, 29);
       this.panelOptions.Name = "panelOptions";
       this.panelOptions.Size = new System.Drawing.Size(1658, 106);
-      this.panelOptions.TabIndex = 1;
+      this.panelOptions.TabIndex = 0;
       this.panelOptions.Visible = false;
       // 
       // cbNoUpdateWhilePlaying
@@ -2157,7 +2237,7 @@ namespace ServerBrowser
       this.cbNoUpdateWhilePlaying.Properties.AutoWidth = true;
       this.cbNoUpdateWhilePlaying.Properties.Caption = "off while in-game";
       this.cbNoUpdateWhilePlaying.Size = new System.Drawing.Size(116, 19);
-      this.cbNoUpdateWhilePlaying.TabIndex = 22;
+      this.cbNoUpdateWhilePlaying.TabIndex = 5;
       this.cbNoUpdateWhilePlaying.ToolTip = "Disable Auto-Update while you are in a game.\r\n(This looks at your Steam status)";
       // 
       // cbHideUnresponsiveServers
@@ -2170,7 +2250,7 @@ namespace ServerBrowser
       this.cbHideUnresponsiveServers.Properties.AutoWidth = true;
       this.cbHideUnresponsiveServers.Properties.Caption = "Hide timed out servers";
       this.cbHideUnresponsiveServers.Size = new System.Drawing.Size(141, 19);
-      this.cbHideUnresponsiveServers.TabIndex = 21;
+      this.cbHideUnresponsiveServers.TabIndex = 8;
       this.cbHideUnresponsiveServers.CheckedChanged += new System.EventHandler(this.cbHideUnresponsiveServers_CheckedChanged);
       // 
       // cbRememberColumnLayout
@@ -2182,7 +2262,7 @@ namespace ServerBrowser
       this.cbRememberColumnLayout.Properties.AutoWidth = true;
       this.cbRememberColumnLayout.Properties.Caption = "Remember column layout for each tab";
       this.cbRememberColumnLayout.Size = new System.Drawing.Size(226, 19);
-      this.cbRememberColumnLayout.TabIndex = 15;
+      this.cbRememberColumnLayout.TabIndex = 9;
       this.cbRememberColumnLayout.ToolTip = "When enabled, you can have different column widths in different tabs.";
       // 
       // rbUpdateStatusOnly
@@ -2192,11 +2272,11 @@ namespace ServerBrowser
       this.rbUpdateStatusOnly.Properties.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
       this.rbUpdateStatusOnly.Properties.Appearance.Options.UseFont = true;
       this.rbUpdateStatusOnly.Properties.AutoWidth = true;
-      this.rbUpdateStatusOnly.Properties.Caption = "Update Status";
+      this.rbUpdateStatusOnly.Properties.Caption = "Update Status only";
       this.rbUpdateStatusOnly.Properties.CheckStyle = DevExpress.XtraEditors.Controls.CheckStyles.Radio;
       this.rbUpdateStatusOnly.Properties.RadioGroupIndex = 2;
-      this.rbUpdateStatusOnly.Size = new System.Drawing.Size(95, 19);
-      this.rbUpdateStatusOnly.TabIndex = 11;
+      this.rbUpdateStatusOnly.Size = new System.Drawing.Size(121, 19);
+      this.rbUpdateStatusOnly.TabIndex = 3;
       this.rbUpdateStatusOnly.TabStop = false;
       // 
       // cbFavServersOnTop
@@ -2209,7 +2289,7 @@ namespace ServerBrowser
       this.cbFavServersOnTop.Properties.AutoWidth = true;
       this.cbFavServersOnTop.Properties.Caption = "Keep my favorite servers on top";
       this.cbFavServersOnTop.Size = new System.Drawing.Size(188, 19);
-      this.cbFavServersOnTop.TabIndex = 14;
+      this.cbFavServersOnTop.TabIndex = 7;
       this.cbFavServersOnTop.CheckedChanged += new System.EventHandler(this.cbFavServersOnTop_CheckedChanged);
       // 
       // rbAddressGamePort
@@ -2223,7 +2303,7 @@ namespace ServerBrowser
       this.rbAddressGamePort.Properties.CheckStyle = DevExpress.XtraEditors.Controls.CheckStyles.Radio;
       this.rbAddressGamePort.Properties.RadioGroupIndex = 1;
       this.rbAddressGamePort.Size = new System.Drawing.Size(78, 19);
-      this.rbAddressGamePort.TabIndex = 20;
+      this.rbAddressGamePort.TabIndex = 13;
       this.rbAddressGamePort.TabStop = false;
       this.rbAddressGamePort.CheckedChanged += new System.EventHandler(this.rbAddress_CheckedChanged);
       // 
@@ -2238,7 +2318,7 @@ namespace ServerBrowser
       this.rbAddressQueryPort.Properties.CheckStyle = DevExpress.XtraEditors.Controls.CheckStyles.Radio;
       this.rbAddressQueryPort.Properties.RadioGroupIndex = 1;
       this.rbAddressQueryPort.Size = new System.Drawing.Size(79, 19);
-      this.rbAddressQueryPort.TabIndex = 19;
+      this.rbAddressQueryPort.TabIndex = 12;
       this.rbAddressQueryPort.TabStop = false;
       this.rbAddressQueryPort.CheckedChanged += new System.EventHandler(this.rbAddress_CheckedChanged);
       // 
@@ -2248,7 +2328,7 @@ namespace ServerBrowser
       this.labelControl10.Location = new System.Drawing.Point(563, 13);
       this.labelControl10.Name = "labelControl10";
       this.labelControl10.Size = new System.Drawing.Size(80, 15);
-      this.labelControl10.TabIndex = 17;
+      this.labelControl10.TabIndex = 10;
       this.labelControl10.Text = "Server Address:";
       // 
       // labelControl9
@@ -2257,7 +2337,7 @@ namespace ServerBrowser
       this.labelControl9.Location = new System.Drawing.Point(13, 12);
       this.labelControl9.Name = "labelControl9";
       this.labelControl9.Size = new System.Drawing.Size(109, 15);
-      this.labelControl9.TabIndex = 8;
+      this.labelControl9.TabIndex = 0;
       this.labelControl9.Text = "Auto-Update (mins):";
       // 
       // rbAddressHidden
@@ -2271,18 +2351,18 @@ namespace ServerBrowser
       this.rbAddressHidden.Properties.CheckStyle = DevExpress.XtraEditors.Controls.CheckStyles.Radio;
       this.rbAddressHidden.Properties.RadioGroupIndex = 1;
       this.rbAddressHidden.Size = new System.Drawing.Size(82, 19);
-      this.rbAddressHidden.TabIndex = 18;
+      this.rbAddressHidden.TabIndex = 11;
       this.rbAddressHidden.TabStop = false;
       this.rbAddressHidden.CheckedChanged += new System.EventHandler(this.rbAddress_CheckedChanged);
       // 
       // spinRefreshInterval
       // 
       this.spinRefreshInterval.EditValue = new decimal(new int[] {
-            0,
+            1,
             0,
             0,
             0});
-      this.spinRefreshInterval.Location = new System.Drawing.Point(128, 10);
+      this.spinRefreshInterval.Location = new System.Drawing.Point(138, 10);
       this.spinRefreshInterval.MenuManager = this.barManager1;
       this.spinRefreshInterval.Name = "spinRefreshInterval";
       this.spinRefreshInterval.Properties.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
@@ -2299,7 +2379,7 @@ namespace ServerBrowser
             0,
             0});
       this.spinRefreshInterval.Size = new System.Drawing.Size(47, 22);
-      this.spinRefreshInterval.TabIndex = 9;
+      this.spinRefreshInterval.TabIndex = 1;
       this.spinRefreshInterval.EditValueChanged += new System.EventHandler(this.spinRefreshInterval_EditValueChanged);
       // 
       // rbUpdateListAndStatus
@@ -2313,7 +2393,7 @@ namespace ServerBrowser
       this.rbUpdateListAndStatus.Properties.CheckStyle = DevExpress.XtraEditors.Controls.CheckStyles.Radio;
       this.rbUpdateListAndStatus.Properties.RadioGroupIndex = 2;
       this.rbUpdateListAndStatus.Size = new System.Drawing.Size(172, 19);
-      this.rbUpdateListAndStatus.TabIndex = 10;
+      this.rbUpdateListAndStatus.TabIndex = 2;
       this.rbUpdateListAndStatus.TabStop = false;
       // 
       // rbUpdateDisabled
@@ -2327,7 +2407,7 @@ namespace ServerBrowser
       this.rbUpdateDisabled.Properties.CheckStyle = DevExpress.XtraEditors.Controls.CheckStyles.Radio;
       this.rbUpdateDisabled.Properties.RadioGroupIndex = 2;
       this.rbUpdateDisabled.Size = new System.Drawing.Size(39, 19);
-      this.rbUpdateDisabled.TabIndex = 12;
+      this.rbUpdateDisabled.TabIndex = 4;
       this.rbUpdateDisabled.TabStop = false;
       // 
       // panelControl1
@@ -2394,7 +2474,7 @@ namespace ServerBrowser
       this.panelTabs.Location = new System.Drawing.Point(0, 135);
       this.panelTabs.Name = "panelTabs";
       this.panelTabs.Size = new System.Drawing.Size(1658, 37);
-      this.panelTabs.TabIndex = 45;
+      this.panelTabs.TabIndex = 1;
       // 
       // menuTab
       // 
@@ -2414,7 +2494,7 @@ namespace ServerBrowser
       this.panelStaticList.Location = new System.Drawing.Point(0, 236);
       this.panelStaticList.Name = "panelStaticList";
       this.panelStaticList.Size = new System.Drawing.Size(1658, 64);
-      this.panelStaticList.TabIndex = 50;
+      this.panelStaticList.TabIndex = 3;
       this.panelStaticList.Visible = false;
       // 
       // txtGameServer
@@ -2460,6 +2540,29 @@ namespace ServerBrowser
       // 
       this.timerHideWaitForm.Interval = 5000;
       this.timerHideWaitForm.Tick += new System.EventHandler(this.timerHideWaitForm_Tick);
+      // 
+      // barSubItem1
+      // 
+      this.barSubItem1.Caption = "About";
+      this.barSubItem1.Id = 30;
+      this.barSubItem1.LinksPersistInfo.AddRange(new DevExpress.XtraBars.LinkPersistInfo[] {
+            new DevExpress.XtraBars.LinkPersistInfo(this.miAboutGithub),
+            new DevExpress.XtraBars.LinkPersistInfo(this.miAboutSteamWorkshop)});
+      this.barSubItem1.Name = "barSubItem1";
+      // 
+      // miAboutGithub
+      // 
+      this.miAboutGithub.Caption = "Project Page on github.com";
+      this.miAboutGithub.Id = 31;
+      this.miAboutGithub.Name = "miAboutGithub";
+      this.miAboutGithub.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miAboutGithub_ItemClick);
+      // 
+      // miAboutSteamWorkshop
+      // 
+      this.miAboutSteamWorkshop.Caption = "Steam Workshop Item Page";
+      this.miAboutSteamWorkshop.Id = 32;
+      this.miAboutSteamWorkshop.Name = "miAboutSteamWorkshop";
+      this.miAboutSteamWorkshop.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miAboutSteamWorkshop_ItemClick);
       // 
       // ServerBrowserForm
       // 
@@ -2521,6 +2624,8 @@ namespace ServerBrowser
       ((System.ComponentModel.ISupportInitialize)(this.grpQuickFilter)).EndInit();
       this.grpQuickFilter.ResumeLayout(false);
       this.grpQuickFilter.PerformLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.btnTagExcludeClient.Properties)).EndInit();
+      ((System.ComponentModel.ISupportInitialize)(this.btnTagIncludeClient.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbMinPlayersBots.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.comboMaxPing.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.spinMinPlayers.Properties)).EndInit();
@@ -2534,9 +2639,9 @@ namespace ServerBrowser
       ((System.ComponentModel.ISupportInitialize)(this.comboGames.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.txtMap.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbGetEmpty.Properties)).EndInit();
-      ((System.ComponentModel.ISupportInitialize)(this.txtTagExclude.Properties)).EndInit();
+      ((System.ComponentModel.ISupportInitialize)(this.txtTagExcludeServer.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.comboMasterServer.Properties)).EndInit();
-      ((System.ComponentModel.ISupportInitialize)(this.txtTagInclude.Properties)).EndInit();
+      ((System.ComponentModel.ISupportInitialize)(this.txtTagIncludeServer.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.tabControl)).EndInit();
       this.tabControl.ResumeLayout(false);
       ((System.ComponentModel.ISupportInitialize)(this.panelOptions)).EndInit();
@@ -2657,8 +2762,8 @@ namespace ServerBrowser
     protected LabelControl labelControl8;
     protected LabelControl labelControl2;
     protected DevExpress.Utils.ImageCollection imageCollection;
-    protected ButtonEdit txtTagExclude;
-    protected ButtonEdit txtTagInclude;
+    protected ButtonEdit txtTagExcludeServer;
+    protected ButtonEdit txtTagIncludeServer;
     protected ButtonEdit txtMap;
     protected LabelControl labelControl11;
     protected ButtonEdit txtMod;
@@ -2738,5 +2843,13 @@ namespace ServerBrowser
     private DevExpress.XtraBars.BarLinkContainerItem mnuGameOptions;
     private DevExpress.XtraSplashScreen.SplashScreenManager splashScreenManager1;
     private System.Windows.Forms.Timer timerHideWaitForm;
+    private DevExpress.XtraBars.BarButtonItem miStopUpdate;
+    protected LabelControl labelControl17;
+    protected ButtonEdit btnTagExcludeClient;
+    protected LabelControl labelControl5;
+    protected ButtonEdit btnTagIncludeClient;
+    private DevExpress.XtraBars.BarSubItem barSubItem1;
+    private DevExpress.XtraBars.BarButtonItem miAboutGithub;
+    private DevExpress.XtraBars.BarButtonItem miAboutSteamWorkshop;
   }
 }

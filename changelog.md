@@ -1,3 +1,11 @@
+2.11
+---
+- added Cancel Update button
+- added client-side "Include Tags" and "Exclude Tags", which allow AND and OR conditions using comma and semicolon
+- added "About" menu
+- remember which columns were hidden by user
+- fixed default configuration with missing master server query tabs
+
 2.10
 ---
 - cleaned up menu (only most important function are directly in the menu bar, other items are in the drop downs)

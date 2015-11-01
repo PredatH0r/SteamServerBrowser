@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -29,10 +30,11 @@ namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.10";
+    private const string Version = "2.11";
     private const string DevExpressVersion = "v15.1";
     private const string CustomDetailColumnPrefix = "ServerInfo.";
     private const string CustomRuleColumnPrefix = "custRule.";
+    private static readonly Game[] DefaultGames = {Game.QuakeLive, Game.Reflex, Game.Toxikk, Game.CounterStrike_Global_Offensive, Game.Team_Fortress_2};
 
     private readonly GameExtensionPool extenders = new GameExtensionPool();
     private readonly GameExtension unknownGame = new GameExtension();
@@ -49,7 +51,7 @@ namespace ServerBrowser
     private readonly IniFile iniFile;
     private XtraTabPage dragPage;
     private const int PredefinedTabCount = 2;
-    private readonly List<ServerRow> filteredServers = new List<ServerRow>();
+    private List<ServerRow> filteredServers = new List<ServerRow>();
 
     #region ctor()
     public ServerBrowserForm()
@@ -238,6 +240,21 @@ namespace ServerBrowser
         }
       }
 
+      // add default games
+      if (i == 0)
+      {
+        foreach (var game in DefaultGames)
+        {
+          var vm = new TabViewModel();
+          vm.InitialGameID = (int)game;
+          var page = new XtraTabPage();
+          page.Text = this.GetGameCaption(game);
+          page.Tag = vm;
+          page.ImageIndex = vm.ImageIndex;
+          this.tabControl.TabPages.Insert(i++, page);
+        }
+      }
+
       if (hasFavTab)
       {
         this.tabControl.TabPages.Remove(this.tabFavorites);
@@ -288,8 +305,8 @@ namespace ServerBrowser
         info = "hl2master.steampowered.com:27011";
       this.comboMasterServer.Text = info;
       this.SetSteamAppId(vm.InitialGameID);
-      this.txtTagInclude.Text = vm.TagsInclude;
-      this.txtTagExclude.Text = vm.TagsExclude;
+      this.txtTagIncludeServer.Text = vm.TagsIncludeServer;
+      this.txtTagExcludeServer.Text = vm.TagsExcludeServer;
       this.txtMod.Text = vm.FilterMod;
       this.txtMap.Text = vm.FilterMap;
       this.cbGetEmpty.Checked = vm.GetEmptyServers;
@@ -297,6 +314,8 @@ namespace ServerBrowser
       this.comboQueryLimit.Text = vm.MasterServerQueryLimit.ToString();
 
       this.gvServers.ActiveFilterString = vm.GridFilter;
+      this.btnTagIncludeClient.Text = vm.TagsIncludeClient;
+      this.btnTagExcludeClient.Text = vm.TagsExcludeClient;
 
       UpdatePanelVisibility();
       this.miFindServers.Enabled = vm.Source == TabViewModel.SourceType.MasterServer;
@@ -524,11 +543,13 @@ namespace ServerBrowser
 
       vm.FilterMod = this.txtMod.Text;
       vm.FilterMap = this.txtMap.Text;
-      vm.TagsInclude = this.txtTagInclude.Text;
-      vm.TagsExclude = this.txtTagExclude.Text;
+      vm.TagsIncludeServer = this.txtTagIncludeServer.Text;
+      vm.TagsExcludeServer = this.txtTagExcludeServer.Text;
       vm.GetEmptyServers = this.cbGetEmpty.Checked;
       vm.GetFullServers = this.cbGetFull.Checked;
       vm.MasterServerQueryLimit = Convert.ToInt32(this.comboQueryLimit.Text);
+      vm.TagsIncludeClient = this.btnTagIncludeClient.Text;
+      vm.TagsExcludeClient = this.btnTagExcludeClient.Text;
 
       vm.GridFilter = this.gvServers.ActiveFilterString;
       if (this.cbRememberColumnLayout.Checked)
@@ -540,9 +561,12 @@ namespace ServerBrowser
       vm.serverSource = this.CreateServerSource(vm.MasterServer);
       vm.gameExtension = this.extenders.Get((Game)vm.InitialGameID);
 
-      // remove no longer visible custom columns
+      // remember hidden default columns and remove no longer visible custom columns
+      vm.HideColumns.Clear();
       foreach (GridColumn col in this.gvServers.Columns)
       {
+        if (col.Tag == null && !col.Visible)
+          vm.HideColumns.Add(col.FieldName);
         if (col.VisibleIndex >= 0) continue;
         if (col.Tag != null && col.FieldName.StartsWith(CustomDetailColumnPrefix))
           vm.CustomDetailColumns.Remove(col.FieldName);
@@ -673,18 +697,18 @@ namespace ServerBrowser
         return;
 
       this.SetStatusMessage("Requesting server list from master server...");
-
+      this.miStopUpdate.Enabled = true;
       IpFilter filter = new IpFilter();
       filter.App = (Game)this.viewModel.InitialGameID;
       filter.IsNotEmpty = !this.viewModel.GetEmptyServers;
       filter.IsNotFull = !this.viewModel.GetFullServers;
       filter.GameDirectory = this.viewModel.FilterMod;
       filter.Map = this.viewModel.FilterMap;
-      filter.Sv_Tags = this.ParseTags(this.viewModel.TagsInclude);
-      if (this.viewModel.TagsExclude != "")
+      filter.Sv_Tags = this.ParseTags(this.viewModel.TagsIncludeServer);
+      if (this.viewModel.TagsExcludeServer != "")
       {
         filter.Nor = new IpFilter();
-        filter.Nor.Sv_Tags = this.ParseTags(this.viewModel.TagsExclude);
+        filter.Nor.Sv_Tags = this.ParseTags(this.viewModel.TagsExcludeServer);
       }
       this.CustomizeFilter(filter);
 
@@ -697,6 +721,7 @@ namespace ServerBrowser
     {
       if (this.queryLogic.IsUpdating)
         return;
+      this.miStopUpdate.Enabled = true;
       this.timerReloadServers.Stop();
       this.SetStatusMessage("Updating status of " + this.filteredServers.Count + " servers...");
       this.queryLogic.RefreshAllServers(this.filteredServers);
@@ -724,14 +749,9 @@ namespace ServerBrowser
           filter += " and ";
         filter += "[ServerInfo.Ping]<=" + ping;
       }
-      if (cbHideUnresponsiveServers.Checked)
-      {
-        if (filter != "")
-          filter += " and ";
-        filter += "[Status] not like 'Timeout%'";
-        filter += " and [ServerInfo.Ping] is not null";
-      }
+      this.gvServers.BeginSort();
       this.gvServers.ActiveFilterString = filter;
+      this.gvServers.EndSort();
     }
     #endregion
 
@@ -760,15 +780,17 @@ namespace ServerBrowser
       this.LookupGeoIps();
       this.UpdateCachedServerNames();
       
-      this.filteredServers.Clear();
-      if (this.viewModel.servers != null)
-      {
-        if (this.cbHideUnresponsiveServers.Checked)
-          this.filteredServers.AddRange(this.viewModel.servers.Where(s => s.ServerInfo != null && s.ServerInfo.Ping != 0 && !s.Status.StartsWith("Timeout")));
-        else
-          this.filteredServers.AddRange(this.viewModel.servers);
-      }
-      this.gcServers.DataSource = filteredServers; // always use the same object reference, otherwise all state (top-row, focused, selected) would get lost
+      //this.filteredServers.Clear();
+      //if (this.viewModel.servers != null)
+      //{
+      //  if (this.cbHideUnresponsiveServers.Checked)
+      //    this.filteredServers.AddRange(this.viewModel.servers.Where(s => s.ServerInfo != null && s.ServerInfo.Ping != 0 && !s.Status.StartsWith("Timeout")));
+      //  else
+      //    this.filteredServers.AddRange(this.viewModel.servers);
+      //}
+      //this.gcServers.DataSource = filteredServers; // always use the same object reference, otherwise all state (top-row, focused, selected) would get lost
+      this.filteredServers = this.viewModel.servers;
+      this.gcServers.DataSource = this.viewModel.servers;
       this.gvServers.EndDataUpdate();
       //this.gvServers.RefreshData();
 
@@ -1123,6 +1145,31 @@ namespace ServerBrowser
     }
     #endregion
 
+    #region MatchTagCriteria()
+    private bool MatchTagCriteria(string tags, string condition)
+    {
+      tags = ',' + tags + ',';
+      var orParts = condition.Split(';');
+      foreach (var orPart in orParts)
+      {
+        var match = true;
+        var andParts = orPart.Split(',');
+        foreach (var andPart in andParts)
+        {
+          if (!tags.Contains(',' + andPart.Trim() + ','))
+          {
+            match = false;
+            break;
+          }
+        }
+        if (match)
+          return true;
+      }
+      return false;
+    }
+    #endregion
+
+
     // general components
 
     #region queryLogic_SetStatusMessage
@@ -1146,6 +1193,8 @@ namespace ServerBrowser
       this.UpdateBuddyCount();
       this.UpdateViews();
       this.SetStatusMessage("Update of " + this.viewModel.servers.Count + " servers complete");
+      this.miStopUpdate.Enabled = false;
+
       if (this.gvServers.RowCount > 0 && this.cbAlert.Checked)
       {
         this.cbAlert.Checked = false;
@@ -1437,6 +1486,44 @@ namespace ServerBrowser
       {
         this.timerUpdateServerList.Start();
       }
+    }
+    #endregion
+
+    #region gvServers_CustomRowFilter()
+    private void gvServers_CustomRowFilter(object sender, RowFilterEventArgs e)
+    {
+      var row = this.filteredServers[e.ListSourceRow];
+      if (this.cbHideUnresponsiveServers.Checked)
+      {
+        if (row.ServerInfo == null || row.ServerInfo.Ping == 0 || row.Status.StartsWith("Timeout"))
+        {
+          e.Visible = false;
+          e.Handled = true;
+          return;
+        }
+      }
+
+      if (this.btnTagIncludeClient.Text != "")
+      {
+        if (!MatchTagCriteria(row.ServerInfo?.Extra?.Keywords, this.btnTagIncludeClient.Text))
+        {
+          e.Visible = false;
+          e.Handled = true;
+          return;
+        }
+      }
+
+      if (this.btnTagExcludeClient.Text != "")
+      {
+        if (MatchTagCriteria(row.ServerInfo?.Extra?.Keywords, this.btnTagExcludeClient.Text))
+        {
+          e.Visible = false;
+          e.Handled = true;
+          return;
+        }
+      }
+
+      e.Handled = false;
     }
     #endregion
 
@@ -1753,10 +1840,11 @@ namespace ServerBrowser
     {
       if (!e.IsGetData) return;
       var server = (ServerRow) this.gvServers.GetFocusedRow();
+      if (server == null) return;
       var player = (Player) e.Row;
       if (e.Column.FieldName == "CleanName")
         e.Value = server.GameExtension.GetCleanPlayerName(player);
-      else if (server != null && player != null)
+      else if (player != null)
         e.Value = server.GameExtension.GetPlayerCellValue(server, player, e.Column.FieldName);
     }
     #endregion
@@ -1879,6 +1967,13 @@ namespace ServerBrowser
       this.UpdatePanelVisibility();
     }
 
+    private void miShowFilter_DownChanged(object sender, ItemClickEventArgs e)
+    {
+      this.grpQuickFilter.Visible = this.miShowFilter.Down;
+    }
+    #endregion
+
+    #region mi*_ItemClick
     private void miFindServers_ItemClick(object sender, ItemClickEventArgs e)
     {
       this.ReloadServerList();
@@ -1888,6 +1983,14 @@ namespace ServerBrowser
     {
       this.RefreshServerInfo();
     }
+
+    private void miStopUpdate_ItemClick(object sender, ItemClickEventArgs e)
+    {
+      this.queryLogic.Cancel();
+      this.SetStatusMessage("Server status update cancelled");
+      this.miStopUpdate.Enabled = false;
+    }
+
     #endregion
 
     #region miRenameTab_ItemClick
@@ -1930,6 +2033,18 @@ namespace ServerBrowser
       if (e.KeyCode == Keys.Enter || e.KeyCode == Keys.Return)
         this.FindNextPlayer((barManager1.ActiveEditor as ComboBoxEdit)?.EditValue as string);
 
+    }
+    #endregion
+
+    #region miAbout*_ItemClick
+    private void miAboutGithub_ItemClick(object sender, ItemClickEventArgs e)
+    {
+      Process.Start("https://github.com/PredatH0r/SteamServerBrowser/wiki");
+    }
+
+    private void miAboutSteamWorkshop_ItemClick(object sender, ItemClickEventArgs e)
+    {
+      Process.Start("http://steamcommunity.com/sharedfiles/filedetails/?id=543312745&tscn=1446330349");
     }
     #endregion
 
@@ -2127,11 +2242,5 @@ namespace ServerBrowser
       this.AddNewTab("New Favorites", TabViewModel.SourceType.Favorites);
     }
     #endregion
-
-    private void miShowFilter_DownChanged(object sender, ItemClickEventArgs e)
-    {
-      this.grpQuickFilter.Visible = this.miShowFilter.Down;
-    }
-
   }
 }
