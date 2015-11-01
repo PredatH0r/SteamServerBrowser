@@ -13,7 +13,7 @@ copy Ionic.BZip2.dll "%target%"
 copy steam_api.dll "%target%"
 
 del "DevExpress*Office*"
-del "DevExpress*Rich*"
+rem del "DevExpress*Rich*"
 del "DevExpress*Spark*"
 del "DevExpress*Tree*"
 copy "DevExpress*.dll" "%target%"
