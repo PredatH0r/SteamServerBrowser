@@ -1,3 +1,7 @@
+2.12.1
+---
+- fixed crash/hang when Steam API could not be called (Steam not running or under a different user account)
+
 2.12
 ---
 - increased size for "Include Tags" and "Exclude Tags"

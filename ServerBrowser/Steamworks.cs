@@ -98,6 +98,7 @@ namespace ServerBrowser
     public void SetName(string name)
     {
       var handle = SteamFriends();
+      if (handle == IntPtr.Zero) return;
       var cName = Encoding.UTF8.GetBytes(name + "\0");
       SteamAPI_ISteamFriends_SetPersonaName(handle, cName);
     }
@@ -105,14 +106,15 @@ namespace ServerBrowser
     public ulong GetUserID()
     {
       var handle = SteamUser();
-      return SteamAPI_ISteamUser_GetSteamID(handle);
+      return handle == IntPtr.Zero ? 0 : SteamAPI_ISteamUser_GetSteamID(handle);
     }
 
     public bool IsInGame()
     {
       var myId = GetUserID();
+      if (myId == 0) return false;
       var handle = SteamFriends();
-
+      if (handle == IntPtr.Zero) return false;
       FriendGameInfo_t info = new FriendGameInfo_t();
       bool playing = SteamAPI_ISteamFriends_GetFriendGamePlayed(handle, myId, ref info);
       return playing;
