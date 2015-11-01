@@ -30,7 +30,7 @@ namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.11";
+    private const string Version = "2.12";
     private const string DevExpressVersion = "v15.1";
     private const string CustomDetailColumnPrefix = "ServerInfo.";
     private const string CustomRuleColumnPrefix = "custRule.";
@@ -385,8 +385,12 @@ namespace ServerBrowser
       this.cbFavServersOnTop.Checked = options.GetBool("KeepFavServersOnTop", true);
       this.cbHideUnresponsiveServers.Checked = options.GetBool("HideUnresponsiveServers", true);
       this.cbRememberColumnLayout.Checked = options.GetBool("ColumnLayoutPerTab", true);
-      this.spinMinPlayers.Value = options.GetInt("MinPlayers");
+      this.cbShowFilterPanelInfo.Checked = options.GetBool("ShowFilterPanelInfo", true);
+      this.cbShowCounts.Checked = options.GetBool("ShowServerCounts", true);
+
+      this.comboMinPlayers.Text = options.GetString("MinPlayers");
       this.cbMinPlayersBots.Checked = options.GetBool("MinPlayersInclBots");
+      this.comboMaxPing.Text = options.GetString("MaxPing");
 
       // load favorite servers
       var favs = ini.GetSection("FavoriteServers");
@@ -462,8 +466,12 @@ namespace ServerBrowser
       sb.AppendLine($"Skin={UserLookAndFeel.Default.SkinName}");
       sb.AppendLine($"TabIndex={this.tabControl.SelectedTabPageIndex}");
       sb.AppendLine($"ColumnLayoutPerTab={this.cbRememberColumnLayout.Checked}");
-      sb.AppendLine($"MinPlayers={this.spinMinPlayers.Value}");
+      sb.AppendLine($"ShowFilterPanelInfo={this.cbShowFilterPanelInfo.Checked}");
+      sb.AppendLine($"ShowServerCounts={this.cbShowCounts.Checked}");
+
+      sb.AppendLine($"MinPlayers={this.comboMinPlayers.Text}");
       sb.AppendLine($"MinPlayersInclBots={this.cbMinPlayersBots.Checked}");
+      sb.AppendLine($"MaxPing={this.comboMaxPing.Text}");
 
       sb.AppendLine();
       sb.AppendLine("[FavoriteServers]");
@@ -731,27 +739,84 @@ namespace ServerBrowser
     #endregion
 
 
-    #region SetClientGridFilter()
-    private void SetClientGridFilters()
+    #region FilterServerRow()
+
+    private bool FilterServerRow(ServerRow row)
     {
-      var filter = "";
-      if (this.spinMinPlayers.Value > 0)
+      if (this.cbHideUnresponsiveServers.Checked)
       {
-        filter = this.cbMinPlayersBots.Checked ? "[PlayerCount.TotalPlayers]" : "[PlayerCount.RealPlayers]";
-        filter += ">=" + this.spinMinPlayers.Value;
+        if (row.ServerInfo == null || row.ServerInfo.Ping == 0 || row.Status.StartsWith("Timeout"))
+          return true;
+      }
+
+      if (this.btnTagIncludeClient.Text != "")
+      {
+        if (!MatchTagCriteria(row.ServerInfo?.Extra?.Keywords, this.btnTagIncludeClient.Text))
+          return true;
+      }
+
+      if (this.btnTagExcludeClient.Text != "")
+      {
+        if (MatchTagCriteria(row.ServerInfo?.Extra?.Keywords, this.btnTagExcludeClient.Text))
+          return true;
+      }
+
+
+      int minPlayers;
+      int.TryParse(this.comboMinPlayers.Text, out minPlayers);
+      if (minPlayers > 0)
+      {
+        var val = this.cbMinPlayersBots.Checked ? row.PlayerCount.TotalPlayers : row.PlayerCount.RealPlayers;
+        if (val.HasValue && val.Value < minPlayers)
+          return true;
       }
 
       int ping;
       int.TryParse(this.comboMaxPing.Text, out ping);
       if (ping != 0)
       {
-        if (filter != "")
-          filter += " and ";
-        filter += "[ServerInfo.Ping]<=" + ping;
+        if ((row.ServerInfo?.Ping ?? 0) > ping)
+          return true;
       }
-      this.gvServers.BeginSort();
-      this.gvServers.ActiveFilterString = filter;
-      this.gvServers.EndSort();
+      return false;
+    }
+
+    #endregion
+
+    #region MatchTagCriteria()
+    private bool MatchTagCriteria(string tags, string condition)
+    {
+      tags = ',' + tags + ',';
+      var orParts = condition.Split(';');
+      foreach (var orPart in orParts)
+      {
+        var match = true;
+        var andParts = orPart.Split(' ', ',');
+        foreach (var andPart in andParts)
+        {
+          if (!tags.Contains(',' + andPart.Trim() + ','))
+          {
+            match = false;
+            break;
+          }
+        }
+        if (match)
+          return true;
+      }
+      return false;
+    }
+    #endregion
+
+    #region CheckAlertCondition()
+    private void CheckAlertCondition()
+    {
+      if (this.gvServers.RowCount > 0 && this.cbAlert.Checked)
+      {
+        this.cbAlert.Checked = false;
+        SystemSounds.Asterisk.Play();
+        this.alertControl1.Show(this, "Steam Server Browser", DateTime.Now.ToString("HH:mm:ss") + ": Found " + this.gvServers.RowCount + " server(s) matching your criteria.",
+          this.imageCollection.Images[2]);
+      }
     }
     #endregion
 
@@ -765,7 +830,7 @@ namespace ServerBrowser
     #region ParseTags()
     private string ParseTags(string text)
     {
-      return text.Replace("\\", "");
+      return text.Replace("\\", "").Replace(' ', ',');
     }
     #endregion
 
@@ -1145,37 +1210,13 @@ namespace ServerBrowser
     }
     #endregion
 
-    #region MatchTagCriteria()
-    private bool MatchTagCriteria(string tags, string condition)
-    {
-      tags = ',' + tags + ',';
-      var orParts = condition.Split(';');
-      foreach (var orPart in orParts)
-      {
-        var match = true;
-        var andParts = orPart.Split(',');
-        foreach (var andPart in andParts)
-        {
-          if (!tags.Contains(',' + andPart.Trim() + ','))
-          {
-            match = false;
-            break;
-          }
-        }
-        if (match)
-          return true;
-      }
-      return false;
-    }
-    #endregion
-
 
     // general components
 
     #region queryLogic_SetStatusMessage
     protected virtual void queryLogic_SetStatusMessage(object sender, TextEventArgs e)
     {
-      { this.SetStatusMessage(e.Text); }
+      this.SetStatusMessage(e.Text);
     }
     #endregion
 
@@ -1194,15 +1235,9 @@ namespace ServerBrowser
       this.UpdateViews();
       this.SetStatusMessage("Update of " + this.viewModel.servers.Count + " servers complete");
       this.miStopUpdate.Enabled = false;
-
-      if (this.gvServers.RowCount > 0 && this.cbAlert.Checked)
-      {
-        this.cbAlert.Checked = false;
-        SystemSounds.Asterisk.Play();
-        this.alertControl1.Show(this, "Steam Server Browser", DateTime.Now.ToString("HH:mm:ss") + ": Found " + this.gvServers.RowCount + " server(s) matching your criteria.", 
-          this.imageCollection.Images[2]);
-      }
+      this.CheckAlertCondition();
     }
+
     #endregion
 
     #region queryLogic_RefreshSingleServerComplete()
@@ -1265,7 +1300,172 @@ namespace ServerBrowser
     }
     #endregion
 
+    // main menu
+
+    #region mi*_DownChanged / ItemClick
+
+    private void miShowOptions_DownChanged(object sender, ItemClickEventArgs e)
+    {
+      this.panelOptions.Visible = this.miShowOptions.Down;
+    }
+
+    private void miServerQuery_DownChanged(object sender, ItemClickEventArgs e)
+    {
+      this.UpdatePanelVisibility();
+    }
+
+    private void miShowFilter_DownChanged(object sender, ItemClickEventArgs e)
+    {
+      this.grpQuickFilter.Visible = this.miShowFilter.Down;
+    }
+    #endregion
+
+    #region mi*_ItemClick
+    private void miFindServers_ItemClick(object sender, ItemClickEventArgs e)
+    {
+      this.ReloadServerList();
+    }
+
+    private void miQuickRefresh_ItemClick(object sender, ItemClickEventArgs e)
+    {
+      this.RefreshServerInfo();
+    }
+
+    private void miStopUpdate_ItemClick(object sender, ItemClickEventArgs e)
+    {
+      this.queryLogic.Cancel();
+      this.SetStatusMessage("Server status update cancelled");
+      this.miStopUpdate.Enabled = false;
+    }
+
+    #endregion
+
+    #region miRenameTab_ItemClick
+    private void miRenameTab_ItemClick(object sender, ItemClickEventArgs e)
+    {
+      using (var dlg = new RenameTabForm())
+      {
+        dlg.Caption = this.tabControl.SelectedTabPage.Text;
+        if (dlg.ShowDialog(this) == DialogResult.OK)
+          this.tabControl.SelectedTabPage.Text = dlg.Caption;
+      }
+    }
+    #endregion
+
+    #region riFindPlayer_ButtonPressed
+    private void riFindPlayer_ButtonPressed(object sender, ButtonPressedEventArgs e)
+    {
+      var text = (barManager1.ActiveEditor as ComboBoxEdit)?.EditValue as string;
+
+      if (e.Button.Kind == ButtonPredefines.Plus)
+      {
+        AddBuddy(text);
+      }
+      else if (e.Button.Kind == ButtonPredefines.Minus)
+      {
+        var list = this.riFindPlayer.Items.OfType<string>().Where(i => i != text).ToList();
+        this.riFindPlayer.Items.Clear();
+        this.riFindPlayer.Items.AddRange(list);
+        this.miFindPlayer.EditValue = "";
+      }
+      else if (e.Button.Kind == ButtonPredefines.Search)
+        this.FindNextPlayer(text);
+    }
+    #endregion
+
+    #region riFindPlayer_KeyDown
+
+    private void riFindPlayer_KeyDown(object sender, KeyEventArgs e)
+    {
+      if (e.KeyCode == Keys.Enter || e.KeyCode == Keys.Return)
+        this.FindNextPlayer((barManager1.ActiveEditor as ComboBoxEdit)?.EditValue as string);
+
+    }
+    #endregion
+
+    #region miAbout*_ItemClick
+    private void miAboutGithub_ItemClick(object sender, ItemClickEventArgs e)
+    {
+      Process.Start("https://github.com/PredatH0r/SteamServerBrowser/wiki");
+    }
+
+    private void miAboutSteamWorkshop_ItemClick(object sender, ItemClickEventArgs e)
+    {
+      Process.Start("http://steamcommunity.com/sharedfiles/filedetails/?id=543312745&tscn=1446330349");
+    }
+    #endregion
+
     // option elements
+
+    #region spinRefreshInterval_EditValueChanged
+    private void spinRefreshInterval_EditValueChanged(object sender, EventArgs e)
+    {
+      this.timerReloadServers.Stop();
+      int mins;
+      int.TryParse(this.spinRefreshInterval.Value.ToString(), out mins);
+      if (mins > 0)
+      {
+        this.timerReloadServers.Interval = mins * 60000;
+        this.timerReloadServers.Start();
+      }
+    }
+    #endregion
+
+    #region cbShowGamePort_CheckedChanged
+    private void rbAddress_CheckedChanged(object sender, EventArgs e)
+    {
+      this.colEndPoint.Visible = !this.rbAddressHidden.Checked;
+      this.showAddressMode = this.rbAddressQueryPort.Checked ? 1 : this.rbAddressGamePort.Checked ? 2 : 0;
+      if (this.colEndPoint.Visible)
+      {
+        this.gvServers.BeginUpdate();
+        this.gvServers.EndUpdate();
+      }
+    }
+    #endregion
+
+    #region cbFavServersOnTop_CheckedChanged
+    private void cbFavServersOnTop_CheckedChanged(object sender, EventArgs e)
+    {
+      this.gvServers.BeginSort();
+      if (this.cbFavServersOnTop.Checked)
+        gvServers_StartSorting(null, null);
+      else
+        this.colFavServer.SortOrder = ColumnSortOrder.None;
+      this.gvServers.EndSort();
+    }
+    #endregion
+
+    #region cbHideUnresponsiveServers_CheckedChanged
+    private void cbHideUnresponsiveServers_CheckedChanged(object sender, EventArgs e)
+    {
+      this.UpdateViews();
+    }
+    #endregion
+
+    #region btnSkin_Click
+    private void btnSkin_Click(object sender, EventArgs e)
+    {
+      using (var dlg = new SkinPicker(this.BonusSkinDllPath))
+        dlg.ShowDialog(this);
+    }
+    #endregion
+
+    #region cbShowFilterPanelInfo_CheckedChanged
+    private void cbShowFilterPanelInfo_CheckedChanged(object sender, EventArgs e)
+    {
+      this.txtFilterInfoClient.Visible = this.txtFilterInfoMaster.Visible = this.cbShowFilterPanelInfo.Checked;
+    }
+    #endregion
+
+    #region cbShowCounts_CheckedChanged
+    private void cbShowCounts_CheckedChanged(object sender, EventArgs e)
+    {
+      this.gvServers.OptionsView.ShowFooter = this.cbShowCounts.Checked;
+    }
+    #endregion
+
+    // server-side filters
 
     #region comboGames_SelectedIndexChanged
     private void comboGames_SelectedIndexChanged(object sender, EventArgs e)
@@ -1292,13 +1492,6 @@ namespace ServerBrowser
     private void btnUpdateStatus_Click(object sender, EventArgs e)
     {
       this.RefreshServerInfo();
-    }
-    #endregion
-
-    #region linkFilter_HyperlinkClick
-    private void linkFilter_HyperlinkClick(object sender, HyperlinkClickEventArgs e)
-    {
-      this.gvServers.ShowFilterEditor(this.colHumanPlayers);
     }
     #endregion
 
@@ -1363,16 +1556,37 @@ namespace ServerBrowser
     }
     #endregion
 
-    #region cbShowGamePort_CheckedChanged
-    private void rbAddress_CheckedChanged(object sender, EventArgs e)
+    // client-side filters
+
+    #region linkFilter_HyperlinkClick
+    private void linkFilter_HyperlinkClick(object sender, HyperlinkClickEventArgs e)
     {
-      this.colEndPoint.Visible = !this.rbAddressHidden.Checked;
-      this.showAddressMode = this.rbAddressQueryPort.Checked ? 1 : this.rbAddressGamePort.Checked ? 2 : 0;
-      if (this.colEndPoint.Visible)
-      {
-        this.gvServers.BeginUpdate();
-        this.gvServers.EndUpdate();
-      }
+      this.gvServers.ShowFilterEditor(this.colHumanPlayers);
+    }
+    #endregion
+
+    #region comboMinPlayers, cbMinPlayersBots, comboMaxPing
+    private void comboMinPlayers_EditValueChanged(object sender, EventArgs e)
+    {
+      this.btnApplyFilter_Click(null, null);
+    }
+
+    private void cbMinPlayersBots_CheckedChanged(object sender, EventArgs e)
+    {
+      this.btnApplyFilter_Click(null, null);
+    }
+
+    private void comboMaxPing_EditValueChanged(object sender, EventArgs e)
+    {
+      this.btnApplyFilter_Click(null, null);
+    }
+    #endregion
+
+    #region btnApplyFilter_Click
+    private void btnApplyFilter_Click(object sender, EventArgs e)
+    {
+      this.gvServers.BeginSort();
+      this.gvServers.EndSort();
     }
     #endregion
 
@@ -1380,56 +1594,7 @@ namespace ServerBrowser
     private void cbAlert_CheckedChanged(object sender, EventArgs e)
     {
       this.cbAlert.ImageIndex = this.cbAlert.Checked ? 2 : 5;
-      if (!this.cbAlert.Checked || !string.IsNullOrEmpty(this.gvServers.ActiveFilterString))
-        return;
-      this.gvServers.ActiveFilterString = "[PlayerCount.RealPlayers]>=1";
-    }
-    #endregion
-
-    #region spinRefreshInterval_EditValueChanged
-    private void spinRefreshInterval_EditValueChanged(object sender, EventArgs e)
-    {
-      this.timerReloadServers.Stop();
-      int mins = Convert.ToInt32(this.spinRefreshInterval.EditValue);
-      if (mins > 0)
-      {
-        this.timerReloadServers.Interval = mins * 60000;
-        this.timerReloadServers.Start();
-      }
-    }
-    #endregion
-
-    #region cbHideUnresponsiveServers_CheckedChanged
-    private void cbHideUnresponsiveServers_CheckedChanged(object sender, EventArgs e)
-    {
-      this.UpdateViews();
-    }
-    #endregion
-
-    #region btnSkin_Click
-    private void btnSkin_Click(object sender, EventArgs e)
-    {
-      using (var dlg = new SkinPicker(this.BonusSkinDllPath))
-        dlg.ShowDialog(this);
-    }
-    #endregion
-
-    #region cbFavServersOnTop_CheckedChanged
-    private void cbFavServersOnTop_CheckedChanged(object sender, EventArgs e)
-    {
-      this.gvServers.BeginSort();
-      if (this.cbFavServersOnTop.Checked)
-        gvServers_StartSorting(null, null);
-      else
-        this.colFavServer.SortOrder = ColumnSortOrder.None;
-      this.gvServers.EndSort();
-    }
-    #endregion
-
-    #region btnApplyFilter_Click
-    private void btnApplyFilter_Click(object sender, EventArgs e)
-    {
-      SetClientGridFilters();
+      this.CheckAlertCondition();
     }
     #endregion
 
@@ -1489,41 +1654,18 @@ namespace ServerBrowser
     }
     #endregion
 
-    #region gvServers_CustomRowFilter()
+    #region gvServers_CustomRowFilter
     private void gvServers_CustomRowFilter(object sender, RowFilterEventArgs e)
     {
       var row = this.filteredServers[e.ListSourceRow];
-      if (this.cbHideUnresponsiveServers.Checked)
-      {
-        if (row.ServerInfo == null || row.ServerInfo.Ping == 0 || row.Status.StartsWith("Timeout"))
-        {
-          e.Visible = false;
-          e.Handled = true;
-          return;
-        }
-      }
 
-      if (this.btnTagIncludeClient.Text != "")
+      if (FilterServerRow(row))
       {
-        if (!MatchTagCriteria(row.ServerInfo?.Extra?.Keywords, this.btnTagIncludeClient.Text))
-        {
-          e.Visible = false;
-          e.Handled = true;
-          return;
-        }
+        e.Visible = false;
+        e.Handled = true;
       }
-
-      if (this.btnTagExcludeClient.Text != "")
-      {
-        if (MatchTagCriteria(row.ServerInfo?.Extra?.Keywords, this.btnTagExcludeClient.Text))
-        {
-          e.Visible = false;
-          e.Handled = true;
-          return;
-        }
-      }
-
-      e.Handled = false;
+      else
+        e.Handled = false;
     }
     #endregion
 
@@ -1783,7 +1925,7 @@ namespace ServerBrowser
       {
         var text = Clipboard.GetText();
         var regex = new System.Text.RegularExpressions.Regex(@"^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}:[0-9]{1,5}$");
-        foreach (var line in text.Split('\n'))
+        foreach (var line in text.Split('\n', '\r', ' ', ',', ';','|'))
         {
           var addr = line.Trim();
           if (regex.IsMatch(addr))
@@ -1830,6 +1972,13 @@ namespace ServerBrowser
         this.favServers.Remove(row.EndPoint);
       }
       this.UpdateViews();
+    }
+    #endregion
+
+    #region btnPasteAddresses_Click
+    private void btnPasteAddresses_Click(object sender, EventArgs e)
+    {
+      this.miPasteAddress_ItemClick(null, null);
     }
     #endregion
 
@@ -1923,7 +2072,6 @@ namespace ServerBrowser
     }
     #endregion
 
-
     // Rules grid
 
     #region gvRules_MouseDown
@@ -1950,101 +2098,6 @@ namespace ServerBrowser
     private void miAddRulesColumnNumeric_ItemClick(object sender, ItemClickEventArgs e)
     {
       AddColumnForRuleToServerGrid(CustomRuleColumnPrefix, UnboundColumnType.Decimal);
-    }
-    #endregion
-
-    // main menu
-
-    #region mi*_DownChanged / ItemClick
-
-    private void miShowOptions_DownChanged(object sender, ItemClickEventArgs e)
-    {
-      this.panelOptions.Visible = this.miShowOptions.Down;
-    }
-
-    private void miServerQuery_DownChanged(object sender, ItemClickEventArgs e)
-    {
-      this.UpdatePanelVisibility();
-    }
-
-    private void miShowFilter_DownChanged(object sender, ItemClickEventArgs e)
-    {
-      this.grpQuickFilter.Visible = this.miShowFilter.Down;
-    }
-    #endregion
-
-    #region mi*_ItemClick
-    private void miFindServers_ItemClick(object sender, ItemClickEventArgs e)
-    {
-      this.ReloadServerList();
-    }
-
-    private void miQuickRefresh_ItemClick(object sender, ItemClickEventArgs e)
-    {
-      this.RefreshServerInfo();
-    }
-
-    private void miStopUpdate_ItemClick(object sender, ItemClickEventArgs e)
-    {
-      this.queryLogic.Cancel();
-      this.SetStatusMessage("Server status update cancelled");
-      this.miStopUpdate.Enabled = false;
-    }
-
-    #endregion
-
-    #region miRenameTab_ItemClick
-    private void miRenameTab_ItemClick(object sender, ItemClickEventArgs e)
-    {
-      using (var dlg = new RenameTabForm())
-      {
-        dlg.Caption = this.tabControl.SelectedTabPage.Text;
-        if (dlg.ShowDialog(this) == DialogResult.OK)
-          this.tabControl.SelectedTabPage.Text = dlg.Caption;
-      }
-    }
-    #endregion
-
-    #region riFindPlayer_ButtonPressed
-    private void riFindPlayer_ButtonPressed(object sender, ButtonPressedEventArgs e)
-    {
-      var text = (barManager1.ActiveEditor as ComboBoxEdit)?.EditValue as string;
-
-      if (e.Button.Kind == ButtonPredefines.Plus)
-      {
-        AddBuddy(text);
-      }
-      else if (e.Button.Kind == ButtonPredefines.Minus)
-      {
-        var list = this.riFindPlayer.Items.OfType<string>().Where(i => i != text).ToList();
-        this.riFindPlayer.Items.Clear();
-        this.riFindPlayer.Items.AddRange(list);
-        this.miFindPlayer.EditValue = "";
-      }
-      else if (e.Button.Kind == ButtonPredefines.Search)
-        this.FindNextPlayer(text);
-    }
-    #endregion
-
-    #region riFindPlayer_KeyDown
-
-    private void riFindPlayer_KeyDown(object sender, KeyEventArgs e)
-    {
-      if (e.KeyCode == Keys.Enter || e.KeyCode == Keys.Return)
-        this.FindNextPlayer((barManager1.ActiveEditor as ComboBoxEdit)?.EditValue as string);
-
-    }
-    #endregion
-
-    #region miAbout*_ItemClick
-    private void miAboutGithub_ItemClick(object sender, ItemClickEventArgs e)
-    {
-      Process.Start("https://github.com/PredatH0r/SteamServerBrowser/wiki");
-    }
-
-    private void miAboutSteamWorkshop_ItemClick(object sender, ItemClickEventArgs e)
-    {
-      Process.Start("http://steamcommunity.com/sharedfiles/filedetails/?id=543312745&tscn=1446330349");
     }
     #endregion
 

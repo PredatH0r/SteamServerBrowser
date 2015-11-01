@@ -1,3 +1,11 @@
+2.12
+---
+- increased size for "Include Tags" and "Exclude Tags"
+- added information text about server-side and client side filters
+- fixed: when update interval was set to 1 min, servers were updated again immediately after the previous update ended
+- fixed: client-side "Include Tags" and "Exclude Tags" was not saved/restored
+- fixed: "Maximum Ping" filter was not saved/restored
+
 2.11
 ---
 - added Cancel Update button

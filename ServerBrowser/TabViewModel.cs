@@ -85,6 +85,8 @@ namespace ServerBrowser
       this.GetFullServers = ini.GetBool("GetFullServers", true);
       this.MasterServerQueryLimit = ini.GetInt("MasterServerQueryLimit", this.MasterServerQueryLimit);
       this.GridFilter = ini.GetString("GridFilter");
+      this.TagsIncludeClient = ini.GetString("TagsIncludeClient");
+      this.TagsExcludeClient = ini.GetString("TagsExcludeClient");
 
       this.CustomDetailColumns.Clear();
       foreach (var detail in (ini.GetString("CustomDetailColumns") ?? "").Split(','))
@@ -163,6 +165,8 @@ namespace ServerBrowser
         ini.Append("MasterServerQueryLimit=").Append(this.MasterServerQueryLimit).AppendLine();
       }
       ini.Append("GridFilter=").AppendLine(this.GridFilter);
+      ini.Append("TagsIncludeClient=").AppendLine(this.TagsIncludeClient);
+      ini.Append("TagsExcludeClient=").AppendLine(this.TagsExcludeClient);
       if (this.ServerGridLayout != null)
       {
         var buf = new byte[this.ServerGridLayout.Length];
