@@ -119,10 +119,6 @@
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Xml" />
-    <Reference Include="ZeroMQ">
-      <HintPath>..\packages\ZeroMQ.4.1.0.15\lib\net40\ZeroMQ.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Games\CounterStrikeGO.cs" />
