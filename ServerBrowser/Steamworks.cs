@@ -72,9 +72,16 @@ namespace ServerBrowser
 
     public bool Init()
     {
+      if (initialized)
+      {
+        // sanity check that it still works. steam client could have been terminated/restarted
+        if (SteamUser() != IntPtr.Zero)
+          return true;
+        SteamAPI_Shutdown();
+      }
+
       var path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\steam_appid.txt";
-      //if (!File.Exists(path))
-        File.WriteAllText(path, AppID.ToString());
+      File.WriteAllText(path, AppID.ToString());
       return initialized = SteamAPI_Init();
     }
 

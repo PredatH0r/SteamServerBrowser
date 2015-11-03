@@ -2,7 +2,7 @@
 cd /d %~dp0
 set cwd=%cd%
 set curdate=%date:~6,4%-%date:~3,2%-%date:~0,2%
-set target=%cd%\SteamServerBrowser_%curdate%
+set target=%cd%\SteamServerBrowser
 mkdir "%target%" 2>nul
 del /s /q "%target%\*"
 
@@ -25,7 +25,7 @@ cd "%cwd%"
 copy *.md "%target%"
 
 del "%target%.zip" >nul
-"c:\program files\7-Zip\7z.exe" a -tzip "%target%.zip" SteamServerBrowser_%curdate%
+"c:\program files\7-Zip\7z.exe" a -tzip "%target%.zip" SteamServerBrowser
 
 cd "%cwd%"
 pause

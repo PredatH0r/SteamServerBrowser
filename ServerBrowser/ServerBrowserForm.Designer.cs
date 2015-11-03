@@ -19,6 +19,7 @@ namespace ServerBrowser
       {
         components.Dispose();
       }
+      this.steam.Dispose();
       base.Dispose(disposing);
     }
 

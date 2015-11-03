@@ -44,6 +44,7 @@ namespace ServerBrowser
     private int showAddressMode;
     private readonly ServerQueryLogic queryLogic;
     private readonly GeoIpClient geoIpClient = new GeoIpClient();
+    private readonly Steamworks steam = new Steamworks();
     private int geoIpModified;
     private readonly Dictionary<IPEndPoint, string> favServers = new Dictionary<IPEndPoint, string>();
     private TabViewModel viewModel;
@@ -1596,12 +1597,8 @@ namespace ServerBrowser
 
       if (this.cbNoUpdateWhilePlaying.Checked)
       {
-        using (var steam = new Steamworks())
-        {
-          steam.Init();
-          if (steam.IsInGame())
-            return;
-        }
+        if (steam.Init() && steam.IsInGame())
+          return;
       }
 
       this.timerReloadServers.Stop();

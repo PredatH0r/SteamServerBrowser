@@ -24,3 +24,5 @@ _ReSharper.Caches/
 workshop/
 SteamServerBrowser.opensdf
 SteamServerBrowser.sdf
+/SteamServerBrowser/
+SteamServerBrowser*.zip
