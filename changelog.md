@@ -1,3 +1,7 @@
+2.15
+---
+- use long living steam API session to prevent massive FPS drop after a while
+
 2.14
 ---
 - fixed copy&paste shortcuts
