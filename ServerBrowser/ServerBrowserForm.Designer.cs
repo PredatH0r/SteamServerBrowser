@@ -32,9 +32,9 @@ namespace ServerBrowser
     {
       this.components = new System.ComponentModel.Container();
       System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ServerBrowserForm));
-      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject7 = new DevExpress.Utils.SerializableAppearanceObject();
-      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject8 = new DevExpress.Utils.SerializableAppearanceObject();
-      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject9 = new DevExpress.Utils.SerializableAppearanceObject();
+      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject1 = new DevExpress.Utils.SerializableAppearanceObject();
+      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject2 = new DevExpress.Utils.SerializableAppearanceObject();
+      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject3 = new DevExpress.Utils.SerializableAppearanceObject();
       this.riCheckEdit = new DevExpress.XtraEditors.Repository.RepositoryItemCheckEdit();
       this.gcDetails = new DevExpress.XtraGrid.GridControl();
       this.gvDetails = new DevExpress.XtraGrid.Views.Grid.GridView();
@@ -79,7 +79,7 @@ namespace ServerBrowser
       this.labelControl13 = new DevExpress.XtraEditors.LabelControl();
       this.labelControl15 = new DevExpress.XtraEditors.LabelControl();
       this.txtRconPort = new DevExpress.XtraEditors.ButtonEdit();
-      this.barManager1 = new DevExpress.XtraBars.BarManager(this.components);
+      this.barManager1 = new XBarManager(this.components);
       this.barMenu = new DevExpress.XtraBars.Bar();
       this.mnuView = new DevExpress.XtraBars.BarSubItem();
       this.miShowOptions = new DevExpress.XtraBars.BarButtonItem();
@@ -184,7 +184,6 @@ namespace ServerBrowser
       this.labelControl19 = new DevExpress.XtraEditors.LabelControl();
       this.cbNoUpdateWhilePlaying = new DevExpress.XtraEditors.CheckEdit();
       this.cbHideUnresponsiveServers = new DevExpress.XtraEditors.CheckEdit();
-      this.cbRememberColumnLayout = new DevExpress.XtraEditors.CheckEdit();
       this.rbUpdateStatusOnly = new DevExpress.XtraEditors.CheckEdit();
       this.cbFavServersOnTop = new DevExpress.XtraEditors.CheckEdit();
       this.rbAddressGamePort = new DevExpress.XtraEditors.CheckEdit();
@@ -275,7 +274,6 @@ namespace ServerBrowser
       ((System.ComponentModel.ISupportInitialize)(this.cbShowFilterPanelInfo.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbNoUpdateWhilePlaying.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbHideUnresponsiveServers.Properties)).BeginInit();
-      ((System.ComponentModel.ISupportInitialize)(this.cbRememberColumnLayout.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.rbUpdateStatusOnly.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbFavServersOnTop.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.rbAddressGamePort.Properties)).BeginInit();
@@ -1443,9 +1441,9 @@ namespace ServerBrowser
       this.riFindPlayer.AutoHeight = false;
       this.riFindPlayer.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
             new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo),
-            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Plus, "", -1, true, true, false, DevExpress.XtraEditors.ImageLocation.MiddleCenter, null, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), serializableAppearanceObject7, "Add to list", null, null, true),
-            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Minus, "", -1, true, true, false, DevExpress.XtraEditors.ImageLocation.MiddleCenter, null, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), serializableAppearanceObject8, "Remove from list", null, null, true),
-            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Search, "", -1, true, true, false, DevExpress.XtraEditors.ImageLocation.MiddleCenter, null, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), serializableAppearanceObject9, "Find", null, null, true)});
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Plus, "", -1, true, true, false, DevExpress.XtraEditors.ImageLocation.MiddleCenter, null, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), serializableAppearanceObject1, "Add to list", null, null, true),
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Minus, "", -1, true, true, false, DevExpress.XtraEditors.ImageLocation.MiddleCenter, null, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), serializableAppearanceObject2, "Remove from list", null, null, true),
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Search, "", -1, true, true, false, DevExpress.XtraEditors.ImageLocation.MiddleCenter, null, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), serializableAppearanceObject3, "Find", null, null, true)});
       this.riFindPlayer.Name = "riFindPlayer";
       this.riFindPlayer.NullValuePrompt = "min 3 chars, * as placeholder";
       this.riFindPlayer.NullValuePromptShowForEmptyValue = true;
@@ -2295,7 +2293,6 @@ namespace ServerBrowser
       this.panelOptions.Controls.Add(this.labelControl19);
       this.panelOptions.Controls.Add(this.cbNoUpdateWhilePlaying);
       this.panelOptions.Controls.Add(this.cbHideUnresponsiveServers);
-      this.panelOptions.Controls.Add(this.cbRememberColumnLayout);
       this.panelOptions.Controls.Add(this.rbUpdateStatusOnly);
       this.panelOptions.Controls.Add(this.cbFavServersOnTop);
       this.panelOptions.Controls.Add(this.rbAddressGamePort);
@@ -2376,19 +2373,6 @@ namespace ServerBrowser
       this.cbHideUnresponsiveServers.Size = new System.Drawing.Size(141, 19);
       this.cbHideUnresponsiveServers.TabIndex = 8;
       this.cbHideUnresponsiveServers.CheckedChanged += new System.EventHandler(this.cbHideUnresponsiveServers_CheckedChanged);
-      // 
-      // cbRememberColumnLayout
-      // 
-      this.cbRememberColumnLayout.EditValue = true;
-      this.cbRememberColumnLayout.Location = new System.Drawing.Point(326, 68);
-      this.cbRememberColumnLayout.Name = "cbRememberColumnLayout";
-      this.cbRememberColumnLayout.Properties.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
-      this.cbRememberColumnLayout.Properties.Appearance.Options.UseFont = true;
-      this.cbRememberColumnLayout.Properties.AutoWidth = true;
-      this.cbRememberColumnLayout.Properties.Caption = "Remember column layout for each tab";
-      this.cbRememberColumnLayout.Size = new System.Drawing.Size(226, 19);
-      this.cbRememberColumnLayout.TabIndex = 9;
-      this.cbRememberColumnLayout.ToolTip = "When enabled, you can have different column widths in different tabs.";
       // 
       // rbUpdateStatusOnly
       // 
@@ -2780,7 +2764,6 @@ namespace ServerBrowser
       ((System.ComponentModel.ISupportInitialize)(this.cbShowFilterPanelInfo.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbNoUpdateWhilePlaying.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbHideUnresponsiveServers.Properties)).EndInit();
-      ((System.ComponentModel.ISupportInitialize)(this.cbRememberColumnLayout.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.rbUpdateStatusOnly.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbFavServersOnTop.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.rbAddressGamePort.Properties)).EndInit();
@@ -2863,7 +2846,7 @@ namespace ServerBrowser
     protected DevExpress.XtraBars.BarDockControl barDockControlRight;
     protected DevExpress.XtraBars.BarDockControl barDockControlBottom;
     protected DevExpress.XtraBars.BarDockControl barDockControlTop;
-    protected DevExpress.XtraBars.BarManager barManager1;
+    protected XBarManager barManager1;
     protected DevExpress.XtraBars.BarButtonItem miConnect;
     protected DevExpress.XtraBars.BarButtonItem miConnectSpectator;
     protected DevExpress.XtraBars.PopupMenu menuServers;
@@ -2952,7 +2935,6 @@ namespace ServerBrowser
     private DevExpress.XtraBars.BarSubItem mnuTabs;
     private DevExpress.XtraBars.BarSubItem mnuServer;
     private DevExpress.XtraBars.BarSubItem mnuUpdate;
-    protected CheckEdit cbRememberColumnLayout;
     private LabelControl labelControl1;
     protected SimpleButton btnApplyFilter;
     protected ComboBoxEdit comboMaxPing;

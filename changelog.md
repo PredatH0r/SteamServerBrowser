@@ -1,3 +1,10 @@
+2.14
+---
+- fixed copy&paste shortcuts
+- fixed error when a Quake Live servers has a non-integer teamsize (0.5)
+- fixed servers not showing up after pasting to a manual server list
+- removed option "remember column layout for each tab" (it's now always on)
+
 2.13
 ---
 - Min Player, Max Ping are now stored per-tab

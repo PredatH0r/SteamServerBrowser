@@ -180,12 +180,7 @@ namespace ServerBrowser
       ini.Append("TagsIncludeClient=").AppendLine(this.TagsIncludeClient);
       ini.Append("TagsExcludeClient=").AppendLine(this.TagsExcludeClient);
       if (this.ServerGridLayout != null)
-      {
-        var buf = new byte[this.ServerGridLayout.Length];
-        this.ServerGridLayout.Seek(0, SeekOrigin.Begin);
-        var len = this.ServerGridLayout.Read(buf, 0, buf.Length);
-        ini.Append("GridLayout=").AppendLine(Convert.ToBase64String(buf, 0, len));
-      }
+        ini.Append("GridLayout=").AppendLine(Base64GridLayout(this.ServerGridLayout));
 
       var sb = new StringBuilder();
       foreach (var detail in this.CustomDetailColumns)
@@ -209,6 +204,16 @@ namespace ServerBrowser
         foreach (var row in this.servers)
           ini.AppendLine($"{row.EndPoint}={row.ServerInfo?.Name ?? row.CachedName}");
       }
+    }
+    #endregion
+
+    #region Base64GridLayout()
+    internal static string Base64GridLayout(MemoryStream stream)
+    {
+      var buf = new byte[stream.Length];
+      stream.Seek(0, SeekOrigin.Begin);
+      var len = stream.Read(buf, 0, buf.Length);
+      return Convert.ToBase64String(buf, 0, len);
     }
     #endregion
   }

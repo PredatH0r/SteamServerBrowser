@@ -190,7 +190,8 @@ namespace ServerBrowser
       var ts = row.GetRule("teamsize");
       if (!string.IsNullOrEmpty(ts))
       {
-        var n = int.Parse(ts);
+        int n;
+        int.TryParse(ts, out n);
         if (n != 0)
           return n*2;
       }

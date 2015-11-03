@@ -30,7 +30,7 @@ namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.13";
+    private const string Version = "2.14";
     private const string DevExpressVersion = "v15.1";
     private const string CustomDetailColumnPrefix = "ServerInfo.";
     private const string CustomRuleColumnPrefix = "custRule.";
@@ -51,7 +51,6 @@ namespace ServerBrowser
     private readonly IniFile iniFile;
     private XtraTabPage dragPage;
     private const int PredefinedTabCount = 2;
-    private List<ServerRow> filteredServers = new List<ServerRow>();
 
     #region ctor()
     public ServerBrowserForm()
@@ -387,7 +386,6 @@ namespace ServerBrowser
       this.cbNoUpdateWhilePlaying.Checked = !options.GetBool("AutoUpdateWhilePlaying");
       this.cbFavServersOnTop.Checked = options.GetBool("KeepFavServersOnTop", true);
       this.cbHideUnresponsiveServers.Checked = options.GetBool("HideUnresponsiveServers", true);
-      this.cbRememberColumnLayout.Checked = options.GetBool("ColumnLayoutPerTab", true);
       this.cbShowFilterPanelInfo.Checked = options.GetBool("ShowFilterPanelInfo", true);
       this.cbShowCounts.Checked = options.GetBool("ShowServerCounts", true);
 
@@ -464,7 +462,6 @@ namespace ServerBrowser
       sb.AppendLine($"AutoUpdateWhilePlaying={!this.cbNoUpdateWhilePlaying.Checked}");
       sb.AppendLine($"Skin={UserLookAndFeel.Default.SkinName}");
       sb.AppendLine($"TabIndex={this.tabControl.SelectedTabPageIndex}");
-      sb.AppendLine($"ColumnLayoutPerTab={this.cbRememberColumnLayout.Checked}");
       sb.AppendLine($"ShowFilterPanelInfo={this.cbShowFilterPanelInfo.Checked}");
       sb.AppendLine($"ShowServerCounts={this.cbShowCounts.Checked}");
 
@@ -561,12 +558,9 @@ namespace ServerBrowser
       vm.TagsExcludeClient = this.btnTagExcludeClient.Text;
 
       vm.GridFilter = this.gvServers.ActiveFilterString;
-      if (this.cbRememberColumnLayout.Checked)
-      {
-        var strm = new MemoryStream();
-        this.gvServers.SaveLayoutToStream(strm);
-        vm.ServerGridLayout = strm;
-      }
+      var strm = new MemoryStream();
+      this.gvServers.SaveLayoutToStream(strm);
+      vm.ServerGridLayout = strm;
       vm.serverSource = this.CreateServerSource(vm.MasterServer);
       vm.gameExtension = this.extenders.Get((Game)vm.InitialGameID);
 
@@ -648,18 +642,16 @@ namespace ServerBrowser
       this.gvServers.BeginUpdate();
       this.ResetGridColumns(this.gvServers);
       this.viewModel.gameExtension.CustomizeServerGridColumns(gvServers);
-      if (this.cbRememberColumnLayout.Checked)
+      foreach (var custCol in this.viewModel.CustomDetailColumns)
       {
-        foreach (var custCol in this.viewModel.CustomDetailColumns)
-        {
-          var col = this.viewModel.gameExtension.AddColumn(this.gvServers, CustomDetailColumnPrefix + custCol, custCol, null);
-          col.UnboundType = UnboundColumnType.Bound;
-        }
-        foreach (var custCol in this.viewModel.CustomRuleColumns)
-          this.viewModel.gameExtension.AddColumn(this.gvServers, CustomRuleColumnPrefix + custCol, custCol, null);
+        var col = this.viewModel.gameExtension.AddColumn(this.gvServers, CustomDetailColumnPrefix + custCol, custCol, null);
+        col.UnboundType = UnboundColumnType.Bound;
       }
+      foreach (var custCol in this.viewModel.CustomRuleColumns)
+        this.viewModel.gameExtension.AddColumn(this.gvServers, CustomRuleColumnPrefix + custCol, custCol, null);
       this.gvServers.EndUpdate();
-      if (viewModel.ServerGridLayout != null && this.cbRememberColumnLayout.Checked)
+
+      if (viewModel.ServerGridLayout != null)
       {
         viewModel.ServerGridLayout.Seek(0, SeekOrigin.Begin);
         this.gvServers.RestoreLayoutFromStream(viewModel.ServerGridLayout);
@@ -732,8 +724,8 @@ namespace ServerBrowser
         return;
       this.miStopUpdate.Enabled = true;
       this.timerReloadServers.Stop();
-      this.SetStatusMessage("Updating status of " + this.filteredServers.Count + " servers...");
-      this.queryLogic.RefreshAllServers(this.filteredServers);
+      this.SetStatusMessage("Updating status of " + this.viewModel.servers.Count + " servers...");
+      this.queryLogic.RefreshAllServers(this.viewModel.servers);
       if (this.spinRefreshInterval.Value > 0)
         this.timerReloadServers.Start();
     }
@@ -846,16 +838,6 @@ namespace ServerBrowser
       this.LookupGeoIps();
       this.UpdateCachedServerNames();
       
-      //this.filteredServers.Clear();
-      //if (this.viewModel.servers != null)
-      //{
-      //  if (this.cbHideUnresponsiveServers.Checked)
-      //    this.filteredServers.AddRange(this.viewModel.servers.Where(s => s.ServerInfo != null && s.ServerInfo.Ping != 0 && !s.Status.StartsWith("Timeout")));
-      //  else
-      //    this.filteredServers.AddRange(this.viewModel.servers);
-      //}
-      //this.gcServers.DataSource = filteredServers; // always use the same object reference, otherwise all state (top-row, focused, selected) would get lost
-      this.filteredServers = this.viewModel.servers;
       this.gcServers.DataSource = this.viewModel.servers;
       this.gvServers.EndDataUpdate();
       //this.gvServers.RefreshData();
@@ -863,7 +845,7 @@ namespace ServerBrowser
       if (this.viewModel.lastSelectedServer != null)
       {
         int i = 0;
-        foreach (var server in filteredServers)
+        foreach (var server in this.viewModel.servers)
         {
           if (server.EndPoint.Equals(this.viewModel.lastSelectedServer.EndPoint))
           {
@@ -1537,9 +1519,10 @@ namespace ServerBrowser
           serverRow = new ServerRow(endpoint, this.extenders.Get(0));
           this.viewModel.servers.Add(serverRow);
           this.gvServers.EndDataUpdate();
+          serverRow.SetModified();
           var handle = this.gvServers.GetRowHandle(this.viewModel.servers.Count - 1);
           this.gvServers.FocusedRowHandle = handle;
-          this.gvServers.SelectRow(handle);
+          this.gvServers.SelectRow(handle);          
         }
         this.queryLogic.RefreshSingleServer(serverRow);
       }
@@ -1658,7 +1641,7 @@ namespace ServerBrowser
     #region gvServers_CustomRowFilter
     private void gvServers_CustomRowFilter(object sender, RowFilterEventArgs e)
     {
-      var row = this.filteredServers[e.ListSourceRow];
+      var row = this.viewModel.servers[e.ListSourceRow];
 
       if (FilterServerRow(row))
       {
@@ -1922,6 +1905,8 @@ namespace ServerBrowser
     {
       if (this.viewModel.Source != TabViewModel.SourceType.CustomList)
         return;
+      this.gvServers.BeginDataUpdate();
+      
       try
       {
         var text = Clipboard.GetText();
@@ -1934,14 +1919,19 @@ namespace ServerBrowser
             var endpoint = Ip4Utils.ParseEndpoint(addr);
             var row = this.viewModel.servers.FirstOrDefault(r => r.EndPoint.Equals(endpoint));
             if (row == null)
-              this.viewModel.servers.Add(new ServerRow(endpoint, unknownGame));
+            {
+              row = new ServerRow(endpoint, unknownGame);
+              row.SetModified();
+              this.viewModel.servers.Add(row);
+              this.queryLogic.RefreshSingleServer(row);
+            }
           }
         }
       }
       catch
       {
       }
-      this.UpdateViews();
+      this.gvServers.EndDataUpdate();
     }
     #endregion
 

@@ -188,6 +188,9 @@
       <DependentUpon>ConnectingWaitForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Win32.cs" />
+    <Compile Include="XBarManager.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="XWebClient.cs" />
     <EmbeddedResource Include="Games\QuakeLiveOptionsDialog.resx">
       <DependentUpon>QuakeLiveOptionsDialog.cs</DependentUpon>
