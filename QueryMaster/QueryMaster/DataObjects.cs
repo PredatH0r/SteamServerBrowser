@@ -116,6 +116,11 @@ namespace QueryMaster
         /// Time (in seconds) before a player is arrested while being witnessed.
         /// </summary>
         public byte Duration { get; internal set; }
+
+      public override string ToString()
+      {
+        return string.IsNullOrEmpty(Mode) ? "" : Mode + ", Wit=" + Witnesses + "Dur=" + Duration;
+      }
     }
 
     /// <summary>
@@ -149,6 +154,11 @@ namespace QueryMaster
         /// Indicates whether mod uses its own DLL
         /// </summary>
         public bool IsHalfLifeDll { get; internal set; }
+
+      public override string ToString()
+      {
+        return Link ?? DownloadLink ?? "";
+      }
     }
 
     /// <summary>
@@ -257,7 +267,7 @@ namespace QueryMaster
 
       public override string ToString()
       {
-        return Name + " :" + Port;
+        return string.IsNullOrEmpty(Name) ? "" : (Name + ":" + Port);
       }
     }
 

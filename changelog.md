@@ -1,3 +1,15 @@
+2.17
+---
+- fixed "max players" display for non-team modes (Duel, FFA, Race)
+- fixed display of special "modinfo", "specinfo", and "The Ship" fields in Server Details
+
+2.16
+---
+- improved performance (reduced amout of GC calls by using structs for primitve objects)
+- added option to disable use of SteamAPI for in-game check (use of SteamAPI can cause massive FPS drops)
+- fixed a couple issues when auto-update timer wasn't stopped/started correctly
+- using Release build for steam package
+
 2.15
 ---
 - use long living steam API session to prevent massive FPS drop after a while

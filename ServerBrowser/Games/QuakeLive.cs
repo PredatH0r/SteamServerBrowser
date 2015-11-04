@@ -187,13 +187,17 @@ namespace ServerBrowser
     #region GetMaxPlayers()
     public override int? GetMaxPlayers(ServerRow row)
     {
+      var gt = row.GetRule("g_gametype");
+      if (gt == "1") // Duel
+        return 2;
+
       var ts = row.GetRule("teamsize");
       if (!string.IsNullOrEmpty(ts))
       {
         int n;
         int.TryParse(ts, out n);
         if (n != 0)
-          return n*2;
+          return gt == "0" || gt == "2" ? n : n*2; // FFA, Race
       }
 
       // QL currently returns the sv_maxclients in MaxPlayers (instead of teamsize * 2)

@@ -30,7 +30,7 @@ namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.16";
+    private const string Version = "2.17";
     private const string DevExpressVersion = "v15.1";
     private const string CustomDetailColumnPrefix = "ServerInfo.";
     private const string CustomRuleColumnPrefix = "custRule.";
@@ -903,7 +903,7 @@ namespace ServerBrowser
         this.gcDetails.DataSource = EnumerateProps(
           row.ServerInfo,
           row.ServerInfo?.Extra,
-          row.ServerInfo?.ShipInfo);
+          row.ServerInfo?.ShipInfo.Mode != null ? row.ServerInfo?.ShipInfo : null);
       }
       this.gvDetails.EndDataUpdate();
 
