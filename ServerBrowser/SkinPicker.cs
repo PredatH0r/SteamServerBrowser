@@ -65,15 +65,16 @@ namespace ServerBrowser
     #region btnReset_Click
     private void btnReset_Click(object sender, EventArgs e)
     {
+      const string DefaultSkin = "Office 2010 Black";
       foreach (var galItem in gallery.Gallery.GetAllItems())
       {
-        if (galItem.Caption == DevExpress.LookAndFeel.UserLookAndFeel.Default.SkinName)
+        if (galItem.Caption == DefaultSkin)
         {
           galItem.Checked = true;
           break;
         }
       }
-      DevExpress.LookAndFeel.UserLookAndFeel.Default.SkinName = this.initialSkinName;
+      DevExpress.LookAndFeel.UserLookAndFeel.Default.SkinName = DefaultSkin;
     }
     #endregion
 

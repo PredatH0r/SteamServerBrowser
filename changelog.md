@@ -1,3 +1,8 @@
+2.18
+---
+- fixed: last used skin will be loaded when the program is restarted
+- fixed: "Use Default Skin" button in the skin selection dialog had no effect
+
 2.17
 ---
 - fixed "max players" display for non-team modes (Duel, FFA, Race)

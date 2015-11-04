@@ -30,7 +30,7 @@ namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.17";
+    private const string Version = "2.18";
     private const string DevExpressVersion = "v15.1";
     private const string CustomDetailColumnPrefix = "ServerInfo.";
     private const string CustomRuleColumnPrefix = "custRule.";
@@ -372,6 +372,7 @@ namespace ServerBrowser
     #region ApplyAppSettingsFromIni()
     private int ApplyAppSettingsFromIni(IniFile ini, IniFile.Section options, out string[] masterServers)
     {
+      UserLookAndFeel.Default.SkinName = options.GetString("Skin") ?? "Office 2010 Black";
       masterServers = (options.GetString("ApplyAppSettingsFromXml") ?? "").Split(',');
       this.miShowOptions.Down = options.GetBool("ShowOptions", true);
       this.miShowServerQuery.Down = options.GetBool("ShowServerQuery", true);
