@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace QueryMaster
 {
@@ -105,7 +102,7 @@ namespace QueryMaster
     /// Contains extra information about the Ship server
     /// </summary>
     [Serializable]
-    public class TheShip
+    public struct TheShip
     {
         /// <summary>
         /// Indicates the game mode.(Hunt/Elimination/Duel/Deathmatch/VIP Team/Team Elimination)
@@ -126,7 +123,7 @@ namespace QueryMaster
     /// </summary>
     /// <remarks>Present only in Obsolete server responses.</remarks>
     [Serializable]
-    public class Mod
+    public struct Mod
     {
         /// <summary>
         /// URL to mod website. 
@@ -178,7 +175,7 @@ namespace QueryMaster
     /// Contains information of a server rule
     /// </summary>
     [Serializable]
-    public class Rule
+    public struct Rule
     {
         /// <summary>
         /// Name of the rule. 
@@ -196,7 +193,7 @@ namespace QueryMaster
     /// Contains information of a player
     /// </summary>
     [Serializable]
-    public class PlayerInfo
+    public struct PlayerInfo
     {
         /// <summary>
         /// Name of player
@@ -220,7 +217,7 @@ namespace QueryMaster
     /// Contains extra information about server
     /// </summary>
     [Serializable]
-    public class ExtraInfo
+    public struct ExtraInfo
     {
         /// <summary>
         /// The server's game port number.
@@ -247,7 +244,7 @@ namespace QueryMaster
     /// Contains information on SourceTV
     /// </summary>
     [Serializable]
-    public class SourceTVInfo
+    public struct SourceTVInfo
     {
         /// <summary>
         /// Spectator port number for SourceTV.

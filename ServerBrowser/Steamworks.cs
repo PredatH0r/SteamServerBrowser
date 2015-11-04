@@ -72,17 +72,24 @@ namespace ServerBrowser
 
     public bool Init()
     {
-      if (initialized)
+      try
       {
-        // sanity check that it still works. steam client could have been terminated/restarted
-        if (SteamUser() != IntPtr.Zero)
-          return true;
-        SteamAPI_Shutdown();
-      }
+        if (initialized)
+        {
+          // sanity check that it still works. steam client could have been terminated/restarted
+          if (SteamUser() != IntPtr.Zero)
+            return true;
+          SteamAPI_Shutdown();
+        }
 
-      var path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\steam_appid.txt";
-      File.WriteAllText(path, AppID.ToString());
-      return initialized = SteamAPI_Init();
+        var path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\steam_appid.txt";
+        File.WriteAllText(path, AppID.ToString());
+        return initialized = SteamAPI_Init();
+      }
+      catch
+      {
+      }
+      return false;
     }
 
     ~Steamworks()

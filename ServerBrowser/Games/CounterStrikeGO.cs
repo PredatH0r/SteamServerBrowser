@@ -28,8 +28,7 @@ namespace ServerBrowser
     public override bool SupportsPlayersQuery(ServerRow server)
     {
       // in case the matchmaking servers weren't filtered out on the server side, we also have a client-side check here
-      if (server != null && server.ServerInfo != null && server.ServerInfo.Extra != null 
-        && server.ServerInfo.Extra.Keywords != null && server.ServerInfo.Extra.Keywords.Contains("valve_ds"))
+      if (server?.ServerInfo?.Extra.Keywords != null && server.ServerInfo.Extra.Keywords.Contains("valve_ds"))
         return false;
 
       return true;

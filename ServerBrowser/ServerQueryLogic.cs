@@ -119,7 +119,7 @@ namespace ServerBrowser
     #endregion
 
     #region IsUpdating
-    public bool IsUpdating => !this.currentRequest.PendingTasks?.IsSet ?? true;
+    public bool IsUpdating => !this.currentRequest.IsCancelled && (!this.currentRequest.PendingTasks?.IsSet ?? true);
 
     #endregion
 
@@ -343,7 +343,7 @@ namespace ServerBrowser
         if (si == null)
           return false;
         row.ServerInfo = si;
-        var gameId = si.Extra?.GameId ?? 0;
+        var gameId = si.Extra.GameId;
         if (gameId == 0) gameId = si.Id;
         if (gameId == 0) gameId = (int)request.AppId;
         var extension = this.gameExtensions.Get((Game)gameId);

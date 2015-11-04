@@ -6,7 +6,7 @@ set target=%cd%\SteamServerBrowser
 mkdir "%target%" 2>nul
 del /s /q "%target%\*"
 
-cd "%cwd%\ServerBrowser\bin\x86\debug"
+cd "%cwd%\ServerBrowser\bin\x86\Release"
 copy ServerBrowser.exe "%target%"
 copy QueryMaster.dll "%target%"
 copy Ionic.BZip2.dll "%target%"

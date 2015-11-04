@@ -30,7 +30,7 @@ namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.15";
+    private const string Version = "2.16";
     private const string DevExpressVersion = "v15.1";
     private const string CustomDetailColumnPrefix = "ServerInfo.";
     private const string CustomRuleColumnPrefix = "custRule.";
@@ -385,6 +385,7 @@ namespace ServerBrowser
       this.rbUpdateListAndStatus.Checked = options.GetBool("AutoUpdateList", true);
       this.rbUpdateStatusOnly.Checked = options.GetBool("AutoUpdateInfo");
       this.cbNoUpdateWhilePlaying.Checked = !options.GetBool("AutoUpdateWhilePlaying");
+      this.cbUseSteamApi.Checked = options.GetBool("UseSteamAPI");
       this.cbFavServersOnTop.Checked = options.GetBool("KeepFavServersOnTop", true);
       this.cbHideUnresponsiveServers.Checked = options.GetBool("HideUnresponsiveServers", true);
       this.cbShowFilterPanelInfo.Checked = options.GetBool("ShowFilterPanelInfo", true);
@@ -461,6 +462,7 @@ namespace ServerBrowser
       sb.AppendLine($"AutoUpdateList={this.rbUpdateListAndStatus.Checked}");
       sb.AppendLine($"AutoUpdateInfo={this.rbUpdateStatusOnly.Checked}");
       sb.AppendLine($"AutoUpdateWhilePlaying={!this.cbNoUpdateWhilePlaying.Checked}");
+      sb.AppendLine($"UseSteamAPI={this.cbUseSteamApi.Checked}");
       sb.AppendLine($"Skin={UserLookAndFeel.Default.SkinName}");
       sb.AppendLine($"TabIndex={this.tabControl.SelectedTabPageIndex}");
       sb.AppendLine($"ShowFilterPanelInfo={this.cbShowFilterPanelInfo.Checked}");
@@ -700,6 +702,7 @@ namespace ServerBrowser
 
       this.SetStatusMessage("Requesting server list from master server...");
       this.miStopUpdate.Enabled = true;
+      this.timerReloadServers.Stop();
       IpFilter filter = new IpFilter();
       filter.App = (Game)this.viewModel.InitialGameID;
       filter.IsNotEmpty = !this.viewModel.GetEmptyServers;
@@ -713,8 +716,7 @@ namespace ServerBrowser
         filter.Nor.Sv_Tags = this.ParseTags(this.viewModel.TagsExcludeServer);
       }
       this.CustomizeFilter(filter);
-
-      queryLogic.ReloadServerList(this.viewModel.serverSource, 750, this.viewModel.MasterServerQueryLimit, QueryMaster.Region.Rest_of_the_world, filter);
+      this.queryLogic.ReloadServerList(this.viewModel.serverSource, 750, this.viewModel.MasterServerQueryLimit, QueryMaster.Region.Rest_of_the_world, filter);
     }
     #endregion
 
@@ -727,8 +729,6 @@ namespace ServerBrowser
       this.timerReloadServers.Stop();
       this.SetStatusMessage("Updating status of " + this.viewModel.servers.Count + " servers...");
       this.queryLogic.RefreshAllServers(this.viewModel.servers);
-      if (this.spinRefreshInterval.Value > 0)
-        this.timerReloadServers.Start();
     }
     #endregion
 
@@ -745,13 +745,13 @@ namespace ServerBrowser
 
       if (this.btnTagIncludeClient.Text != "")
       {
-        if (!MatchTagCriteria(row.ServerInfo?.Extra?.Keywords, this.btnTagIncludeClient.Text))
+        if (!MatchTagCriteria(row.ServerInfo?.Extra.Keywords, this.btnTagIncludeClient.Text))
           return true;
       }
 
       if (this.btnTagExcludeClient.Text != "")
       {
-        if (MatchTagCriteria(row.ServerInfo?.Extra?.Keywords, this.btnTagExcludeClient.Text))
+        if (MatchTagCriteria(row.ServerInfo?.Extra.Keywords, this.btnTagExcludeClient.Text))
           return true;
       }
 
@@ -992,6 +992,11 @@ namespace ServerBrowser
       }
 
       this.SetStatusMessage("Connecting to " + row.EndPoint + "    " + row.ServerInfo.Name);
+      if (this.cbNoUpdateWhilePlaying.Checked && !this.cbUseSteamApi.Checked)
+      {
+        this.queryLogic.Cancel();
+        this.timerReloadServers.Stop();
+      }
       this.splashScreenManager1.ShowWaitForm();
       this.splashScreenManager1.SetWaitFormCaption("Connecting to " + row.EndPoint);
       this.splashScreenManager1.SetWaitFormDescription(row.Name);
@@ -1220,6 +1225,8 @@ namespace ServerBrowser
       this.SetStatusMessage("Update of " + this.viewModel.servers.Count + " servers complete");
       this.miStopUpdate.Enabled = false;
       this.CheckAlertCondition();
+      if (this.spinRefreshInterval.Value > 0)
+        this.timerReloadServers.Start();
     }
 
     #endregion
@@ -1320,6 +1327,8 @@ namespace ServerBrowser
       this.queryLogic.Cancel();
       this.SetStatusMessage("Server status update cancelled");
       this.miStopUpdate.Enabled = false;
+      if (this.spinRefreshInterval.Value > 0)
+        this.timerReloadServers.Start();
     }
 
     #endregion
@@ -1465,10 +1474,7 @@ namespace ServerBrowser
     #region btnUpdateList_Click
     private void btnUpdateList_Click(object sender, EventArgs e)
     {
-      this.timerReloadServers.Stop();
       ReloadServerList();
-      if (this.spinRefreshInterval.Value > 0)
-        this.timerReloadServers.Start();
     }
     #endregion
 
@@ -1595,24 +1601,16 @@ namespace ServerBrowser
       if (this.queryLogic.IsUpdating)
         return;
 
-      if (this.cbNoUpdateWhilePlaying.Checked)
+      if (this.cbNoUpdateWhilePlaying.Checked && this.cbUseSteamApi.Checked)
       {
         if (steam.Init() && steam.IsInGame())
           return;
       }
 
-      this.timerReloadServers.Stop();
-      try
-      {
-        if (this.rbUpdateListAndStatus.Checked)
-          this.ReloadServerList();
-        else if (this.rbUpdateStatusOnly.Checked)
-          this.RefreshServerInfo();
-      }
-      finally
-      {
-        this.timerReloadServers.Start();
-      }
+      if (this.rbUpdateListAndStatus.Checked)
+        this.ReloadServerList();
+      else if (this.rbUpdateStatusOnly.Checked)
+        this.RefreshServerInfo();
     }
     #endregion
 

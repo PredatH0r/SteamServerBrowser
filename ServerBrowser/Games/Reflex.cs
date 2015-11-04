@@ -72,17 +72,13 @@ namespace ServerBrowser
     {
       if (fieldName == "_gametype")
       {
-        if (row.ServerInfo == null || row.ServerInfo.Extra == null || row.ServerInfo.Extra.Keywords == null)
-          return null;
-        var parts = row.ServerInfo.Extra.Keywords.Split('|');
-        return parts[0];
+        var parts = row.ServerInfo?.Extra.Keywords?.Split('|');
+        return parts?[0];
       }
       if (fieldName == "_location")
       {
-        if (row.ServerInfo == null || row.ServerInfo.Extra == null || row.ServerInfo.Extra.Keywords == null)
-          return null;
-        var parts = row.ServerInfo.Extra.Keywords.Split('|');
-        return parts.Length > 1 ? parts[1] : null;
+        var parts = row.ServerInfo?.Extra.Keywords?.Split('|');
+        return parts?.Length > 1 ? parts[1] : null;
       }
 
       return base.GetServerCellValue(row, fieldName);
