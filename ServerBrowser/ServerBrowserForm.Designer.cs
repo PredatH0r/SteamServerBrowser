@@ -33,9 +33,9 @@ namespace ServerBrowser
     {
       this.components = new System.ComponentModel.Container();
       System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ServerBrowserForm));
-      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject4 = new DevExpress.Utils.SerializableAppearanceObject();
-      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject5 = new DevExpress.Utils.SerializableAppearanceObject();
-      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject6 = new DevExpress.Utils.SerializableAppearanceObject();
+      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject1 = new DevExpress.Utils.SerializableAppearanceObject();
+      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject2 = new DevExpress.Utils.SerializableAppearanceObject();
+      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject3 = new DevExpress.Utils.SerializableAppearanceObject();
       this.riCheckEdit = new DevExpress.XtraEditors.Repository.RepositoryItemCheckEdit();
       this.gcDetails = new DevExpress.XtraGrid.GridControl();
       this.gvDetails = new DevExpress.XtraGrid.Views.Grid.GridView();
@@ -58,11 +58,13 @@ namespace ServerBrowser
       this.riFavServer = new DevExpress.XtraEditors.Repository.RepositoryItemCheckEdit();
       this.imageCollection = new DevExpress.Utils.ImageCollection(this.components);
       this.colEndPoint = new DevExpress.XtraGrid.Columns.GridColumn();
+      this.colPrivate = new DevExpress.XtraGrid.Columns.GridColumn();
+      this.riPrivate = new DevExpress.XtraEditors.Repository.RepositoryItemImageComboBox();
+      this.colDedicated = new DevExpress.XtraGrid.Columns.GridColumn();
+      this.riDedicated = new DevExpress.XtraEditors.Repository.RepositoryItemImageComboBox();
       this.colJoinStatus = new DevExpress.XtraGrid.Columns.GridColumn();
       this.riJoinStatus = new DevExpress.XtraEditors.Repository.RepositoryItemImageComboBox();
       this.colName = new DevExpress.XtraGrid.Columns.GridColumn();
-      this.colDedicated = new DevExpress.XtraGrid.Columns.GridColumn();
-      this.colPrivate = new DevExpress.XtraGrid.Columns.GridColumn();
       this.colDescription = new DevExpress.XtraGrid.Columns.GridColumn();
       this.colTags = new DevExpress.XtraGrid.Columns.GridColumn();
       this.colPlayerCount = new DevExpress.XtraGrid.Columns.GridColumn();
@@ -112,6 +114,7 @@ namespace ServerBrowser
       this.barSubItem1 = new DevExpress.XtraBars.BarSubItem();
       this.miAboutGithub = new DevExpress.XtraBars.BarButtonItem();
       this.miAboutSteamWorkshop = new DevExpress.XtraBars.BarButtonItem();
+      this.miAboutVersionHistory = new DevExpress.XtraBars.BarButtonItem();
       this.barDockControlTop = new DevExpress.XtraBars.BarDockControl();
       this.barDockControlBottom = new DevExpress.XtraBars.BarDockControl();
       this.barDockControlLeft = new DevExpress.XtraBars.BarDockControl();
@@ -180,6 +183,7 @@ namespace ServerBrowser
       this.tabAdd = new DevExpress.XtraTab.XtraTabPage();
       this.timerUpdateServerList = new System.Windows.Forms.Timer(this.components);
       this.panelOptions = new DevExpress.XtraEditors.PanelControl();
+      this.cbUseSteamApi = new DevExpress.XtraEditors.CheckEdit();
       this.cbShowCounts = new DevExpress.XtraEditors.CheckEdit();
       this.cbShowFilterPanelInfo = new DevExpress.XtraEditors.CheckEdit();
       this.labelControl19 = new DevExpress.XtraEditors.LabelControl();
@@ -213,7 +217,6 @@ namespace ServerBrowser
       this.menuDetails = new DevExpress.XtraBars.PopupMenu(this.components);
       this.splashScreenManager1 = new DevExpress.XtraSplashScreen.SplashScreenManager(this, typeof(global::ServerBrowser.ConnectingWaitForm), false, true);
       this.timerHideWaitForm = new System.Windows.Forms.Timer(this.components);
-      this.cbUseSteamApi = new DevExpress.XtraEditors.CheckEdit();
       ((System.ComponentModel.ISupportInitialize)(this.riCheckEdit)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.gcDetails)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.gvDetails)).BeginInit();
@@ -227,6 +230,8 @@ namespace ServerBrowser
       ((System.ComponentModel.ISupportInitialize)(this.imgFlags)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.riFavServer)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.imageCollection)).BeginInit();
+      ((System.ComponentModel.ISupportInitialize)(this.riPrivate)).BeginInit();
+      ((System.ComponentModel.ISupportInitialize)(this.riDedicated)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.riJoinStatus)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.dockManager1)).BeginInit();
       this.panelRcon.SuspendLayout();
@@ -272,6 +277,7 @@ namespace ServerBrowser
       this.tabControl.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.panelOptions)).BeginInit();
       this.panelOptions.SuspendLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.cbUseSteamApi.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbShowCounts.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbShowFilterPanelInfo.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbNoUpdateWhilePlaying.Properties)).BeginInit();
@@ -297,7 +303,6 @@ namespace ServerBrowser
       ((System.ComponentModel.ISupportInitialize)(this.txtGameServer.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.menuAddTab)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.menuDetails)).BeginInit();
-      ((System.ComponentModel.ISupportInitialize)(this.cbUseSteamApi.Properties)).BeginInit();
       this.SuspendLayout();
       // 
       // riCheckEdit
@@ -419,7 +424,9 @@ namespace ServerBrowser
       this.gcServers.RepositoryItems.AddRange(new DevExpress.XtraEditors.Repository.RepositoryItem[] {
             this.riCountryFlagEdit,
             this.riFavServer,
-            this.riJoinStatus});
+            this.riJoinStatus,
+            this.riPrivate,
+            this.riDedicated});
       this.gcServers.Size = new System.Drawing.Size(1288, 339);
       this.gcServers.TabIndex = 0;
       this.gcServers.ToolTipController = this.toolTipController;
@@ -437,10 +444,10 @@ namespace ServerBrowser
             this.colBuddyCount,
             this.colFavServer,
             this.colEndPoint,
+            this.colPrivate,
+            this.colDedicated,
             this.colJoinStatus,
             this.colName,
-            this.colDedicated,
-            this.colPrivate,
             this.colDescription,
             this.colTags,
             this.colPlayerCount,
@@ -452,6 +459,7 @@ namespace ServerBrowser
             this.colPing,
             this.colStatus});
       this.gvServers.GridControl = this.gcServers;
+      this.gvServers.Images = this.imageCollection;
       this.gvServers.Name = "gvServers";
       this.gvServers.OptionsDetail.EnableMasterViewMode = false;
       this.gvServers.OptionsFilter.DefaultFilterEditorView = DevExpress.XtraEditors.FilterEditorViewMode.VisualAndText;
@@ -803,6 +811,11 @@ namespace ServerBrowser
       this.imageCollection.Images.SetKeyName(21, "021.png");
       this.imageCollection.Images.SetKeyName(22, "022.png");
       this.imageCollection.Images.SetKeyName(23, "023.png");
+      this.imageCollection.Images.SetKeyName(24, "024.png");
+      this.imageCollection.Images.SetKeyName(25, "025.png");
+      this.imageCollection.Images.SetKeyName(26, "026.png");
+      this.imageCollection.Images.SetKeyName(27, "027.png");
+      this.imageCollection.Images.SetKeyName(28, "028.png");
       // 
       // colEndPoint
       // 
@@ -815,6 +828,51 @@ namespace ServerBrowser
       this.colEndPoint.VisibleIndex = 3;
       this.colEndPoint.Width = 132;
       // 
+      // colPrivate
+      // 
+      this.colPrivate.Caption = "Pr";
+      this.colPrivate.ColumnEdit = this.riPrivate;
+      this.colPrivate.FieldName = "ServerInfo.IsPrivate";
+      this.colPrivate.Name = "colPrivate";
+      this.colPrivate.OptionsColumn.AllowEdit = false;
+      this.colPrivate.Visible = true;
+      this.colPrivate.VisibleIndex = 5;
+      this.colPrivate.Width = 20;
+      // 
+      // riPrivate
+      // 
+      this.riPrivate.AutoHeight = false;
+      this.riPrivate.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)});
+      this.riPrivate.Items.AddRange(new DevExpress.XtraEditors.Controls.ImageComboBoxItem[] {
+            new DevExpress.XtraEditors.Controls.ImageComboBoxItem("Public", false, -1),
+            new DevExpress.XtraEditors.Controls.ImageComboBoxItem("Private", true, 24)});
+      this.riPrivate.Name = "riPrivate";
+      this.riPrivate.SmallImages = this.imageCollection;
+      // 
+      // colDedicated
+      // 
+      this.colDedicated.Caption = "De";
+      this.colDedicated.ColumnEdit = this.riDedicated;
+      this.colDedicated.FieldName = "Dedicated";
+      this.colDedicated.Name = "colDedicated";
+      this.colDedicated.ToolTip = "Dedicated / Listen";
+      this.colDedicated.UnboundType = DevExpress.Data.UnboundColumnType.Boolean;
+      this.colDedicated.Visible = true;
+      this.colDedicated.VisibleIndex = 4;
+      this.colDedicated.Width = 20;
+      // 
+      // riDedicated
+      // 
+      this.riDedicated.AutoHeight = false;
+      this.riDedicated.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)});
+      this.riDedicated.Items.AddRange(new DevExpress.XtraEditors.Controls.ImageComboBoxItem[] {
+            new DevExpress.XtraEditors.Controls.ImageComboBoxItem("Dedicated Server", true, -1),
+            new DevExpress.XtraEditors.Controls.ImageComboBoxItem("Listen Server (Home)", false, 27)});
+      this.riDedicated.Name = "riDedicated";
+      this.riDedicated.SmallImages = this.imageCollection;
+      // 
       // colJoinStatus
       // 
       this.colJoinStatus.Caption = "Jn";
@@ -825,8 +883,8 @@ namespace ServerBrowser
       this.colJoinStatus.OptionsColumn.AllowEdit = false;
       this.colJoinStatus.ToolTip = "Joinable";
       this.colJoinStatus.Visible = true;
-      this.colJoinStatus.VisibleIndex = 4;
-      this.colJoinStatus.Width = 25;
+      this.colJoinStatus.VisibleIndex = 6;
+      this.colJoinStatus.Width = 20;
       // 
       // riJoinStatus
       // 
@@ -851,30 +909,8 @@ namespace ServerBrowser
             new DevExpress.XtraGrid.GridColumnSummaryItem(DevExpress.Data.SummaryItemType.Count, "Name", "Servers passing filter: {0:d}")});
       this.colName.UnboundType = DevExpress.Data.UnboundColumnType.String;
       this.colName.Visible = true;
-      this.colName.VisibleIndex = 5;
+      this.colName.VisibleIndex = 7;
       this.colName.Width = 260;
-      // 
-      // colDedicated
-      // 
-      this.colDedicated.Caption = "Ded";
-      this.colDedicated.FieldName = "Dedicated";
-      this.colDedicated.Name = "colDedicated";
-      this.colDedicated.ToolTip = "Dedicated";
-      this.colDedicated.UnboundType = DevExpress.Data.UnboundColumnType.Boolean;
-      this.colDedicated.Visible = true;
-      this.colDedicated.VisibleIndex = 6;
-      this.colDedicated.Width = 35;
-      // 
-      // colPrivate
-      // 
-      this.colPrivate.Caption = "Private";
-      this.colPrivate.ColumnEdit = this.riCheckEdit;
-      this.colPrivate.FieldName = "ServerInfo.IsPrivate";
-      this.colPrivate.Name = "colPrivate";
-      this.colPrivate.OptionsColumn.AllowEdit = false;
-      this.colPrivate.Visible = true;
-      this.colPrivate.VisibleIndex = 7;
-      this.colPrivate.Width = 45;
       // 
       // colDescription
       // 
@@ -1128,8 +1164,9 @@ namespace ServerBrowser
             this.miStopUpdate,
             this.barSubItem1,
             this.miAboutGithub,
-            this.miAboutSteamWorkshop});
-      this.barManager1.MaxItemId = 33;
+            this.miAboutSteamWorkshop,
+            this.miAboutVersionHistory});
+      this.barManager1.MaxItemId = 34;
       this.barManager1.RepositoryItems.AddRange(new DevExpress.XtraEditors.Repository.RepositoryItem[] {
             this.riFindPlayer});
       // 
@@ -1444,9 +1481,9 @@ namespace ServerBrowser
       this.riFindPlayer.AutoHeight = false;
       this.riFindPlayer.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
             new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo),
-            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Plus, "", -1, true, true, false, DevExpress.XtraEditors.ImageLocation.MiddleCenter, null, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), serializableAppearanceObject4, "Add to list", null, null, true),
-            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Minus, "", -1, true, true, false, DevExpress.XtraEditors.ImageLocation.MiddleCenter, null, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), serializableAppearanceObject5, "Remove from list", null, null, true),
-            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Search, "", -1, true, true, false, DevExpress.XtraEditors.ImageLocation.MiddleCenter, null, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), serializableAppearanceObject6, "Find", null, null, true)});
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Plus, "", -1, true, true, false, DevExpress.XtraEditors.ImageLocation.MiddleCenter, null, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), serializableAppearanceObject1, "Add to list", null, null, true),
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Minus, "", -1, true, true, false, DevExpress.XtraEditors.ImageLocation.MiddleCenter, null, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), serializableAppearanceObject2, "Remove from list", null, null, true),
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Search, "", -1, true, true, false, DevExpress.XtraEditors.ImageLocation.MiddleCenter, null, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), serializableAppearanceObject3, "Find", null, null, true)});
       this.riFindPlayer.Name = "riFindPlayer";
       this.riFindPlayer.NullValuePrompt = "min 3 chars, * as placeholder";
       this.riFindPlayer.NullValuePromptShowForEmptyValue = true;
@@ -1460,7 +1497,8 @@ namespace ServerBrowser
       this.barSubItem1.Id = 30;
       this.barSubItem1.LinksPersistInfo.AddRange(new DevExpress.XtraBars.LinkPersistInfo[] {
             new DevExpress.XtraBars.LinkPersistInfo(this.miAboutGithub),
-            new DevExpress.XtraBars.LinkPersistInfo(this.miAboutSteamWorkshop)});
+            new DevExpress.XtraBars.LinkPersistInfo(this.miAboutSteamWorkshop),
+            new DevExpress.XtraBars.LinkPersistInfo(this.miAboutVersionHistory)});
       this.barSubItem1.Name = "barSubItem1";
       // 
       // miAboutGithub
@@ -1478,6 +1516,13 @@ namespace ServerBrowser
       this.miAboutSteamWorkshop.Id = 32;
       this.miAboutSteamWorkshop.Name = "miAboutSteamWorkshop";
       this.miAboutSteamWorkshop.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miAboutSteamWorkshop_ItemClick);
+      // 
+      // miAboutVersionHistory
+      // 
+      this.miAboutVersionHistory.Caption = "Version History";
+      this.miAboutVersionHistory.Id = 33;
+      this.miAboutVersionHistory.Name = "miAboutVersionHistory";
+      this.miAboutVersionHistory.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miAboutVersionHistory_ItemClick);
       // 
       // barDockControlTop
       // 
@@ -2316,6 +2361,20 @@ namespace ServerBrowser
       this.panelOptions.TabIndex = 0;
       this.panelOptions.Visible = false;
       // 
+      // cbUseSteamApi
+      // 
+      this.cbUseSteamApi.Location = new System.Drawing.Point(327, 72);
+      this.cbUseSteamApi.Name = "cbUseSteamApi";
+      this.cbUseSteamApi.Properties.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
+      this.cbUseSteamApi.Properties.Appearance.Options.UseFont = true;
+      this.cbUseSteamApi.Properties.AutoWidth = true;
+      this.cbUseSteamApi.Properties.Caption = "Use Steam API to detect in-game status";
+      this.cbUseSteamApi.Size = new System.Drawing.Size(230, 19);
+      this.cbUseSteamApi.TabIndex = 10;
+      this.cbUseSteamApi.ToolTip = "If you experience extremely low FPS when you start the game, disable this option." +
+    "\r\nYou will then have to manually refresh your server list when you return from y" +
+    "our game.";
+      // 
       // cbShowCounts
       // 
       this.cbShowCounts.EditValue = true;
@@ -2681,20 +2740,6 @@ namespace ServerBrowser
       this.timerHideWaitForm.Interval = 5000;
       this.timerHideWaitForm.Tick += new System.EventHandler(this.timerHideWaitForm_Tick);
       // 
-      // cbUseSteamApi
-      // 
-      this.cbUseSteamApi.Location = new System.Drawing.Point(327, 72);
-      this.cbUseSteamApi.Name = "cbUseSteamApi";
-      this.cbUseSteamApi.Properties.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
-      this.cbUseSteamApi.Properties.Appearance.Options.UseFont = true;
-      this.cbUseSteamApi.Properties.AutoWidth = true;
-      this.cbUseSteamApi.Properties.Caption = "Use Steam API to detect in-game status";
-      this.cbUseSteamApi.Size = new System.Drawing.Size(230, 19);
-      this.cbUseSteamApi.TabIndex = 10;
-      this.cbUseSteamApi.ToolTip = "If you experience extremely low FPS when you start the game, disable this option." +
-    "\r\nYou will then have to manually refresh your server list when you return from y" +
-    "our game.";
-      // 
       // ServerBrowserForm
       // 
       this.Appearance.Options.UseFont = true;
@@ -2729,6 +2774,8 @@ namespace ServerBrowser
       ((System.ComponentModel.ISupportInitialize)(this.imgFlags)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.riFavServer)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.imageCollection)).EndInit();
+      ((System.ComponentModel.ISupportInitialize)(this.riPrivate)).EndInit();
+      ((System.ComponentModel.ISupportInitialize)(this.riDedicated)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.riJoinStatus)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.dockManager1)).EndInit();
       this.panelRcon.ResumeLayout(false);
@@ -2778,6 +2825,7 @@ namespace ServerBrowser
       ((System.ComponentModel.ISupportInitialize)(this.panelOptions)).EndInit();
       this.panelOptions.ResumeLayout(false);
       this.panelOptions.PerformLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.cbUseSteamApi.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbShowCounts.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbShowFilterPanelInfo.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbNoUpdateWhilePlaying.Properties)).EndInit();
@@ -2805,7 +2853,6 @@ namespace ServerBrowser
       ((System.ComponentModel.ISupportInitialize)(this.txtGameServer.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.menuAddTab)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.menuDetails)).EndInit();
-      ((System.ComponentModel.ISupportInitialize)(this.cbUseSteamApi.Properties)).EndInit();
       this.ResumeLayout(false);
       this.PerformLayout();
 
@@ -2991,5 +3038,8 @@ namespace ServerBrowser
     protected CheckEdit cbShowFilterPanelInfo;
     protected CheckEdit cbShowCounts;
     protected CheckEdit cbUseSteamApi;
+    private DevExpress.XtraBars.BarButtonItem miAboutVersionHistory;
+    private DevExpress.XtraEditors.Repository.RepositoryItemImageComboBox riPrivate;
+    private DevExpress.XtraEditors.Repository.RepositoryItemImageComboBox riDedicated;
   }
 }

@@ -7,7 +7,6 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
-using System.Windows.Forms;
 
 namespace ServerBrowser
 {
@@ -20,11 +19,13 @@ namespace ServerBrowser
     /// </summary>
     private readonly Dictionary<uint,object> cache = new Dictionary<uint, object>();
     private readonly BlockingCollection<IPAddress> queue = new BlockingCollection<IPAddress>();
+    private readonly string cacheFile;
 
     public string ServiceUrlFormat { get; set; }
 
-    public GeoIpClient()
+    public GeoIpClient(string cacheFile)
     {
+      this.cacheFile = cacheFile;
       this.ServiceUrlFormat = DefaultServiceUrlFormat;
       for (int i=0; i<ThreadCount; i++)
         ThreadPool.QueueUserWorkItem(context => this.ProcessLoop());
@@ -145,15 +146,12 @@ namespace ServerBrowser
     }
     #endregion
 
-    private string CacheFile => Path.Combine(Application.LocalUserAppDataPath, "locations.txt");
-
     #region LoadCache()
     public void LoadCache()
     {
-      var path = this.CacheFile;
-      if (!File.Exists(path))
+      if (!File.Exists(this.cacheFile))
         return;
-      foreach (var line in File.ReadAllLines(path))
+      foreach (var line in File.ReadAllLines(this.cacheFile))
       {
         try
         {
@@ -192,7 +190,7 @@ namespace ServerBrowser
               info.Iso2, info.Country, info.State, info.Region, info.City, info.Latitude, info.Longitude);
           }
         }
-        File.WriteAllText(this.CacheFile, sb.ToString());
+        File.WriteAllText(this.cacheFile, sb.ToString());
       }
       catch { }
     }

@@ -35,6 +35,7 @@ namespace ServerBrowser
     private const string CustomDetailColumnPrefix = "ServerInfo.";
     private const string CustomRuleColumnPrefix = "custRule.";
     private static readonly Game[] DefaultGames = {Game.QuakeLive, Game.Reflex, Game.Toxikk, Game.CounterStrike_Global_Offensive, Game.Team_Fortress_2};
+    internal static Color LinkControlColor;
 
     private readonly GameExtensionPool extenders = new GameExtensionPool();
     private readonly GameExtension unknownGame = new GameExtension();
@@ -43,7 +44,8 @@ namespace ServerBrowser
     private readonly PasswordForm passwordForm = new PasswordForm();
     private int showAddressMode;
     private readonly ServerQueryLogic queryLogic;
-    private readonly GeoIpClient geoIpClient = new GeoIpClient();
+    private readonly string geoIpCachePath;
+    private readonly GeoIpClient geoIpClient;
     private readonly Steamworks steam = new Steamworks();
     private int geoIpModified;
     private readonly Dictionary<IPEndPoint, string> favServers = new Dictionary<IPEndPoint, string>();
@@ -58,8 +60,12 @@ namespace ServerBrowser
     {
       InitializeComponent();
 
-      this.iniPath = Path.Combine(Application.LocalUserAppDataPath, "ServerBrowser.ini");
+      var baseDir = Path.GetDirectoryName(this.GetType().Assembly.Location) ?? ".";
+      this.iniPath = Path.Combine(baseDir, "ServerBrowser.ini");
+      this.geoIpCachePath = Path.Combine(baseDir, "locations.txt");
+      this.MoveConfigFilesFromOldLocation();
       this.iniFile = new IniFile(iniPath);
+      this.geoIpClient = new GeoIpClient(this.geoIpCachePath);
 
       this.InitGameInfoExtenders(this.iniFile);
       this.queryLogic = new ServerQueryLogic(this.extenders);
@@ -84,6 +90,37 @@ namespace ServerBrowser
       var vm = new TabViewModel();
       vm.Source = TabViewModel.SourceType.Favorites;
       this.tabFavorites.Tag = vm;
+    }
+    #endregion
+
+    #region MoveConfigFilesFromOldLocation()
+    private void MoveConfigFilesFromOldLocation()
+    {
+      if (!File.Exists(this.iniPath))
+      {
+        try
+        {
+          var oldIniPath = Path.Combine(Application.LocalUserAppDataPath, "ServerBrowser.ini");
+          if (File.Exists(oldIniPath))
+            File.Move(oldIniPath, this.iniPath);
+        }
+        catch
+        {
+        }
+      }
+
+      if (!File.Exists(this.geoIpCachePath))
+      { 
+        try
+        {
+          var geoCache = Path.Combine(Application.LocalUserAppDataPath, "locations.txt");
+          if (File.Exists(geoCache))
+            File.Move(geoCache, this.geoIpCachePath);
+        }
+        catch
+        {
+        }
+      }
     }
     #endregion
 
@@ -1257,6 +1294,7 @@ namespace ServerBrowser
       color = skin.TranslateColor(color);
       if (color == Color.Transparent)
         color = this.panelQuery.ForeColor;
+      LinkControlColor = color;
       this.linkFilter1.Appearance.LinkColor = this.linkFilter1.Appearance.PressedColor = color;
 
       this.miConnect.ItemAppearance.Normal.Font = new Font(this.miConnect.ItemAppearance.Normal.Font, FontStyle.Bold);
@@ -1387,6 +1425,12 @@ namespace ServerBrowser
     {
       Process.Start("http://steamcommunity.com/sharedfiles/filedetails/?id=543312745&tscn=1446330349");
     }
+
+    private void miAboutVersionHistory_ItemClick(object sender, ItemClickEventArgs e)
+    {
+      Process.Start("https://github.com/PredatH0r/SteamServerBrowser/releases");
+    }
+
     #endregion
 
     // option elements
@@ -2282,5 +2326,6 @@ namespace ServerBrowser
       this.AddNewTab("New Favorites", TabViewModel.SourceType.Favorites);
     }
     #endregion
+
   }
 }

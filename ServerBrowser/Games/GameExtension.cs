@@ -19,6 +19,8 @@ namespace ServerBrowser
   /// </summary>
   public class GameExtension
   {
+    public static string SteamWorkshopFolder = null;
+
     protected bool supportsRulesQuery = true;
     protected bool supportsPlayersQuery = true;
     protected bool supportsConnectAsSpectator = false;

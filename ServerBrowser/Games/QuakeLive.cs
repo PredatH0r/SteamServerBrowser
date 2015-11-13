@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
 using DevExpress.Data;
+using DevExpress.XtraEditors.Controls;
+using DevExpress.XtraEditors.Repository;
 using DevExpress.XtraGrid.Columns;
 using DevExpress.XtraGrid.Views.Grid;
 using QueryMaster;
@@ -42,6 +45,8 @@ namespace ServerBrowser
     private static readonly Regex NameColors = new Regex("\\^[0-9]");
     private readonly Game steamAppId;
     private bool useKeystrokesToConnect;
+    private bool startExtraQL;
+    private string extraQlPath;
 
     #region ctor()
 
@@ -60,6 +65,8 @@ namespace ServerBrowser
     {
       var sec = ini.GetSection("QuakeLive", true);
       this.useKeystrokesToConnect = sec.GetBool("useKeystrokesToConnect");
+      this.startExtraQL = sec.GetBool("startExtraQL");
+      this.extraQlPath = sec.GetString("extraQlPath");
     }
     #endregion
 
@@ -69,6 +76,8 @@ namespace ServerBrowser
       ini.AppendLine();
       ini.AppendLine("[QuakeLive]");
       ini.AppendLine($"useKeystrokesToConnect={this.useKeystrokesToConnect}");
+      ini.AppendLine($"startExtraQL={this.startExtraQL}");
+      ini.AppendLine($"extraQlPath={this.extraQlPath}");
     }
     #endregion
 
@@ -78,9 +87,11 @@ namespace ServerBrowser
       using (var dlg = new QuakeLiveOptionsDialog())
       {
         dlg.UseKeystrokes = this.useKeystrokesToConnect;
+        dlg.StartExtraQL = this.startExtraQL;
         if (dlg.ShowDialog(Form.ActiveForm) != DialogResult.OK)
           return;
         this.useKeystrokesToConnect = dlg.UseKeystrokes;
+        this.startExtraQL = dlg.StartExtraQL;
       }
     }
     #endregion
@@ -100,13 +111,41 @@ namespace ServerBrowser
 
       idx = view.Columns["PlayerCount"].VisibleIndex;
       AddColumn(view, "_teamsize", "TS", "Team Size", 30, ++idx, UnboundColumnType.Integer);
-      idx = view.Columns["JoinStatus"].VisibleIndex;
-      AddColumn(view, "_fullTeams", "FT", "Full Teams", 30, ++idx, UnboundColumnType.Boolean);
 
       idx = view.Columns["ServerInfo.Ping"].VisibleIndex;
       AddColumn(view, "_goalscore", "SL", "Score Limit", 30, idx, UnboundColumnType.Integer);
       AddColumn(view, "timelimit", "TL", "Time Limit", 30, ++idx, UnboundColumnType.Integer);
-      AddColumn(view, "g_instagib", "Insta", "Instagib", 35, ++idx, UnboundColumnType.Boolean);
+      //AddColumn(view, "g_instaGib", "Insta", "Instagib", 35, ++idx, UnboundColumnType.Boolean);
+
+      var col = AddColumn(view, "g_loadout", "Lo", "Loadout", 20, ++idx, UnboundColumnType.Boolean);
+      var ed = view.GridControl.RepositoryItems["riLoadout"] as RepositoryItemImageComboBox;
+      if (ed == null)
+      {
+        ed = new RepositoryItemImageComboBox();
+        ed.BeginInit();
+        ed.Name = "riLoadout";
+        ed.SmallImages = view.Images;
+        ed.Items.Add(new ImageComboBoxItem("No Loadouts", false, -1));
+        ed.Items.Add(new ImageComboBoxItem("Loadouts", true, 28));
+        ed.EndInit();
+        view.GridControl.RepositoryItems.Add(ed);
+      }
+      col.ColumnEdit = ed;
+
+      col = AddColumn(view, "g_itemTimers", "Ti", "Item Timers", 20, ++idx, UnboundColumnType.Boolean);
+      ed = view.GridControl.RepositoryItems["riItemTimer"] as RepositoryItemImageComboBox;
+      if (ed == null)
+      {
+        ed = new RepositoryItemImageComboBox();
+        ed.BeginInit();
+        ed.Name = "riItemTimer";
+        ed.SmallImages = view.Images;
+        ed.Items.Add(new ImageComboBoxItem("No Item Timers", false, -1));
+        ed.Items.Add(new ImageComboBoxItem("Item Timers", true, 26));
+        ed.EndInit();
+        view.GridControl.RepositoryItems.Add(ed);
+      }
+      col.ColumnEdit = ed;
     }
 
     #endregion
@@ -138,7 +177,7 @@ namespace ServerBrowser
         case "_gametype":
         {
           var gt = row.GetRule("g_gametype");
-          var instaPrefix = row.GetRule("g_instagib") == "1" ? "i" : "";
+          var instaPrefix = row.GetRule("g_instaGib") == "1" ? "i" : "";
           int num;
           string name;
           if (int.TryParse(gt, out num) && gameTypeName.TryGetValue(num, out name))
@@ -151,13 +190,11 @@ namespace ServerBrowser
           int.TryParse(row.GetRule("teamsize") ?? "0", out ts);
           return ts == 0 ? null : (object) ts;
         }
-        case "_fullTeams":
-        {
-          int ts;
-          int.TryParse(row.GetRule("teamsize") ?? "0", out ts);
-          return row.PlayerCount.RealPlayers >= row.PlayerCount.MaxPlayers || ts != 0 && row.PlayerCount.RealPlayers >= ts*2;
-        }
-        case "g_instagib":
+        case "g_instaGib":
+          return row.GetRule(fieldName) == "1";
+        case "g_loadout":
+          return row.GetRule(fieldName) == "1";
+        case "g_itemTimers":
           return row.GetRule(fieldName) == "1";
       }
       return base.GetServerCellValue(row, fieldName);
@@ -209,7 +246,21 @@ namespace ServerBrowser
 
     public override bool Connect(ServerRow server, string password, bool spectate)
     {
-      if (useKeystrokesToConnect)
+      if (this.startExtraQL)
+      {
+        var extraQlExe = this.GetExtaQlPath();
+        if (extraQlExe != null)
+        {
+          //using (var cli = new XWebClient(500))
+          //{
+          //  var response = cli.DownloadString("http://localhost:27963/version");
+          //  if (response == null)
+              Process.Start(extraQlExe);
+          //}
+        }
+      }
+
+      if (this.useKeystrokesToConnect)
       {
         // don't use the ThreadPool b/c it might be full with waiting server update requests
         new Thread(ctx => { ConnectInBackground(server, password, spectate); }).Start();       
@@ -219,6 +270,16 @@ namespace ServerBrowser
       return base.Connect(server, password, spectate);
     }
 
+    #endregion
+
+    #region GetExtraQlPath()
+    private string GetExtaQlPath()
+    {
+      if (!string.IsNullOrEmpty(this.extraQlPath) && File.Exists(this.extraQlPath))
+        return this.extraQlPath;
+      var extraQlExe = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(this.GetType().Assembly.Location)), @"539252269\extraQL.exe");
+      return File.Exists(extraQlExe) ? extraQlExe : null;
+    }
     #endregion
 
     #region ConnectInBackground()

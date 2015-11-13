@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading;
@@ -7,8 +8,8 @@ namespace ServerBrowser
 {
   public class ServerRow
   {
-    private readonly Dictionary<string, string> rulesFieldCache = new Dictionary<string, string>();
-    private readonly Dictionary<string, object> extenderFieldCache = new Dictionary<string, object>();
+    private readonly Dictionary<string, string> rulesFieldCache = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+    private readonly Dictionary<string, object> extenderFieldCache = new Dictionary<string, object>(StringComparer.InvariantCultureIgnoreCase);
 
     public string Name => ServerInfo != null ? ServerInfo.Name : CachedName != "" ? CachedName : EndPoint.ToString();
     public IPEndPoint EndPoint { get; private set; }

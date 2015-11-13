@@ -66,9 +66,17 @@ namespace ServerBrowser
       var request = (AsyncRequest)asyncRequest;
       using (request)
       {
-        ThreadPool.QueueUserWorkItem(context => request.DownloadStringAsync(this.Encoding));
-        if (!request.WaitHandle.WaitOne(this.Timeout))
+        // the WebClient calls an event through the Windows message pump, so we can't make a blocking wait here and have to call the pump every now and then
+        request.DownloadStringAsync(this.Encoding);
+        long time = DateTime.UtcNow.Millisecond;
+        while (!request.WaitHandle.WaitOne(100))
         {
+          if (DateTime.UtcNow.Millisecond - time < this.Timeout)
+          {
+            System.Windows.Forms.Application.DoEvents();
+            continue;
+          }
+
           var internalCtor = typeof(DownloadStringCompletedEventArgs).GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, null,
             new[] { typeof(string), typeof(Exception), typeof(bool), typeof(object) }, null);
           request.StringResult = (DownloadStringCompletedEventArgs)internalCtor.Invoke(new[] { null, new TimeoutException("Request timed out"), false, request.State });

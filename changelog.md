@@ -1,7 +1,14 @@
 2.18
 ---
+- added About / Version History menu item
+- using Lock icon instead of a checkbox for private (password protected) servers
+- Quake Live: added option to automatically start extraQL when connecting to match
+- Quake Live: gametype column "GT" now has a prefixed "i" for InstaGib matches. The Instagib checkbox column was removed
+- Quake Live: added columns "Lo" and "Ti" to indicate enabled loadouts and item timers
+- Quake Live: removed redundant "FT" column (full teams), as this is already indicated by the traffic light
 - fixed: last used skin will be loaded when the program is restarted
 - fixed: "Use Default Skin" button in the skin selection dialog had no effect
+- moved ServerBrowser.ini and locations.txt from %appdata%\..\Local\ServerBrowser to local directory
 
 2.17
 ---
