@@ -217,6 +217,7 @@ namespace ServerBrowser
       this.menuDetails = new DevExpress.XtraBars.PopupMenu(this.components);
       this.splashScreenManager1 = new DevExpress.XtraSplashScreen.SplashScreenManager(this, typeof(global::ServerBrowser.ConnectingWaitForm), false, true);
       this.timerHideWaitForm = new System.Windows.Forms.Timer(this.components);
+      this.cbConnectOnDoubleClick = new DevExpress.XtraEditors.CheckEdit();
       ((System.ComponentModel.ISupportInitialize)(this.riCheckEdit)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.gcDetails)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.gvDetails)).BeginInit();
@@ -303,6 +304,7 @@ namespace ServerBrowser
       ((System.ComponentModel.ISupportInitialize)(this.txtGameServer.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.menuAddTab)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.menuDetails)).BeginInit();
+      ((System.ComponentModel.ISupportInitialize)(this.cbConnectOnDoubleClick.Properties)).BeginInit();
       this.SuspendLayout();
       // 
       // riCheckEdit
@@ -1470,11 +1472,11 @@ namespace ServerBrowser
       this.miFindPlayer.Caption = "Find Buddy:";
       this.miFindPlayer.CategoryGuid = new System.Guid("dce44941-9e20-4803-823c-6829c76924c5");
       this.miFindPlayer.Edit = this.riFindPlayer;
+      this.miFindPlayer.EditWidth = 244;
       this.miFindPlayer.Id = 25;
       this.miFindPlayer.ItemShortcut = new DevExpress.XtraBars.BarShortcut(System.Windows.Forms.Keys.F3);
       this.miFindPlayer.Name = "miFindPlayer";
       this.miFindPlayer.PaintStyle = DevExpress.XtraBars.BarItemPaintStyle.CaptionGlyph;
-      this.miFindPlayer.Width = 244;
       // 
       // riFindPlayer
       // 
@@ -1989,9 +1991,9 @@ namespace ServerBrowser
       // 
       this.btnSkin.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
       this.btnSkin.Appearance.Options.UseFont = true;
-      this.btnSkin.Location = new System.Drawing.Point(871, 6);
+      this.btnSkin.Location = new System.Drawing.Point(1101, 10);
       this.btnSkin.Name = "btnSkin";
-      this.btnSkin.Size = new System.Drawing.Size(98, 25);
+      this.btnSkin.Size = new System.Drawing.Size(115, 25);
       this.btnSkin.TabIndex = 15;
       this.btnSkin.Text = "Change Skin";
       this.btnSkin.Click += new System.EventHandler(this.btnSkin_Click);
@@ -2336,6 +2338,7 @@ namespace ServerBrowser
       // panelOptions
       // 
       this.panelOptions.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.NoBorder;
+      this.panelOptions.Controls.Add(this.cbConnectOnDoubleClick);
       this.panelOptions.Controls.Add(this.cbUseSteamApi);
       this.panelOptions.Controls.Add(this.cbShowCounts);
       this.panelOptions.Controls.Add(this.cbShowFilterPanelInfo);
@@ -2378,7 +2381,7 @@ namespace ServerBrowser
       // cbShowCounts
       // 
       this.cbShowCounts.EditValue = true;
-      this.cbShowCounts.Location = new System.Drawing.Point(871, 68);
+      this.cbShowCounts.Location = new System.Drawing.Point(796, 32);
       this.cbShowCounts.Name = "cbShowCounts";
       this.cbShowCounts.Properties.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
       this.cbShowCounts.Properties.Appearance.Options.UseFont = true;
@@ -2391,7 +2394,7 @@ namespace ServerBrowser
       // cbShowFilterPanelInfo
       // 
       this.cbShowFilterPanelInfo.EditValue = true;
-      this.cbShowFilterPanelInfo.Location = new System.Drawing.Point(871, 49);
+      this.cbShowFilterPanelInfo.Location = new System.Drawing.Point(796, 13);
       this.cbShowFilterPanelInfo.Name = "cbShowFilterPanelInfo";
       this.cbShowFilterPanelInfo.Properties.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
       this.cbShowFilterPanelInfo.Properties.Appearance.Options.UseFont = true;
@@ -2740,6 +2743,18 @@ namespace ServerBrowser
       this.timerHideWaitForm.Interval = 5000;
       this.timerHideWaitForm.Tick += new System.EventHandler(this.timerHideWaitForm_Tick);
       // 
+      // cbConnectOnDoubleClick
+      // 
+      this.cbConnectOnDoubleClick.EditValue = true;
+      this.cbConnectOnDoubleClick.Location = new System.Drawing.Point(796, 53);
+      this.cbConnectOnDoubleClick.Name = "cbConnectOnDoubleClick";
+      this.cbConnectOnDoubleClick.Properties.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
+      this.cbConnectOnDoubleClick.Properties.Appearance.Options.UseFont = true;
+      this.cbConnectOnDoubleClick.Properties.AutoWidth = true;
+      this.cbConnectOnDoubleClick.Properties.Caption = "Use double-click to connect to a game server";
+      this.cbConnectOnDoubleClick.Size = new System.Drawing.Size(260, 19);
+      this.cbConnectOnDoubleClick.TabIndex = 18;
+      // 
       // ServerBrowserForm
       // 
       this.Appearance.Options.UseFont = true;
@@ -2853,6 +2868,7 @@ namespace ServerBrowser
       ((System.ComponentModel.ISupportInitialize)(this.txtGameServer.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.menuAddTab)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.menuDetails)).EndInit();
+      ((System.ComponentModel.ISupportInitialize)(this.cbConnectOnDoubleClick.Properties)).EndInit();
       this.ResumeLayout(false);
       this.PerformLayout();
 
@@ -3041,5 +3057,6 @@ namespace ServerBrowser
     private DevExpress.XtraBars.BarButtonItem miAboutVersionHistory;
     private DevExpress.XtraEditors.Repository.RepositoryItemImageComboBox riPrivate;
     private DevExpress.XtraEditors.Repository.RepositoryItemImageComboBox riDedicated;
+    protected CheckEdit cbConnectOnDoubleClick;
   }
 }

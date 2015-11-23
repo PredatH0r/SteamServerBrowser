@@ -30,7 +30,7 @@ namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.18";
+    private const string Version = "2.19";
     private const string DevExpressVersion = "v15.1";
     private const string CustomDetailColumnPrefix = "ServerInfo.";
     private const string CustomRuleColumnPrefix = "custRule.";
@@ -428,6 +428,7 @@ namespace ServerBrowser
       this.cbHideUnresponsiveServers.Checked = options.GetBool("HideUnresponsiveServers", true);
       this.cbShowFilterPanelInfo.Checked = options.GetBool("ShowFilterPanelInfo", true);
       this.cbShowCounts.Checked = options.GetBool("ShowServerCounts", true);
+      this.cbConnectOnDoubleClick.Checked = options.GetBool("ConnectOnDoubleClick", true);
 
       // load favorite servers
       var favs = ini.GetSection("FavoriteServers");
@@ -505,6 +506,7 @@ namespace ServerBrowser
       sb.AppendLine($"TabIndex={this.tabControl.SelectedTabPageIndex}");
       sb.AppendLine($"ShowFilterPanelInfo={this.cbShowFilterPanelInfo.Checked}");
       sb.AppendLine($"ShowServerCounts={this.cbShowCounts.Checked}");
+      sb.AppendLine($"ConnectOnDoubleClick={this.cbConnectOnDoubleClick.Checked}");
 
       sb.AppendLine();
       sb.AppendLine("[FavoriteServers]");
@@ -1805,6 +1807,8 @@ namespace ServerBrowser
     #region gvServers_DoubleClick
     private void gvServers_DoubleClick(object sender, EventArgs e)
     {
+      if (!this.cbConnectOnDoubleClick.Checked)
+        return;
       try
       {
         var hit = this.gvServers.CalcHitInfo(this.gcServers.PointToClient(MousePosition));

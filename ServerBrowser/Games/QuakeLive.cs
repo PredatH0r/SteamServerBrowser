@@ -250,14 +250,7 @@ namespace ServerBrowser
       {
         var extraQlExe = this.GetExtaQlPath();
         if (extraQlExe != null)
-        {
-          //using (var cli = new XWebClient(500))
-          //{
-          //  var response = cli.DownloadString("http://localhost:27963/version");
-          //  if (response == null)
-              Process.Start(extraQlExe);
-          //}
-        }
+          Process.Start(extraQlExe, "-background");
       }
 
       if (this.useKeystrokesToConnect)

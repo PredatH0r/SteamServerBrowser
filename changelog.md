@@ -1,3 +1,8 @@
+2.19
+---
+- Quake Live: open extraQL in the background instead of bringing it to front (requires extraQL 2.7 or later)
+- connect on double-click can now be disabled
+
 2.18
 ---
 - added About / Version History menu item
