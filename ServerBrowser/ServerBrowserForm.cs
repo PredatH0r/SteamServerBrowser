@@ -30,7 +30,7 @@ namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.19";
+    private const string Version = "2.20";
     private const string DevExpressVersion = "v15.1";
     private const string CustomDetailColumnPrefix = "ServerInfo.";
     private const string CustomRuleColumnPrefix = "custRule.";
@@ -1037,6 +1037,8 @@ namespace ServerBrowser
         this.queryLogic.Cancel();
         this.timerReloadServers.Stop();
       }
+      if (this.splashScreenManager1.IsSplashFormVisible)
+        this.splashScreenManager1.CloseWaitForm();
       this.splashScreenManager1.ShowWaitForm();
       this.splashScreenManager1.SetWaitFormCaption("Connecting to " + row.EndPoint);
       this.splashScreenManager1.SetWaitFormDescription(row.Name);

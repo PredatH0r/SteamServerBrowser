@@ -247,6 +247,11 @@ namespace ServerBrowser
     {
       return row?.ServerInfo?.MaxPlayers;
     }
+
+    public virtual int? GetPrivateClients(ServerRow row)
+    {
+      return 0;
+    }
   }
   #endregion
 

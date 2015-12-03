@@ -112,8 +112,15 @@ namespace ServerBrowser
           return row.GetRule(fieldName) == "1";
         case "_gametype":
           var gt = row.ServerInfo.Description;
-          return gt == null ? null : gt.Contains("BloodLust") ? "BL" : gt.Contains("TeamGame") ? "SA" : gt.Contains("Cell") ? "CC" 
-            : gt.Contains("TRGame") ? "TR" : gt.Contains("TAGame") ? "TA" : gt;
+          return gt == null ? null : 
+            gt.Contains("BloodLust") ? "BL" : 
+            gt.Contains("TeamGame") ? "SA" : 
+            gt.Contains("Cell") ? "CC" : 
+            gt.Contains("TRGame") ? "TR" : 
+            gt.Contains("TAGame") ? "TA" : 
+            gt.Contains("AreaDomination") ? "AD" : 
+            gt =="STBGame" ? "SB" : 
+            gt;
         case Mutators:
           var mods = (row.GetRule(fieldName) ?? "").ToLower();
           var buff = new StringBuilder();

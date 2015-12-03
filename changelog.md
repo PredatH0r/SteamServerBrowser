@@ -1,7 +1,13 @@
+2.20
+---
+- Quake Live: player count and join-status now includes sv_privateClients in the calculations
+- Toxikk: short game type names for AD (Area Domination) and SB (Score-the-Banshee)
+
 2.19
 ---
 - Quake Live: open extraQL in the background instead of bringing it to front (requires extraQL 2.7 or later)
 - connect on double-click can now be disabled
+- open "Connecting to ..." form no longer blocks reconnecting again
 
 2.18
 ---

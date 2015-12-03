@@ -213,8 +213,9 @@ namespace ServerBrowser
     public override int? GetMaxClients(ServerRow row)
     {
       var cli = row.GetRule("sv_maxclients");
-      if (!string.IsNullOrEmpty(cli))
-        return int.Parse(cli);
+      int val;
+      if (!string.IsNullOrEmpty(cli) && int.TryParse(cli, out val))
+        return val;
 
       // QL currently returns the sv_maxclients in MaxPlayers (instead of teamsize * 2)
       return row.ServerInfo?.MaxPlayers;
@@ -239,6 +240,18 @@ namespace ServerBrowser
 
       // QL currently returns the sv_maxclients in MaxPlayers (instead of teamsize * 2)
       return row.ServerInfo?.MaxPlayers;
+    }
+    #endregion
+
+    #region GetPrivateClients()
+    public override int? GetPrivateClients(ServerRow row)
+    {
+      var cli = row.GetRule("sv_privateclients");
+      int val;
+      if (!string.IsNullOrEmpty(cli) && int.TryParse(cli, out val))
+        return val;
+
+      return 0;
     }
     #endregion
 

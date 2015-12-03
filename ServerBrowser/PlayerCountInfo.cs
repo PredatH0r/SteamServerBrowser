@@ -17,6 +17,7 @@ namespace ServerBrowser
     public int? TotalPlayers => RealPlayers + Bots;
     public int? MaxPlayers { get; private set; }
     public int? MaxClients { get; private set; }
+    public int? PrivateClients { get; private set; }
 
     public PlayerCountInfo(ServerRow row)
     {
@@ -27,13 +28,14 @@ namespace ServerBrowser
     public void Update()
     {
       if (row.ServerInfo == null)
-        RealPlayers = Bots = MaxPlayers = MaxClients = null;
+        RealPlayers = Bots = MaxPlayers = MaxClients = PrivateClients = null;
       else
       {
         Bots = row.GameExtension.GetBotCount(row);
         MaxPlayers = row.GameExtension.GetMaxPlayers(row);
         MaxClients = row.GameExtension.GetMaxClients(row);
         RealPlayers = row.ServerInfo.Players;
+        PrivateClients = row.GameExtension.GetPrivateClients(row);
 
         // some games count bots as players, others don't
         if (RealPlayers >= Bots)
@@ -95,9 +97,11 @@ namespace ServerBrowser
 
       if (this.MaxPlayers > 0)
       {
-        sb.Append(" / ").Append(this.MaxPlayers);
-        if (this.MaxClients > this.MaxPlayers)
-          sb.Append('+').Append(this.MaxClients - this.MaxPlayers);
+        var privateInUse = Math.Max(0, (this.TotalPlayers - (this.MaxClients - this.PrivateClients)) ?? 0);
+        int max = Math.Min(this.MaxPlayers ?? 0, (this.MaxClients ?? 0) - (this.PrivateClients ?? 0) + privateInUse);
+        sb.Append(" / ").Append(max);
+        if (this.MaxClients - this.PrivateClients + privateInUse > max)
+          sb.Append('+').Append(this.MaxClients - this.PrivateClients + privateInUse - max);
       }
       return sb.ToString();
     }

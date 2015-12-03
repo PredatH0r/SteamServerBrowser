@@ -63,13 +63,13 @@ namespace ServerBrowser
         var maxPlayers = PlayerCount.MaxPlayers;
         if (maxPlayers == null) return -1;
 
+        if (players >= PlayerCount.MaxClients - PlayerCount.PrivateClients)
+          return 2;
+
         if (players < maxPlayers)
           return 0;
 
-        var maxClients = PlayerCount.MaxClients;
-        if (maxClients != null && players < maxClients)
-          return 1;
-        return 2;
+        return 1;
       }
     }
 
