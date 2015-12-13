@@ -30,7 +30,7 @@ namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.20";
+    private const string Version = "2.21";
     private const string DevExpressVersion = "v15.1";
     private const string CustomDetailColumnPrefix = "ServerInfo.";
     private const string CustomRuleColumnPrefix = "custRule.";
@@ -47,6 +47,7 @@ namespace ServerBrowser
     private readonly string geoIpCachePath;
     private readonly GeoIpClient geoIpClient;
     private readonly Steamworks steam = new Steamworks();
+    private readonly MemoryStream defaultLayout = new MemoryStream();
     private int geoIpModified;
     private readonly Dictionary<IPEndPoint, string> favServers = new Dictionary<IPEndPoint, string>();
     private TabViewModel viewModel;
@@ -164,6 +165,8 @@ namespace ServerBrowser
 
       if (LicenseManager.UsageMode == LicenseUsageMode.Designtime)
         return;
+
+      this.dockManager1.SaveLayoutToStream(this.defaultLayout);
 
       ++this.ignoreUiEvents;
       this.FillCountryFlags();
@@ -368,8 +371,16 @@ namespace ServerBrowser
     private void UpdatePanelVisibility()
     {
       this.SuspendLayout();
-      this.panelQuery.Visible = this.miShowServerQuery.Down && this.viewModel.Source == TabViewModel.SourceType.MasterServer;
-      this.panelStaticList.Visible = this.miShowServerQuery.Down && this.viewModel.Source == TabViewModel.SourceType.CustomList;
+      this.panelOptions.Visible = this.miShowOptions.Down;
+      this.panelQuery.Visible = this.miShowServerQuery.Down && this.viewModel?.Source == TabViewModel.SourceType.MasterServer;
+      this.panelStaticList.Visible = this.miShowServerQuery.Down && this.viewModel?.Source == TabViewModel.SourceType.CustomList;
+      this.panelTop.Size = new Size(this.panelTop.ClientSize.Width, 
+        this.panelTop.ControlContainer.Top
+        + (this.panelOptions.Visible ? this.panelOptions.Height : 0)
+        + this.panelTabs.Height
+        + (this.panelQuery.Visible ? this.panelQuery.Height : 0)
+        + (this.panelStaticList.Visible ? this.panelStaticList.Height : 0)
+        );
       this.ResumeLayout();
     }
     #endregion
@@ -432,12 +443,14 @@ namespace ServerBrowser
       this.cbShowCounts.Checked = options.GetBool("ShowServerCounts", true);
       this.cbConnectOnDoubleClick.Checked = options.GetBool("ConnectOnDoubleClick", true);
       this.Size = new Size(options.GetInt("WindowWidth", 1600), options.GetInt("WindowHeight", 840));
+
       if (File.Exists(this.xmlLayoutPath))
       {
         try
         {
           using (var stream = new FileStream(this.xmlLayoutPath, FileMode.Open))
             this.dockManager1.RestoreFromStream(stream);
+
         }
         catch
         {
@@ -1338,6 +1351,15 @@ namespace ServerBrowser
     }
     #endregion
 
+    #region dockManager1_BeforeLoadLayout
+    private void dockManager1_BeforeLoadLayout(object sender, LayoutAllowEventArgs e)
+    {
+      int old;
+      int.TryParse(e.PreviousVersion, out old);
+      e.Allow = old == int.Parse(this.dockManager1.LayoutVersion);
+    }
+    #endregion
+
     #region alertControl1_AlertClick
     private void alertControl1_AlertClick(object sender, DevExpress.XtraBars.Alerter.AlertClickEventArgs e)
     {
@@ -1365,7 +1387,7 @@ namespace ServerBrowser
 
     private void miShowOptions_DownChanged(object sender, ItemClickEventArgs e)
     {
-      this.panelOptions.Visible = this.miShowOptions.Down;
+      this.UpdatePanelVisibility();
     }
 
     private void miServerQuery_DownChanged(object sender, ItemClickEventArgs e)
@@ -1399,6 +1421,20 @@ namespace ServerBrowser
         this.timerReloadServers.Start();
     }
 
+    #endregion
+
+    #region miRestoreStandardLayout_ItemClick
+    private void miRestoreStandardLayout_ItemClick(object sender, ItemClickEventArgs e)
+    {
+      try
+      {
+        this.defaultLayout.Seek(0, SeekOrigin.Begin);
+        this.dockManager1.RestoreFromStream(this.defaultLayout);
+      }
+      catch
+      {
+      }
+    }
     #endregion
 
     #region miRenameTab_ItemClick

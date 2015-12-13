@@ -1,3 +1,8 @@
+2.21
+---
+- Save/restore application window size and layout of docked panels
+- Options are now a docking panel, so the right-hand-side panels can be arranged to use the whole window height
+
 2.20
 ---
 - Quake Live: player count and join-status now includes sv_privateClients in the calculations
