@@ -50,6 +50,7 @@ namespace ServerBrowser
     private int geoIpModified;
     private readonly Dictionary<IPEndPoint, string> favServers = new Dictionary<IPEndPoint, string>();
     private TabViewModel viewModel;
+    private readonly string xmlLayoutPath;
     private readonly string iniPath;
     private readonly IniFile iniFile;
     private XtraTabPage dragPage;
@@ -62,6 +63,7 @@ namespace ServerBrowser
 
       var baseDir = Path.GetDirectoryName(this.GetType().Assembly.Location) ?? ".";
       this.iniPath = Path.Combine(baseDir, "ServerBrowser.ini");
+      this.xmlLayoutPath = Path.Combine(baseDir, "WindowLayout.xml");
       this.geoIpCachePath = Path.Combine(baseDir, "locations.txt");
       this.MoveConfigFilesFromOldLocation();
       this.iniFile = new IniFile(iniPath);
@@ -429,6 +431,18 @@ namespace ServerBrowser
       this.cbShowFilterPanelInfo.Checked = options.GetBool("ShowFilterPanelInfo", true);
       this.cbShowCounts.Checked = options.GetBool("ShowServerCounts", true);
       this.cbConnectOnDoubleClick.Checked = options.GetBool("ConnectOnDoubleClick", true);
+      this.Size = new Size(options.GetInt("WindowWidth", 1600), options.GetInt("WindowHeight", 840));
+      if (File.Exists(this.xmlLayoutPath))
+      {
+        try
+        {
+          using (var stream = new FileStream(this.xmlLayoutPath, FileMode.Open))
+            this.dockManager1.RestoreFromStream(stream);
+        }
+        catch
+        {
+        }
+      }
 
       // load favorite servers
       var favs = ini.GetSection("FavoriteServers");
@@ -507,6 +521,8 @@ namespace ServerBrowser
       sb.AppendLine($"ShowFilterPanelInfo={this.cbShowFilterPanelInfo.Checked}");
       sb.AppendLine($"ShowServerCounts={this.cbShowCounts.Checked}");
       sb.AppendLine($"ConnectOnDoubleClick={this.cbConnectOnDoubleClick.Checked}");
+      sb.AppendLine($"WindowWidth={this.Width}");
+      sb.AppendLine($"WindowHeight={this.Height}");
 
       sb.AppendLine();
       sb.AppendLine("[FavoriteServers]");
@@ -517,6 +533,15 @@ namespace ServerBrowser
       sb.AppendLine("[FindPlayers]");
       for (int i = 0; i < this.riFindPlayer.Items.Count; i++)
         sb.AppendLine($"{i}={this.riFindPlayer.Items[i]}");
+
+      try
+      {
+        using (var stream = new FileStream(this.xmlLayoutPath, FileMode.Create))
+          this.dockManager1.SaveLayoutToStream(stream);
+      }
+      catch
+      {
+      }
     }
 
     #endregion
