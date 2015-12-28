@@ -1,3 +1,7 @@
+2.22
+---
+- Quake Live: integrated skill rating information from qlstats.net
+
 2.21
 ---
 - Save/restore application window size and layout of docked panels

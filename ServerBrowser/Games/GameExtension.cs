@@ -82,6 +82,8 @@ namespace ServerBrowser
     }
     #endregion
 
+    public virtual void Refresh() { }
+
     // server list UI
 
     #region CustomizeServerGridColumns()

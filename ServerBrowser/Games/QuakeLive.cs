@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -24,6 +25,15 @@ namespace ServerBrowser
 {
   public class QuakeLive : GameExtension
   {
+    public class QlStatsSkillInfo
+    {
+      public string server { get; set; }
+      public string gt { get; set; }
+      public int min { get; set; }
+      public int avg { get; set; }
+      public int max { get; set; }
+    }
+
     private const int SecondsToWaitForMainWindowAfterLaunch = 20;
 
     private static readonly Dictionary<int, string> gameTypeName = new Dictionary<int, string>
@@ -47,6 +57,8 @@ namespace ServerBrowser
     private bool useKeystrokesToConnect;
     private bool startExtraQL;
     private string extraQlPath;
+    private static readonly DataContractJsonSerializer jsonParser = new DataContractJsonSerializer(typeof(QlStatsSkillInfo[]));
+    private Dictionary<string,QlStatsSkillInfo> skillInfo = new Dictionary<string, QlStatsSkillInfo>();
 
     #region ctor()
 
@@ -110,6 +122,7 @@ namespace ServerBrowser
         .OptionsFilter.AutoFilterCondition = AutoFilterCondition.Default;
 
       idx = view.Columns["PlayerCount"].VisibleIndex;
+      AddColumn(view, "_skill", "Skill", "QLStats.net skill rating max/avg/min (*100)", 60, ++idx, UnboundColumnType.Integer);
       AddColumn(view, "_teamsize", "TS", "Team Size", 30, ++idx, UnboundColumnType.Integer);
 
       idx = view.Columns["ServerInfo.Ping"].VisibleIndex;
@@ -148,6 +161,33 @@ namespace ServerBrowser
       col.ColumnEdit = ed;
     }
 
+    #endregion
+
+    #region Refresh()
+    public override void Refresh()
+    {
+      using (var client = new XWebClient(2000))
+      {
+        client.DownloadStringCompleted += (sender, args) =>
+        {
+          try
+          {
+            using (var strm = new MemoryStream(Encoding.UTF8.GetBytes(args.Result)))
+            {
+              var servers = (QlStatsSkillInfo[]) jsonParser.ReadObject(strm);
+              var dict = new Dictionary<string, QlStatsSkillInfo>();
+              foreach (var server in servers)
+                dict[server.server] = server;
+              this.skillInfo = dict;
+            }
+          }
+          catch
+          {
+          }
+        };
+        client.DownloadStringAsync(new Uri("http://qlstats.net:8088/api/server/skillrating"));
+      }
+    }
     #endregion
 
     #region GetServerCellValue()
@@ -189,6 +229,13 @@ namespace ServerBrowser
           int ts;
           int.TryParse(row.GetRule("teamsize") ?? "0", out ts);
           return ts == 0 ? null : (object) ts;
+        }
+        case "_skill":
+        {
+          QlStatsSkillInfo skill;
+          if (!this.skillInfo.TryGetValue(row.ServerInfo.Address, out skill))
+            return null;
+          return "" + (skill.max + 50)/100 + "/" + (skill.avg + 50)/100 + "/" + (skill.min + 50)/100;
         }
         case "g_instaGib":
           return row.GetRule(fieldName) == "1";

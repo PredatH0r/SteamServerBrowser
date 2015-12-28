@@ -30,7 +30,7 @@ namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.21";
+    private const string Version = "2.22";
     private const string DevExpressVersion = "v15.1";
     private const string CustomDetailColumnPrefix = "ServerInfo.";
     private const string CustomRuleColumnPrefix = "custRule.";
@@ -794,6 +794,8 @@ namespace ServerBrowser
         filter.Nor.Sv_Tags = this.ParseTags(this.viewModel.TagsExcludeServer);
       }
       this.CustomizeFilter(filter);
+      foreach (var ext in this.extenders)
+        ext.Value.Refresh();
       this.queryLogic.ReloadServerList(this.viewModel.serverSource, 750, this.viewModel.MasterServerQueryLimit, QueryMaster.Region.Rest_of_the_world, filter);
     }
     #endregion
@@ -806,6 +808,8 @@ namespace ServerBrowser
       this.miStopUpdate.Enabled = true;
       this.timerReloadServers.Stop();
       this.SetStatusMessage("Updating status of " + this.viewModel.servers.Count + " servers...");
+      foreach (var ext in this.extenders)
+        ext.Value.Refresh();
       this.queryLogic.RefreshAllServers(this.viewModel.servers);
     }
     #endregion
