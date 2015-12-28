@@ -30,7 +30,7 @@ namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.22";
+    private const string Version = "2.23";
     private const string DevExpressVersion = "v15.1";
     private const string CustomDetailColumnPrefix = "ServerInfo.";
     private const string CustomRuleColumnPrefix = "custRule.";
@@ -1271,15 +1271,16 @@ namespace ServerBrowser
     #region AddBuddy()
     private void AddBuddy(string text)
     {
-      if (!this.riFindPlayer.Items.Contains(text))
-      {
-        var list = this.riFindPlayer.Items.OfType<string>().ToList();
-        list.Add(text);
-        list.Sort();
-        this.riFindPlayer.Items.Clear();
-        this.riFindPlayer.Items.AddRange(list);
-        this.miFindPlayer.EditValue = text;
-      }
+      if (string.IsNullOrWhiteSpace(text))
+        return;
+      var list = this.riFindPlayer.Items.OfType<string>().ToList();
+      if (list.Contains(text))
+        return;
+      list.Add(text);
+      list.Sort();
+      this.riFindPlayer.Items.Clear();
+      this.riFindPlayer.Items.AddRange(list);
+      this.miFindPlayer.EditValue = text;
     }
     #endregion
 

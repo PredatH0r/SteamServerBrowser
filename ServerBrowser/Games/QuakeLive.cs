@@ -166,6 +166,7 @@ namespace ServerBrowser
     #region Refresh()
     public override void Refresh()
     {
+      // request server skill rating data from qlstats.net
       using (var client = new XWebClient(2000))
       {
         client.DownloadStringCompleted += (sender, args) =>
@@ -247,6 +248,14 @@ namespace ServerBrowser
       return base.GetServerCellValue(row, fieldName);
     }
 
+    #endregion
+
+    #region IsValidPlayer()
+    public override bool IsValidPlayer(Player player)
+    {
+      // hack to remove ghost players which are not really on the server
+      return player.Score > 0 || player.Time < TimeSpan.FromHours(4);
+    }
     #endregion
 
     #region GetCleanPlayerName()

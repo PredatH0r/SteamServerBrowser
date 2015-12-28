@@ -55,7 +55,7 @@ namespace ServerBrowser
         }
         else if (row.Players.Count > 0) // some games always return an empty list
         {
-          int? count = row.Players.Count(p => !string.IsNullOrEmpty(p.Name));
+          int? count = row.Players.Count(p => !string.IsNullOrEmpty(p.Name) && row.GameExtension.IsValidPlayer(p));
 
           // some games (CS:GO, TF2, QuakeLive) return bots in the player list
           if (count >= Bots)

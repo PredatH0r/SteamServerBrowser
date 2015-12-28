@@ -254,6 +254,11 @@ namespace ServerBrowser
     {
       return 0;
     }
+
+    public virtual bool IsValidPlayer(Player player)
+    {
+      return true;
+    }
   }
   #endregion
 

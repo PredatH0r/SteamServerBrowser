@@ -1,3 +1,8 @@
+2.23
+---
+- Quake Live: remove "ghost players" (dead connections in the player list) from player counts
+- Buddy List: can't add blank or duplicate players anymore
+
 2.22
 ---
 - Quake Live: integrated skill rating information from qlstats.net
