@@ -137,6 +137,15 @@ namespace ServerBrowser
     }
     #endregion
 
+    #region IsValidPlayer()
+    public override bool IsValidPlayer(ServerRow server, Player player)
+    {
+      // hack to remove ghost players which are not really on the server
+      this.UpdatePlayerInfos(server);
+      return server.Rules != null && !string.IsNullOrEmpty(player.Name) && this.playerInfos.ContainsKey(player.Name);
+    }
+    #endregion
+
     #region GetBotCount()
     public override int? GetBotCount(ServerRow row)
     {
@@ -418,6 +427,8 @@ namespace ServerBrowser
         this.playerInfos.Add(name, info);
         ++i;
       }
+
+      server.PlayerCount.Update();
     }
     #endregion
   }

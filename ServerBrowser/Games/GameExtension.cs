@@ -25,6 +25,8 @@ namespace ServerBrowser
     protected bool supportsPlayersQuery = true;
     protected bool supportsConnectAsSpectator = false;
 
+    public Steamworks Steamworks { get; set; }
+
     // menu
 
     public string OptionMenuCaption { get; protected set; } = null;
@@ -82,7 +84,7 @@ namespace ServerBrowser
     }
     #endregion
 
-    public virtual void Refresh() { }
+    public virtual void Refresh(ServerRow row = null, Action callback = null) { }
 
     // server list UI
 
@@ -255,7 +257,7 @@ namespace ServerBrowser
       return 0;
     }
 
-    public virtual bool IsValidPlayer(Player player)
+    public virtual bool IsValidPlayer(ServerRow row, Player player)
     {
       return true;
     }
@@ -282,10 +284,12 @@ namespace ServerBrowser
   public class GameExtensionPool : IEnumerable<KeyValuePair<Game, GameExtension>>
   {
     private readonly Dictionary<Game, GameExtension> extensions = new Dictionary<Game, GameExtension>();
+    public Steamworks Steamworks { get; set; }
 
     public void Add(Game game, GameExtension extension)
     {
       extensions[game] = extension;
+      extension.Steamworks = this.Steamworks;
     }
 
     public GameExtension Get(Game game)
@@ -294,7 +298,7 @@ namespace ServerBrowser
       if (!this.extensions.TryGetValue(game, out extension))
       {
         extension = new GameExtension();
-        this.extensions.Add(game, extension);
+        this.Add(game, extension);
       }
       return extension;
     }

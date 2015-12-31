@@ -1,3 +1,13 @@
+2.24
+---
+- Quake Live: added "Score" column
+- Quake Live: added "Team" and "Skill" columns to player list (using data from qlstats.net)
+- Quake Live: added context menu to Player list with options for steam chat, friend request, steam profile, qlstats profile
+- Quake Live: changed ghost-player time limit from 4h to 1h
+- Ghost players are also removed from the player list now
+- TOXIKK: remove "ghost players" from player counts
+- Player list is sorted by score
+
 2.23
 ---
 - Quake Live: remove "ghost players" (dead connections in the player list) from player counts

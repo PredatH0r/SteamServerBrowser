@@ -30,7 +30,7 @@ namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.23";
+    private const string Version = "2.24";
     private const string DevExpressVersion = "v15.1";
     private const string CustomDetailColumnPrefix = "ServerInfo.";
     private const string CustomRuleColumnPrefix = "custRule.";
@@ -46,7 +46,7 @@ namespace ServerBrowser
     private readonly ServerQueryLogic queryLogic;
     private readonly string geoIpCachePath;
     private readonly GeoIpClient geoIpClient;
-    private readonly Steamworks steam = new Steamworks();
+    private readonly Steamworks steam;
     private readonly MemoryStream defaultLayout = new MemoryStream();
     private int geoIpModified;
     private readonly Dictionary<IPEndPoint, string> favServers = new Dictionary<IPEndPoint, string>();
@@ -69,6 +69,9 @@ namespace ServerBrowser
       this.MoveConfigFilesFromOldLocation();
       this.iniFile = new IniFile(iniPath);
       this.geoIpClient = new GeoIpClient(this.geoIpCachePath);
+
+      this.steam = new Steamworks();
+      this.steam.Init();
 
       this.InitGameInfoExtenders(this.iniFile);
       this.queryLogic = new ServerQueryLogic(this.extenders);
@@ -131,6 +134,7 @@ namespace ServerBrowser
 
     private void InitGameInfoExtenders(IniFile ini)
     {
+      extenders.Steamworks = this.steam;
       extenders.Add(Game.Toxikk, new Toxikk());
       extenders.Add(Game.Reflex, new Reflex());
       extenders.Add(Game.QuakeLive, new QuakeLive(Game.QuakeLive));
@@ -794,8 +798,7 @@ namespace ServerBrowser
         filter.Nor.Sv_Tags = this.ParseTags(this.viewModel.TagsExcludeServer);
       }
       this.CustomizeFilter(filter);
-      foreach (var ext in this.extenders)
-        ext.Value.Refresh();
+      this.RefreshGameExtensions();
       this.queryLogic.ReloadServerList(this.viewModel.serverSource, 750, this.viewModel.MasterServerQueryLimit, QueryMaster.Region.Rest_of_the_world, filter);
     }
     #endregion
@@ -808,12 +811,19 @@ namespace ServerBrowser
       this.miStopUpdate.Enabled = true;
       this.timerReloadServers.Stop();
       this.SetStatusMessage("Updating status of " + this.viewModel.servers.Count + " servers...");
-      foreach (var ext in this.extenders)
-        ext.Value.Refresh();
+      this.RefreshGameExtensions();
       this.queryLogic.RefreshAllServers(this.viewModel.servers);
     }
     #endregion
 
+    #region RefreshGameExtensions()
+    private void RefreshGameExtensions()
+    {
+      // give game extenders a chance to update their data as well (i.e. from external sources)
+      foreach (var ext in this.extenders)
+        ext.Value.Refresh();
+    }
+    #endregion
 
     #region FilterServerRow()
 
@@ -972,7 +982,7 @@ namespace ServerBrowser
     #endregion
 
     #region UpdateGridDataSources()
-    private void UpdateGridDataSources()
+    private void UpdateGridDataSources(bool isCallback = false)
     {
       var row = (ServerRow)this.gvServers.GetFocusedRow();
       this.viewModel.currentServer = row;
@@ -993,6 +1003,7 @@ namespace ServerBrowser
       var curSelName = (gvPlayers.GetFocusedRow() as Player)?.Name;
       this.gcPlayers.DataSource = row?.Players;
       this.gvPlayers.EndDataUpdate();
+      this.gvPlayers.ExpandAllGroups();
       if (curSelName != null)
       {
         int idx = row?.Players?.FindIndex(p => p.Name == curSelName) ?? -1;
@@ -1005,6 +1016,14 @@ namespace ServerBrowser
       this.gvRules.EndDataUpdate();
 
       this.UpdateServerContextMenu();
+
+      if (row != null && !isCallback)
+      {
+        row.GameExtension.Refresh(row, () =>
+        {
+          this.BeginInvoke((Action) (() => { this.UpdateGridDataSources(true); }));
+        });
+      }
     }
     #endregion
 
@@ -1718,7 +1737,7 @@ namespace ServerBrowser
 
       if (this.cbNoUpdateWhilePlaying.Checked && this.cbUseSteamApi.Checked)
       {
-        if (steam.Init() && steam.IsInGame())
+        if (steam.IsInGame())
           return;
       }
 
@@ -1953,6 +1972,7 @@ namespace ServerBrowser
     #region miUpdateServerInfo_ItemClick
     private void miUpdateServerInfo_ItemClick(object sender, ItemClickEventArgs e)
     {
+      this.RefreshGameExtensions();
       if (this.gvServers.SelectedRowsCount == 1)
         this.queryLogic.RefreshSingleServer((ServerRow) this.gvServers.GetFocusedRow());
       else
@@ -1961,8 +1981,7 @@ namespace ServerBrowser
         foreach (var handle in this.gvServers.GetSelectedRows())
           list.Add((ServerRow)this.gvServers.GetRow(handle));
         this.queryLogic.RefreshAllServers(list);
-      }
-      
+      }      
     }
     #endregion
 
@@ -2086,6 +2105,24 @@ namespace ServerBrowser
     #endregion
 
     // Players grid
+
+    #region gvPlayers_CustomRowFilter
+    private void gvPlayers_CustomRowFilter(object sender, RowFilterEventArgs e)
+    {
+      // hide players based on GameExtension.IsValidPlayer() - e.g. ghost connections
+      var server = (ServerRow)this.gvServers.GetFocusedRow();
+      if (server == null) return;
+      var players = server.Players;
+      if (players == null) return;
+      if (e.ListSourceRow >= players.Count) return;
+      var player = players[e.ListSourceRow];
+      if (!server.GameExtension.IsValidPlayer(server, player))
+      {
+        e.Visible = false;
+        e.Handled = true;
+      }
+    }
+    #endregion
 
     #region gvPlayers_CustomUnboundColumnData
     private void gvPlayers_CustomUnboundColumnData(object sender, CustomColumnDataEventArgs e)
@@ -2398,6 +2435,5 @@ namespace ServerBrowser
       this.AddNewTab("New Favorites", TabViewModel.SourceType.Favorites);
     }
     #endregion
-
   }
 }

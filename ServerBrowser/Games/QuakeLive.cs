@@ -6,6 +6,7 @@ using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Linq;
 using System.Windows.Forms;
 using DevExpress.Data;
 using DevExpress.XtraEditors.Controls;
@@ -25,15 +26,6 @@ namespace ServerBrowser
 {
   public class QuakeLive : GameExtension
   {
-    public class QlStatsSkillInfo
-    {
-      public string server { get; set; }
-      public string gt { get; set; }
-      public int min { get; set; }
-      public int avg { get; set; }
-      public int max { get; set; }
-    }
-
     private const int SecondsToWaitForMainWindowAfterLaunch = 20;
 
     private static readonly Dictionary<int, string> gameTypeName = new Dictionary<int, string>
@@ -52,13 +44,20 @@ namespace ServerBrowser
       {12, "RR"}
     };
 
+    private static readonly string[] TeamNames = { null, "Play", "Red", "Blue", "Spec" };
+
     private static readonly Regex NameColors = new Regex("\\^[0-9]");
     private readonly Game steamAppId;
     private bool useKeystrokesToConnect;
     private bool startExtraQL;
     private string extraQlPath;
-    private static readonly DataContractJsonSerializer jsonParser = new DataContractJsonSerializer(typeof(QlStatsSkillInfo[]));
+    private static readonly DataContractJsonSerializer serverSkillJsonParser = new DataContractJsonSerializer(typeof(QlStatsSkillInfo[]));
+    private static readonly DataContractJsonSerializer personalSkillJsonParser = new DataContractJsonSerializer(typeof(QlstatsGlickoRating));
+    private static readonly DataContractJsonSerializer playerListJsonParser = new DataContractJsonSerializer(typeof(QlstatsPlayerList));
     private Dictionary<string,QlStatsSkillInfo> skillInfo = new Dictionary<string, QlStatsSkillInfo>();
+    private GridColumn colSkill;
+    private const string SkillTooltip = "QLStats.net skill rating max/avg/min (*100)";
+    private readonly Dictionary<ServerRow, QlstatsPlayerList> qlstatsPlayerlists = new Dictionary<ServerRow, QlstatsPlayerList>();
 
     #region ctor()
 
@@ -122,7 +121,9 @@ namespace ServerBrowser
         .OptionsFilter.AutoFilterCondition = AutoFilterCondition.Default;
 
       idx = view.Columns["PlayerCount"].VisibleIndex;
-      AddColumn(view, "_skill", "Skill", "QLStats.net skill rating max/avg/min (*100)", 60, ++idx, UnboundColumnType.Integer);
+      this.colSkill = AddColumn(view, "_skill", "Skill", SkillTooltip, 60, ++idx, UnboundColumnType.Integer);
+      AddColumn(view, "_score", "Score", "Current score", 50, ++idx, UnboundColumnType.Integer);
+      //AddColumn(view, "_time", "Time", "Match time", 30, ++idx, UnboundColumnType.Integer);
       AddColumn(view, "_teamsize", "TS", "Team Size", 30, ++idx, UnboundColumnType.Integer);
 
       idx = view.Columns["ServerInfo.Ping"].VisibleIndex;
@@ -163,10 +164,36 @@ namespace ServerBrowser
 
     #endregion
 
-    #region Refresh()
-    public override void Refresh()
+    #region CustomizePlayerGridColumns()
+    public override void CustomizePlayerGridColumns(GridView view)
     {
-      // request server skill rating data from qlstats.net
+      base.CustomizePlayerGridColumns(view);
+
+      AddColumn(view, "_team", "Team", "", 30, 0);
+      AddColumn(view, "_skill", "Skill", SkillTooltip, 30, 2, UnboundColumnType.Integer);
+      view.Columns["Time"].Visible = false;
+      AddColumn(view, "_time", "Time", "Play time since map start", 50);
+    }
+    #endregion
+
+    #region Refresh()
+    public override void Refresh(ServerRow row = null, Action callback = null)
+    {
+      LoadQlstatsPersonalRating();
+      LoadQlstatsServerRatings();
+      if (row == null)
+        this.qlstatsPlayerlists.Clear();
+      else
+        this.LoadQlstatsPlayerList(row, callback);
+    }
+    #endregion
+
+    #region LoadQlstatsPersonalRating()
+    private void LoadQlstatsPersonalRating()
+    {
+      if (this.Steamworks == null) return;
+      var steamid = this.Steamworks.GetUserID();
+      if (steamid == 0) return;
       using (var client = new XWebClient(2000))
       {
         client.DownloadStringCompleted += (sender, args) =>
@@ -175,7 +202,47 @@ namespace ServerBrowser
           {
             using (var strm = new MemoryStream(Encoding.UTF8.GetBytes(args.Result)))
             {
-              var servers = (QlStatsSkillInfo[]) jsonParser.ReadObject(strm);
+              var result = (QlstatsGlickoRating)personalSkillJsonParser.ReadObject(strm);
+              var text = "\n\nYour personal rating, (uncertainty), [games]:";
+              foreach (var player in result.players)
+              {
+                var gametypes = new[] { "ffa", "ca", "duel", "ctf", "tdm", "ft" };
+                var ratings = new[] { player.ffa, player.ca, player.duel, player.ctf, player.tdm, player.ft };
+                for (int i = 0; i < gametypes.Length; i++)
+                {
+                  var rating = ratings[i];
+                  if (rating == null) continue;
+                  text += $"\n{gametypes[i].ToUpper()}: {rating.r_rd} ({rating.rd}) [{rating.games}]";
+                }
+                if (gametypes.Length == 0)
+                  text = "";
+              }
+
+              this.colSkill.ToolTip = SkillTooltip + text;
+            }
+          }
+          catch
+          {
+          }
+        };
+        client.DownloadStringAsync(new Uri("http://qlstats.net:8080/glicko/" + steamid));
+      }
+    }
+
+    #endregion
+
+    #region LoadQlstatsServerRatings()
+    private void LoadQlstatsServerRatings()
+    {
+      using (var client = new XWebClient(2000))
+      {
+        client.DownloadStringCompleted += (sender, args) =>
+        {
+          try
+          {
+            using (var strm = new MemoryStream(Encoding.UTF8.GetBytes(args.Result)))
+            {
+              var servers = (QlStatsSkillInfo[])serverSkillJsonParser.ReadObject(strm);
               var dict = new Dictionary<string, QlStatsSkillInfo>();
               foreach (var server in servers)
                 dict[server.server] = server;
@@ -190,6 +257,36 @@ namespace ServerBrowser
       }
     }
     #endregion
+
+    #region LoadQlstatsPlayerList()
+    private void LoadQlstatsPlayerList(ServerRow row, Action callback = null)
+    {
+      this.qlstatsPlayerlists[row] = null;
+      using (var client = new XWebClient(2000))
+      {
+        client.Encoding = Encoding.UTF8;
+        
+        client.DownloadStringCompleted += (sender, args) =>
+        {
+          try
+          {
+            using (var strm = new MemoryStream(Encoding.UTF8.GetBytes(args.Result)))
+            {
+              var playerList = (QlstatsPlayerList) playerListJsonParser.ReadObject(strm);
+              this.qlstatsPlayerlists[row] = playerList;
+              callback?.Invoke();
+            }
+          }
+          catch
+          {
+          }
+        };
+
+        client.DownloadStringAsync(new Uri("http://qlstats.net:8088/api/server/" + row.EndPoint + "/players"));
+      }
+    }
+    #endregion
+
 
     #region GetServerCellValue()
 
@@ -238,6 +335,33 @@ namespace ServerBrowser
             return null;
           return "" + (skill.max + 50)/100 + "/" + (skill.avg + 50)/100 + "/" + (skill.min + 50)/100;
         }
+        case "_score":
+        {
+          var state = row.GetRule("g_gameState");
+          if (state == "PRE_GAME")
+            return null;
+          var red = row.GetRule("g_redScore");
+          var blue = row.GetRule("g_blueScore");
+          int ired, iblue;
+          if (int.TryParse(red, out ired) && int.TryParse(blue, out iblue) && iblue > ired)
+            return "" + iblue + ":" + ired;
+          return "" + red + ":" + blue;
+        }
+        case "_time":
+        {
+          var time = row.GetRule("g_levelStartTime");
+          if (time == null) return null;
+          int itime;
+          if (!int.TryParse(time, out itime)) return null;
+          var dt = new DateTime(1970, 1, 1).AddSeconds(itime);
+          var span = DateTime.UtcNow - dt;
+          var str = span.Minutes.ToString("d2") + ":" + span.Seconds.ToString("d2");
+          if (span.TotalHours >= 1)
+            str = span.Hours.ToString("d") + "h " + str;
+          if (span.TotalDays >= 1)
+            str = ((int)span.TotalDays) + "d " + str;
+          return str;
+        }
         case "g_instaGib":
           return row.GetRule(fieldName) == "1";
         case "g_loadout":
@@ -250,18 +374,57 @@ namespace ServerBrowser
 
     #endregion
 
+
     #region IsValidPlayer()
-    public override bool IsValidPlayer(Player player)
+    public override bool IsValidPlayer(ServerRow server, Player player)
     {
       // hack to remove ghost players which are not really on the server
-      return player.Score > 0 || player.Time < TimeSpan.FromHours(4);
+      return player.Score > 0 || player.Time < TimeSpan.FromHours(1);
+    }
+    #endregion
+
+    #region GetPlayerCellValue()
+    public override object GetPlayerCellValue(ServerRow server, Player player, string fieldName)
+    {
+      if (fieldName[0] != '_')
+        return base.GetPlayerCellValue(server, player, fieldName);
+
+      QlstatsPlayerList list;
+      QlstatsPlayerList.Player playerInfo = null;
+      this.qlstatsPlayerlists.TryGetValue(server, out list);
+      if (list?.players != null)
+      {
+        var cleanName = this.GetCleanPlayerName(player.Name);
+        foreach (var ch in "'\"<>") // some special characters which QL returns in the server query but strips out of ZMQ names
+          cleanName = cleanName.Replace(ch.ToString(), "");
+        playerInfo = list.players.FirstOrDefault(p => this.GetCleanPlayerName(p.name) == cleanName);
+      }
+      if (playerInfo == null)
+      {
+        if (fieldName == "_time")
+          return player.Time.ToString("hh\\:mm\\:ss");
+        return null;
+      }
+
+      if (fieldName == "_team")
+        return TeamNames[playerInfo.team + 1];
+      if (fieldName == "_skill")
+        return playerInfo.rating; //(playerInfo.rating+50)/100;
+      if (fieldName == "_time")
+        return (DateTime.UtcNow - new DateTime(1970, 1, 1).AddMilliseconds(playerInfo.time)).ToString("hh\\:mm\\:ss");
+
+      return null;
     }
     #endregion
 
     #region GetCleanPlayerName()
     public override string GetCleanPlayerName(Player player)
     {
-      return NameColors.Replace(player.Name, "");
+      return this.GetCleanPlayerName(player.Name);
+    }
+    private string GetCleanPlayerName(string name)
+    {
+      return name == null ? null : NameColors.Replace(name, "");
     }
     #endregion
 
@@ -310,6 +473,26 @@ namespace ServerBrowser
       return 0;
     }
     #endregion
+
+    #region CustomizePlayerContextMenu()
+    public override void CustomizePlayerContextMenu(ServerRow server, Player player, List<PlayerContextMenuItem> menu)
+    {
+      QlstatsPlayerList list;
+      if (!this.qlstatsPlayerlists.TryGetValue(server, out list))
+        return;
+      var cleanName = this.GetCleanPlayerName(player);
+      var info = list.players.FirstOrDefault(p => this.GetCleanPlayerName(p.name) == cleanName);
+      if (info == null)
+        return;
+
+      menu.Insert(0, new PlayerContextMenuItem("Open Steam Chat", () => { Process.Start("steam://friends/message/" + info.steamid); }, true));
+      menu.Insert(1, new PlayerContextMenuItem("Show Steam Profile", () => { Process.Start("http://steamcommunity.com/profiles/" + info.steamid + "/"); }));
+      menu.Insert(2, new PlayerContextMenuItem("Show QLStats Profile", () => { Process.Start("http://qlstats.net:8080/player/" + info.steamid); }));
+      menu.Insert(3, new PlayerContextMenuItem("Add to Steam Friends", () => { Process.Start("steam://friends/add/" + info.steamid); }));
+      menu.Add(new PlayerContextMenuItem("Copy Steam-ID to Clipboard", () => { Clipboard.SetText(info.steamid); }));
+    }
+    #endregion
+
 
     #region Connect()
 
@@ -426,9 +609,60 @@ namespace ServerBrowser
 
     #endregion
 
+
+
+    #region class QlStatsSkillInfo
+    public class QlStatsSkillInfo
+    {
+      public string server;
+      public string gt;
+      public int min;
+      public int avg;
+      public int max;
+    }
+    #endregion
+
+    #region class QlstatsGlickoRating
+
+    public class QlstatsGlickoRating
+    {
+      public class GametypeRating
+      {
+        public int games;
+        public int r_rd;
+        public int rd;
+      }
+      public class Players
+      {
+        public string steamid;
+        public GametypeRating ffa, ca, duel, ctf, tdm, ft;
+      }
+
+      public Players[] players;
+    }
+    #endregion
+
+    #region class QlstatsPlayerList
+    public class QlstatsPlayerList
+    {
+      public class Player
+      {
+        public string steamid;
+        public string name;
+        public int team;
+        public long time;
+        public int rating;
+      }
+
+      public bool ok;
+      public Player[] players;
+    }
+    #endregion
+
+
     // ZeroMQ rcon stuff
 #if ZMQ
-#region Rcon()
+    #region Rcon()
 
     public override void Rcon(ServerRow row, int port, string password, string command)
     {
@@ -480,9 +714,9 @@ namespace ServerBrowser
         }
       }
     }
-#endregion
+    #endregion
 
-#region CreateClientAndMonitorSockets()
+    #region CreateClientAndMonitorSockets()
     private void CreateClientAndMonitorSockets(ZContext ctx, IPEndPoint endPoint, string password, out ZSocket client, out ZSocket monitor)
     {
       client = new ZSocket(ctx, ZSocketType.DEALER);
@@ -502,9 +736,9 @@ namespace ServerBrowser
       client.SetOption(ZSocketOption.IDENTITY, ident);
       client.Connect("tcp://" + endPoint);      
     }
-#endregion
+    #endregion
 
-#region CheckMonitor()
+    #region CheckMonitor()
     private Tuple<ZMonitorEvents,object> CheckMonitor(ZSocket monitor)
     {
       try
@@ -528,7 +762,7 @@ namespace ServerBrowser
         return null;
       }
     }
-#endregion
+    #endregion
 #endif
   }
 }

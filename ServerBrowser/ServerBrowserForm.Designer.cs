@@ -88,6 +88,7 @@ namespace ServerBrowser
       this.miShowOptions = new DevExpress.XtraBars.BarButtonItem();
       this.miShowServerQuery = new DevExpress.XtraBars.BarButtonItem();
       this.miShowFilter = new DevExpress.XtraBars.BarButtonItem();
+      this.miRestoreStandardLayout = new DevExpress.XtraBars.BarButtonItem();
       this.mnuGameOptions = new DevExpress.XtraBars.BarLinkContainerItem();
       this.mnuTabs = new DevExpress.XtraBars.BarSubItem();
       this.miRenameTab = new DevExpress.XtraBars.BarButtonItem();
@@ -220,7 +221,6 @@ namespace ServerBrowser
       this.menuDetails = new DevExpress.XtraBars.PopupMenu(this.components);
       this.splashScreenManager1 = new DevExpress.XtraSplashScreen.SplashScreenManager(this, typeof(global::ServerBrowser.ConnectingWaitForm), false, true);
       this.timerHideWaitForm = new System.Windows.Forms.Timer(this.components);
-      this.miRestoreStandardLayout = new DevExpress.XtraBars.BarButtonItem();
       ((System.ComponentModel.ISupportInitialize)(this.riCheckEdit)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.gcDetails)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.gvDetails)).BeginInit();
@@ -383,9 +383,13 @@ namespace ServerBrowser
             this.colTime});
       this.gvPlayers.GridControl = this.gcPlayers;
       this.gvPlayers.Name = "gvPlayers";
+      this.gvPlayers.OptionsBehavior.Editable = false;
       this.gvPlayers.OptionsView.ShowGroupPanel = false;
       this.gvPlayers.OptionsView.ShowIndicator = false;
+      this.gvPlayers.SortInfo.AddRange(new DevExpress.XtraGrid.Columns.GridColumnSortInfo[] {
+            new DevExpress.XtraGrid.Columns.GridColumnSortInfo(this.colScore, DevExpress.Data.ColumnSortOrder.Descending)});
       this.gvPlayers.CustomUnboundColumnData += new DevExpress.XtraGrid.Views.Base.CustomColumnDataEventHandler(this.gvPlayers_CustomUnboundColumnData);
+      this.gvPlayers.CustomRowFilter += new DevExpress.XtraGrid.Views.Base.RowFilterEventHandler(this.gvPlayers_CustomRowFilter);
       this.gvPlayers.MouseDown += new System.Windows.Forms.MouseEventHandler(this.gvPlayers_MouseDown);
       this.gvPlayers.DoubleClick += new System.EventHandler(this.gvPlayers_DoubleClick);
       // 
@@ -1256,6 +1260,13 @@ namespace ServerBrowser
       this.miShowFilter.ImageIndex = 13;
       this.miShowFilter.Name = "miShowFilter";
       this.miShowFilter.DownChanged += new DevExpress.XtraBars.ItemClickEventHandler(this.miShowFilter_DownChanged);
+      // 
+      // miRestoreStandardLayout
+      // 
+      this.miRestoreStandardLayout.Caption = "Restore Standard Layout";
+      this.miRestoreStandardLayout.Id = 34;
+      this.miRestoreStandardLayout.Name = "miRestoreStandardLayout";
+      this.miRestoreStandardLayout.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miRestoreStandardLayout_ItemClick);
       // 
       // mnuGameOptions
       // 
@@ -2794,13 +2805,6 @@ namespace ServerBrowser
       // 
       this.timerHideWaitForm.Interval = 5000;
       this.timerHideWaitForm.Tick += new System.EventHandler(this.timerHideWaitForm_Tick);
-      // 
-      // miRestoreStandardLayout
-      // 
-      this.miRestoreStandardLayout.Caption = "Restore Standard Layout";
-      this.miRestoreStandardLayout.Id = 34;
-      this.miRestoreStandardLayout.Name = "miRestoreStandardLayout";
-      this.miRestoreStandardLayout.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miRestoreStandardLayout_ItemClick);
       // 
       // ServerBrowserForm
       // 

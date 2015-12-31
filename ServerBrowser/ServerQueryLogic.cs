@@ -101,6 +101,8 @@ namespace ServerBrowser
     public event EventHandler<ServerListEventArgs> ReloadServerListComplete;
     public event EventHandler<ServerEventArgs> RefreshSingleServerComplete;
 
+    private readonly ThrottledThreadPool ThreadPool = new ThrottledThreadPool(50);
+
     #region ctor()
     public ServerQueryLogic(GameExtensionPool gameExtensions)
     {

@@ -6,7 +6,7 @@ using System.Text;
 
 namespace ServerBrowser
 {
-  class Steamworks : IDisposable
+  public class Steamworks : IDisposable
   {
     #region DllImport
 
