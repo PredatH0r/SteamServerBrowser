@@ -58,7 +58,8 @@ namespace ServerBrowser
       if (this.DownloadStringCompleted == null)
         return;
       var request = new AsyncRequest(url, state);
-      ThreadPool.QueueUserWorkItem(this.DownloadStringWithTimeout, request);
+      var thread = new Thread(this.DownloadStringWithTimeout);
+      thread.Start(request);
     }
 
     private void DownloadStringWithTimeout(object asyncRequest)
@@ -105,7 +106,8 @@ namespace ServerBrowser
       if (this.DownloadDataCompleted == null)
         return;
       var request = new AsyncRequest(url, state);
-      ThreadPool.QueueUserWorkItem(this.DownloadDataWithTimeout, request);
+      var thread = new Thread(this.DownloadDataWithTimeout);
+      thread.Start(request);
     }
 
     private void DownloadDataWithTimeout(object asyncRequest)
@@ -124,8 +126,7 @@ namespace ServerBrowser
       }
 
       var handler = this.DownloadDataCompleted;
-      if (handler != null)
-        handler(this, request.DataResult);
+      handler?.Invoke(this, request.DataResult);
     }
     #endregion
 
