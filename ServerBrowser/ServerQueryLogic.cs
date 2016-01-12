@@ -75,7 +75,6 @@ namespace ServerBrowser
       #region Get/SetDataModified()
 
       private int DataModified; // bool, but there is no Interlocked.Exchange(bool)
-      public bool KeepPreviousPing { get; set; }
       public int BatchNumber { get; set; }
 
       public void SetDataModified()
@@ -268,13 +267,12 @@ namespace ServerBrowser
     // refresh single server
 
     #region RefreshSingleServer()
-    public void RefreshSingleServer(ServerRow row, bool updatePing = true)
+    public void RefreshSingleServer(ServerRow row)
     {
       if (this.IsUpdating)
         return;
       row.Status = "updating...";
       var req = new UpdateRequest(this.currentRequest.AppId, 1, this.currentRequest.Timeout, this.currentRequest.GameExtension);
-      req.KeepPreviousPing = !updatePing;
       req.PendingTasks = new CountdownEvent(1);
       this.currentRequest = req;
       ThreadPool.QueueUserWorkItem(dummy => this.UpdateServerAndDetails(req, row, true));
@@ -298,11 +296,8 @@ namespace ServerBrowser
           server.SendFirstPacketTwice = this.sendFirstUdpPacketTwice;
           server.Retries = 3;
           status = "timeout";
-          var oldPing = row.ServerInfo?.Ping ?? 0;
           if (this.UpdateServerInfo(request, row, server))
           {
-            if (request.KeepPreviousPing && row.ServerInfo != null)
-              row.ServerInfo.Ping = oldPing; // keep old ping so that the row isn't immediately resorted and moved
             this.UpdatePlayers(request, row, server);
             this.UpdateRules(request, row, server);
             status = "ok";

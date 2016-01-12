@@ -160,6 +160,7 @@ namespace ServerBrowser
       this.tabFavorites = new DevExpress.XtraTab.XtraTabPage();
       this.tabAdd = new DevExpress.XtraTab.XtraTabPage();
       this.panelOptions = new DevExpress.XtraEditors.PanelControl();
+      this.cbHideGhosts = new DevExpress.XtraEditors.CheckEdit();
       this.cbConnectOnDoubleClick = new DevExpress.XtraEditors.CheckEdit();
       this.cbUseSteamApi = new DevExpress.XtraEditors.CheckEdit();
       this.cbShowCounts = new DevExpress.XtraEditors.CheckEdit();
@@ -268,6 +269,7 @@ namespace ServerBrowser
       this.tabControl.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.panelOptions)).BeginInit();
       this.panelOptions.SuspendLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.cbHideGhosts.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbConnectOnDoubleClick.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbUseSteamApi.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbShowCounts.Properties)).BeginInit();
@@ -388,6 +390,7 @@ namespace ServerBrowser
       this.gvPlayers.OptionsView.ShowIndicator = false;
       this.gvPlayers.SortInfo.AddRange(new DevExpress.XtraGrid.Columns.GridColumnSortInfo[] {
             new DevExpress.XtraGrid.Columns.GridColumnSortInfo(this.colScore, DevExpress.Data.ColumnSortOrder.Descending)});
+      this.gvPlayers.RowCellStyle += new DevExpress.XtraGrid.Views.Grid.RowCellStyleEventHandler(this.gvPlayers_RowCellStyle);
       this.gvPlayers.CustomUnboundColumnData += new DevExpress.XtraGrid.Views.Base.CustomColumnDataEventHandler(this.gvPlayers_CustomUnboundColumnData);
       this.gvPlayers.CustomRowFilter += new DevExpress.XtraGrid.Views.Base.RowFilterEventHandler(this.gvPlayers_CustomRowFilter);
       this.gvPlayers.MouseDown += new System.Windows.Forms.MouseEventHandler(this.gvPlayers_MouseDown);
@@ -472,6 +475,7 @@ namespace ServerBrowser
       this.gvServers.GridControl = this.gcServers;
       this.gvServers.Images = this.imageCollection;
       this.gvServers.Name = "gvServers";
+      this.gvServers.OptionsBehavior.ImmediateUpdateRowPosition = false;
       this.gvServers.OptionsDetail.EnableMasterViewMode = false;
       this.gvServers.OptionsFilter.DefaultFilterEditorView = DevExpress.XtraEditors.FilterEditorViewMode.VisualAndText;
       this.gvServers.OptionsSelection.MultiSelect = true;
@@ -2055,6 +2059,7 @@ namespace ServerBrowser
       // panelOptions
       // 
       this.panelOptions.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.NoBorder;
+      this.panelOptions.Controls.Add(this.cbHideGhosts);
       this.panelOptions.Controls.Add(this.cbConnectOnDoubleClick);
       this.panelOptions.Controls.Add(this.cbUseSteamApi);
       this.panelOptions.Controls.Add(this.cbShowCounts);
@@ -2080,6 +2085,21 @@ namespace ServerBrowser
       this.panelOptions.Size = new System.Drawing.Size(1650, 102);
       this.panelOptions.TabIndex = 0;
       this.panelOptions.Visible = false;
+      // 
+      // cbHideGhosts
+      // 
+      this.cbHideGhosts.EditValue = true;
+      this.cbHideGhosts.Location = new System.Drawing.Point(796, 72);
+      this.cbHideGhosts.Name = "cbHideGhosts";
+      this.cbHideGhosts.Properties.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
+      this.cbHideGhosts.Properties.Appearance.Options.UseFont = true;
+      this.cbHideGhosts.Properties.AutoWidth = true;
+      this.cbHideGhosts.Properties.Caption = "Hide ghost players";
+      this.cbHideGhosts.Size = new System.Drawing.Size(120, 19);
+      this.cbHideGhosts.TabIndex = 19;
+      this.cbHideGhosts.ToolTip = "Game server sometimes report players who are not really on the server.\r\nSuch play" +
+    "ers can be hidden when there is an alternative way to query information.";
+      this.cbHideGhosts.CheckedChanged += new System.EventHandler(this.cbHideGhosts_CheckedChanged);
       // 
       // cbConnectOnDoubleClick
       // 
@@ -2875,6 +2895,7 @@ namespace ServerBrowser
       ((System.ComponentModel.ISupportInitialize)(this.panelOptions)).EndInit();
       this.panelOptions.ResumeLayout(false);
       this.panelOptions.PerformLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.cbHideGhosts.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbConnectOnDoubleClick.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbUseSteamApi.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbShowCounts.Properties)).EndInit();
@@ -3111,5 +3132,6 @@ namespace ServerBrowser
     private DevExpress.XtraBars.Docking.DockPanel panelTop;
     private DevExpress.XtraBars.Docking.ControlContainer controlContainer4;
     private DevExpress.XtraBars.BarButtonItem miRestoreStandardLayout;
+    protected CheckEdit cbHideGhosts;
   }
 }

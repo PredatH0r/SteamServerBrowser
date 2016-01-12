@@ -1,3 +1,12 @@
+2.25
+---
+- added control to turn ghost player filter on/off
+- servers rows keep their position even when sorted data values change
+- improved scrolling during server list updates
+- Quake Live: improved ghost player filter using information from qlstats.net
+- Quake Live: improved display of player counts using information from qlstats.net
+- Quake Live: personal rating information now shows r +/- RD to be consistent with qlstats.net
+
 2.24
 ---
 - Quake Live: added "Score" column

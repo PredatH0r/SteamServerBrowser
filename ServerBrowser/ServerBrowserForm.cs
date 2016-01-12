@@ -30,7 +30,7 @@ namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.24";
+    private const string Version = "2.25";
     private const string DevExpressVersion = "v15.1";
     private const string CustomDetailColumnPrefix = "ServerInfo.";
     private const string CustomRuleColumnPrefix = "custRule.";
@@ -447,6 +447,7 @@ namespace ServerBrowser
       this.cbShowCounts.Checked = options.GetBool("ShowServerCounts", true);
       this.cbConnectOnDoubleClick.Checked = options.GetBool("ConnectOnDoubleClick", true);
       this.Size = new Size(options.GetInt("WindowWidth", 1600), options.GetInt("WindowHeight", 840));
+      this.cbHideGhosts.Checked = options.GetBool("HideGhostPlayers");
 
       if (File.Exists(this.xmlLayoutPath))
       {
@@ -540,6 +541,7 @@ namespace ServerBrowser
       sb.AppendLine($"ConnectOnDoubleClick={this.cbConnectOnDoubleClick.Checked}");
       sb.AppendLine($"WindowWidth={this.Width}");
       sb.AppendLine($"WindowHeight={this.Height}");
+      sb.AppendLine($"HideGhostPlayers={this.cbHideGhosts.Checked}");
 
       sb.AppendLine();
       sb.AppendLine("[FavoriteServers]");
@@ -926,6 +928,8 @@ namespace ServerBrowser
       if (this.viewModel == null) return;
 
       ++ignoreUiEvents;
+
+      var topRow = this.gvServers.TopRowIndex;
       this.gvServers.BeginDataUpdate();
 
       this.LookupGeoIps();
@@ -933,8 +937,8 @@ namespace ServerBrowser
       
       this.gcServers.DataSource = this.viewModel.servers;
       this.gvServers.EndDataUpdate();
-      //this.gvServers.RefreshData();
-
+      this.gvServers.TopRowIndex = topRow;
+      
       if (this.viewModel.lastSelectedServer != null)
       {
         int i = 0;
@@ -946,7 +950,7 @@ namespace ServerBrowser
             this.gvServers.FocusedRowHandle = h;
             this.gvServers.ClearSelection();
             this.gvServers.SelectRow(h);
-            this.gvServers.MakeRowVisible(gvServers.FocusedRowHandle);
+            //this.gvServers.MakeRowVisible(gvServers.FocusedRowHandle);
             break;
           }
           ++i;
@@ -1021,7 +1025,11 @@ namespace ServerBrowser
       {
         row.GameExtension.Refresh(row, () =>
         {
-          this.BeginInvoke((Action) (() => { this.UpdateGridDataSources(true); }));
+          this.BeginInvoke((Action) (() =>
+          {
+            row.PlayerCount.Update();
+            this.UpdateGridDataSources(true);
+          }));
         });
       }
     }
@@ -1592,6 +1600,14 @@ namespace ServerBrowser
     }
     #endregion
 
+    #region cbHideGhosts_CheckedChanged
+    private void cbHideGhosts_CheckedChanged(object sender, EventArgs e)
+    {
+      this.gvPlayers.RefreshData();
+    }
+    #endregion
+
+
     // server-side filters
 
     #region comboGames_SelectedIndexChanged
@@ -1863,7 +1879,7 @@ namespace ServerBrowser
 
         if (row != null && this.cbRefreshSelectedServer.Checked && !this.queryLogic.IsUpdating)
         {
-          this.queryLogic.RefreshSingleServer(row, false);
+          this.queryLogic.RefreshSingleServer(row);
           if (row.GeoInfo == null)
             this.geoIpClient.Lookup(row.EndPoint.Address, geoInfo => this.GeoIpReceived(row, geoInfo));
         }
@@ -2109,6 +2125,8 @@ namespace ServerBrowser
     #region gvPlayers_CustomRowFilter
     private void gvPlayers_CustomRowFilter(object sender, RowFilterEventArgs e)
     {
+      if (!this.cbHideGhosts.Checked)
+        return;
       // hide players based on GameExtension.IsValidPlayer() - e.g. ghost connections
       var server = (ServerRow)this.gvServers.GetFocusedRow();
       if (server == null) return;
@@ -2187,6 +2205,18 @@ namespace ServerBrowser
           return;
         }
       }
+    }
+    #endregion
+
+    #region gvPlayers_RowCellStyle
+    private void gvPlayers_RowCellStyle(object sender, RowCellStyleEventArgs e)
+    {
+      if (this.cbHideGhosts.Checked)
+        return;
+      var player = (Player)this.gvPlayers.GetRow(e.RowHandle);
+      var server = (ServerRow)this.gvServers.GetFocusedRow();
+      if (!server.GameExtension.IsValidPlayer(server, player))
+        e.Appearance.ForeColor = Color.Silver;
     }
     #endregion
 

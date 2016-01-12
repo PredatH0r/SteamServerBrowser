@@ -13,6 +13,7 @@ using DevExpress.XtraEditors.Controls;
 using DevExpress.XtraEditors.Repository;
 using DevExpress.XtraGrid.Columns;
 using DevExpress.XtraGrid.Views.Grid;
+using DevExpress.XtraPrinting.Native;
 using QueryMaster;
 using ServerBrowser.Games;
 
@@ -203,7 +204,7 @@ namespace ServerBrowser
             using (var strm = new MemoryStream(Encoding.UTF8.GetBytes(args.Result)))
             {
               var result = (QlstatsGlickoRating)personalSkillJsonParser.ReadObject(strm);
-              var text = "\n\nYour personal rating, (uncertainty), [games]:";
+              var text = "\n\nYour personal rating: estimate ± uncertainty:";
               foreach (var player in result.players)
               {
                 var gametypes = new[] { "ffa", "ca", "duel", "ctf", "tdm", "ft" };
@@ -212,7 +213,7 @@ namespace ServerBrowser
                 {
                   var rating = ratings[i];
                   if (rating == null) continue;
-                  text += $"\n{gametypes[i].ToUpper()}: {rating.r_rd} ({rating.rd}) [{rating.games}]";
+                  text += $"\n{gametypes[i].ToUpper()}: {rating.r}­ ± {rating.rd} ({rating.games} games)";
                 }
                 if (gametypes.Length == 0)
                   text = "";
@@ -247,6 +248,20 @@ namespace ServerBrowser
               foreach (var server in servers)
                 dict[server.server] = server;
               this.skillInfo = dict;
+
+              var view = this.colSkill.View;
+              var grid = view.GridControl;
+              grid.BeginInvoke((Action) (() =>
+              {
+                for (int i = 0, c = view.RowCount; i < c; i++)
+                {
+                  var row = (ServerRow) view.GetRow(i);
+                  var info = dict.GetValueOrDefault(row.EndPoint.ToString(), null);
+                  if (info != null)
+                    row.PlayerCount.Update();
+                }
+                view.RefreshData();
+              }));
             }
           }
           catch
@@ -274,6 +289,8 @@ namespace ServerBrowser
             {
               var playerList = (QlstatsPlayerList) playerListJsonParser.ReadObject(strm);
               this.qlstatsPlayerlists[row] = playerList;
+              if (playerList.serverinfo != null)
+                this.skillInfo[row.EndPoint.ToString()] = playerList.serverinfo;
               callback?.Invoke();
             }
           }
@@ -378,53 +395,46 @@ namespace ServerBrowser
     #region IsValidPlayer()
     public override bool IsValidPlayer(ServerRow server, Player player)
     {
-      // hack to remove ghost players which are not really on the server
-      return player.Score > 0 || player.Time < TimeSpan.FromHours(1);
-    }
-    #endregion
-
-    #region GetPlayerCellValue()
-    public override object GetPlayerCellValue(ServerRow server, Player player, string fieldName)
-    {
-      if (fieldName[0] != '_')
-        return base.GetPlayerCellValue(server, player, fieldName);
-
-      QlstatsPlayerList list;
-      QlstatsPlayerList.Player playerInfo = null;
-      this.qlstatsPlayerlists.TryGetValue(server, out list);
+      var list = qlstatsPlayerlists.GetValueOrDefault(server, null);
       if (list?.players != null)
       {
-        var cleanName = this.GetCleanPlayerName(player.Name);
-        foreach (var ch in "'\"<>") // some special characters which QL returns in the server query but strips out of ZMQ names
-          cleanName = cleanName.Replace(ch.ToString(), "");
-        playerInfo = list.players.FirstOrDefault(p => this.GetCleanPlayerName(p.name) == cleanName);
+        var cleanName = this.GetCleanPlayerName(player.Name, true);
+        return list.players.Count(p => this.GetCleanPlayerName(p.name) == cleanName) > 0;
       }
-      if (playerInfo == null)
-      {
-        if (fieldName == "_time")
-          return player.Time.ToString("hh\\:mm\\:ss");
-        return null;
-      }
-
-      if (fieldName == "_team")
-        return TeamNames[playerInfo.team + 1];
-      if (fieldName == "_skill")
-        return playerInfo.rating; //(playerInfo.rating+50)/100;
-      if (fieldName == "_time")
-        return (DateTime.UtcNow - new DateTime(1970, 1, 1).AddMilliseconds(playerInfo.time)).ToString("hh\\:mm\\:ss");
-
-      return null;
+        
+      // hack to remove ghost players which are not really on the server
+      var status = server.GetRule("g_gameStatus");
+      return status != "IN_PROGRESS" || player.Score > 0 || player.Time < TimeSpan.FromHours(1);
     }
     #endregion
 
-    #region GetCleanPlayerName()
-    public override string GetCleanPlayerName(Player player)
+    #region GetRealPlayerCount()
+    public override int? GetRealPlayerCount(ServerRow row)
     {
-      return this.GetCleanPlayerName(player.Name);
+      var info = this.skillInfo.GetValueOrDefault(row.EndPoint.ToString(), null);
+      if (info != null)
+        return info.pc + info.sc;
+      return base.GetRealPlayerCount(row);
     }
-    private string GetCleanPlayerName(string name)
+    #endregion
+
+    #region GetSpectatorCount()
+    public override int GetSpectatorCount(ServerRow row)
     {
-      return name == null ? null : NameColors.Replace(name, "");
+      var info = this.skillInfo.GetValueOrDefault(row.EndPoint.ToString(), null);
+      if (info != null)
+        return info.sc;
+      return 0;
+    }
+    #endregion
+
+    #region GetBotCount()
+    public override int? GetBotCount(ServerRow row)
+    {
+      var info = this.skillInfo.GetValueOrDefault(row.EndPoint.ToString(), null);
+      if (info != null)
+        return info.bc;
+      return base.GetRealPlayerCount(row);
     }
     #endregion
 
@@ -471,6 +481,58 @@ namespace ServerBrowser
         return val;
 
       return 0;
+    }
+    #endregion
+
+
+    #region GetPlayerCellValue()
+    public override object GetPlayerCellValue(ServerRow server, Player player, string fieldName)
+    {
+      if (fieldName[0] != '_')
+        return base.GetPlayerCellValue(server, player, fieldName);
+
+      QlstatsPlayerList list;
+      QlstatsPlayerList.Player playerInfo = null;
+      this.qlstatsPlayerlists.TryGetValue(server, out list);
+      if (list?.players != null)
+      {
+        var cleanName = this.GetCleanPlayerName(player.Name, true);
+        playerInfo = list.players.FirstOrDefault(p => this.GetCleanPlayerName(p.name) == cleanName);
+      }
+      if (playerInfo == null)
+      {
+        if (fieldName == "_time")
+          return player.Time.ToString("hh\\:mm\\:ss");
+        return null;
+      }
+
+      if (fieldName == "_team")
+        return TeamNames[playerInfo.team + 1];
+      if (fieldName == "_skill")
+        return playerInfo.rating; //(playerInfo.rating+50)/100;
+      if (fieldName == "_time")
+        return (DateTime.UtcNow - new DateTime(1970, 1, 1).AddMilliseconds(playerInfo.time)).ToString("hh\\:mm\\:ss");
+
+      return null;
+    }
+    #endregion
+
+    #region GetCleanPlayerName()
+    public override string GetCleanPlayerName(Player player)
+    {
+      return this.GetCleanPlayerName(player.Name);
+    }
+
+    private string GetCleanPlayerName(string name, bool removeNonZmqChars = false)
+    {
+      if (name == null) return null;
+      name = NameColors.Replace(name, "");
+      if (removeNonZmqChars)
+      {
+        foreach (var ch in "'\"<>") // some special characters which QL returns in the server query but strips out of ZMQ names
+          name = name.Replace(ch.ToString(), "");
+      }
+      return name;
     }
     #endregion
 
@@ -614,11 +676,14 @@ namespace ServerBrowser
     #region class QlStatsSkillInfo
     public class QlStatsSkillInfo
     {
-      public string server;
-      public string gt;
-      public int min;
+      public string server; // ip:port
+      public string gt; // game type
+      public int min; // glicko rating
       public int avg;
       public int max;
+      public int pc; // player count
+      public int sc; // spectator count
+      public int bc; // bot count
     }
     #endregion
 
@@ -629,8 +694,9 @@ namespace ServerBrowser
       public class GametypeRating
       {
         public int games;
-        public int r_rd;
+        public int r;
         public int rd;
+        public int r_rd;
       }
       public class Players
       {
@@ -656,6 +722,7 @@ namespace ServerBrowser
 
       public bool ok;
       public Player[] players;
+      public QlStatsSkillInfo serverinfo;
     }
     #endregion
 

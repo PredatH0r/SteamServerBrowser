@@ -27,6 +27,7 @@ namespace ServerBrowser
 
     public void Update()
     {
+      bool countPlayers = true;
       if (row.ServerInfo == null)
         RealPlayers = Bots = MaxPlayers = MaxClients = PrivateClients = null;
       else
@@ -34,8 +35,12 @@ namespace ServerBrowser
         Bots = row.GameExtension.GetBotCount(row);
         MaxPlayers = row.GameExtension.GetMaxPlayers(row);
         MaxClients = row.GameExtension.GetMaxClients(row);
-        RealPlayers = row.ServerInfo.Players;
+        RealPlayers = row.GameExtension.GetRealPlayerCount(row);
         PrivateClients = row.GameExtension.GetPrivateClients(row);
+        if (RealPlayers == null)
+          RealPlayers = row.ServerInfo?.Players;
+        else
+          countPlayers = false;
 
         // some games count bots as players, others don't
         if (RealPlayers >= Bots)
@@ -47,7 +52,7 @@ namespace ServerBrowser
         }
       }
 
-      if (row.Players != null)
+      if (countPlayers && row.Players != null)
       {
         // CS:GO with default server settings returns a single fake "Max Players" entry with score=MaxPlayers and time=server up-time
         if (row.Players.Count == 1 && row.Players[0].Name == "Max Players")

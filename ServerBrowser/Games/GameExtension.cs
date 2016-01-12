@@ -112,10 +112,29 @@ namespace ServerBrowser
     }
     #endregion
 
+    #region GetRealPlayerCount()
+    public virtual int? GetRealPlayerCount(ServerRow row)
+    {
+      return null;
+    }
+    #endregion
+
+    #region GetSpectatorCount()
+    /// <summary>
+    /// returns number of spectators among the RealPlayerCount
+    /// </summary>
+    /// <param name="row"></param>
+    /// <returns></returns>
+    public virtual int GetSpectatorCount(ServerRow row)
+    {
+      return 0;
+    }
+    #endregion
+
     #region GetBotCount()
     public virtual int? GetBotCount(ServerRow row)
     {
-      return row.ServerInfo != null ? row.ServerInfo.Bots : (int?)null;
+      return row.ServerInfo?.Bots;
     }
     #endregion
 
