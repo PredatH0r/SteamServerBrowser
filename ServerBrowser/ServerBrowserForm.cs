@@ -30,7 +30,7 @@ namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.25";
+    private const string Version = "2.25.1";
     private const string DevExpressVersion = "v15.1";
     private const string CustomDetailColumnPrefix = "ServerInfo.";
     private const string CustomRuleColumnPrefix = "custRule.";
@@ -55,6 +55,7 @@ namespace ServerBrowser
     private readonly string iniPath;
     private readonly IniFile iniFile;
     private XtraTabPage dragPage;
+    private bool isSingleRowUpdate = true;
     private const int PredefinedTabCount = 2;
 
     #region ctor()
@@ -784,6 +785,7 @@ namespace ServerBrowser
       if (this.viewModel.InitialGameID == 0) // this would result in a truncated list of all games
         return;
 
+      this.isSingleRowUpdate = false;
       this.SetStatusMessage("Requesting server list from master server...");
       this.miStopUpdate.Enabled = true;
       this.timerReloadServers.Stop();
@@ -810,6 +812,7 @@ namespace ServerBrowser
     {
       if (this.queryLogic.IsUpdating)
         return;
+      this.isSingleRowUpdate = false;
       this.miStopUpdate.Enabled = true;
       this.timerReloadServers.Stop();
       this.SetStatusMessage("Updating status of " + this.viewModel.servers.Count + " servers...");
@@ -929,6 +932,14 @@ namespace ServerBrowser
 
       ++ignoreUiEvents;
 
+      // special logic for single-row updates to prevent reordering of rows
+      if (this.isSingleRowUpdate)
+      {
+        this.RefreshDataInSelectedRows();
+        --ignoreUiEvents;
+        return;
+      }
+
       var topRow = this.gvServers.TopRowIndex;
       this.gvServers.BeginDataUpdate();
 
@@ -968,6 +979,15 @@ namespace ServerBrowser
       var row = (ServerRow)this.gvServers.GetFocusedRow();
       if (forceUpdateDetails || row != null && row.GetAndResetIsModified())
         this.UpdateGridDataSources();
+    }
+    #endregion
+
+    #region RefreshDataInSelectedRows()
+    private void RefreshDataInSelectedRows()
+    {
+      var sel = this.gvServers.GetSelectedRows();
+      foreach (var handle in sel)
+        this.gvServers.RefreshRow(handle);
     }
     #endregion
 
@@ -1339,6 +1359,7 @@ namespace ServerBrowser
       this.CheckAlertCondition();
       if (this.spinRefreshInterval.Value > 0)
         this.timerReloadServers.Start();
+      this.isSingleRowUpdate = true;
     }
 
     #endregion
@@ -1347,15 +1368,10 @@ namespace ServerBrowser
     protected virtual void queryLogic_RefreshSingleServerComplete(ServerEventArgs e)
     {
       this.UpdateBuddyCount(e.Server);
-
-      if (this.gvServers.GetFocusedRow() == e.Server)
-      {
-        if (this.gvServers.SelectedRowsCount <= 1)
-          this.gvServers.RefreshRow(this.gvServers.FocusedRowHandle);
-        else
-          this.gvServers.RefreshData();
-        this.UpdateGridDataSources();
-      }
+      var idx = this.viewModel?.servers?.IndexOf(e.Server) ?? -1;
+      if (idx >= 0)      
+        this.gvServers.RefreshRow(this.gvServers.GetRowHandle(idx));
+      this.UpdateGridDataSources();
     }
     #endregion
 
@@ -1990,14 +2006,16 @@ namespace ServerBrowser
     {
       this.RefreshGameExtensions();
       if (this.gvServers.SelectedRowsCount == 1)
+      {
         this.queryLogic.RefreshSingleServer((ServerRow) this.gvServers.GetFocusedRow());
+      }
       else
       {
         var list = new List<ServerRow>();
         foreach (var handle in this.gvServers.GetSelectedRows())
-          list.Add((ServerRow)this.gvServers.GetRow(handle));
+          list.Add((ServerRow) this.gvServers.GetRow(handle));
         this.queryLogic.RefreshAllServers(list);
-      }      
+      }
     }
     #endregion
 

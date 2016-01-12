@@ -53,7 +53,7 @@ namespace ServerBrowser
               object o;
               Action<GeoInfo> callbacks;
               lock (cache)
-                callbacks = cache.TryGetValue(ipInt, out o) ? (Action<GeoInfo>)o : null;
+                callbacks = cache.TryGetValue(ipInt, out o) ? o as Action<GeoInfo> : null;
               var geoInfo = this.HandleResult(ipInt, result);
               if (callbacks != null)
                 ThreadPool.QueueUserWorkItem(ctx => callbacks(geoInfo));

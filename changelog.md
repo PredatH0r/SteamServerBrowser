@@ -1,3 +1,8 @@
+2.25.1
+---
+- fixed error message popup at startup
+- fixed keeping rows at position when only updating single rows
+
 2.25
 ---
 - added control to turn ghost player filter on/off

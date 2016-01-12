@@ -137,7 +137,7 @@ namespace ServerBrowser
       this.currentRequest.IsCancelled = true;
     }
     #endregion
-
+    
     // reload server list
 
     #region ReloadServerList()

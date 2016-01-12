@@ -213,13 +213,16 @@ namespace ServerBrowser
                 {
                   var rating = ratings[i];
                   if (rating == null) continue;
-                  text += $"\n{gametypes[i].ToUpper()}: {rating.r}­ ± {rating.rd} ({rating.games} games)";
+                  text += $"\n{gametypes[i].ToUpper()}: {rating.r} ± {rating.rd} ({rating.games} games)";
                 }
                 if (gametypes.Length == 0)
                   text = "";
               }
 
-              this.colSkill.ToolTip = SkillTooltip + text;
+              this.colSkill.View.GridControl.BeginInvoke((Action) (() =>
+              {
+                this.colSkill.ToolTip = SkillTooltip + text;
+              }));
             }
           }
           catch
@@ -260,7 +263,6 @@ namespace ServerBrowser
                   if (info != null)
                     row.PlayerCount.Update();
                 }
-                view.RefreshData();
               }));
             }
           }
