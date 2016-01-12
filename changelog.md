@@ -1,3 +1,7 @@
+2.25.2
+---
+- fixed error in player list context menu when there is no qlstats.net data available for the server
+
 2.25.1
 ---
 - fixed error message popup at startup

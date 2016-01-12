@@ -30,8 +30,8 @@ namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.25.1";
-    private const string DevExpressVersion = "v15.1";
+    private const string Version = "2.25.2";
+    private const string DevExpressVersion = "v15.2";
     private const string CustomDetailColumnPrefix = "ServerInfo.";
     private const string CustomRuleColumnPrefix = "custRule.";
     private static readonly Game[] DefaultGames = {Game.QuakeLive, Game.Reflex, Game.Toxikk, Game.CounterStrike_Global_Offensive, Game.Team_Fortress_2};

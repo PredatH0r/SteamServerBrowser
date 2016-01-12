@@ -542,7 +542,7 @@ namespace ServerBrowser
     public override void CustomizePlayerContextMenu(ServerRow server, Player player, List<PlayerContextMenuItem> menu)
     {
       QlstatsPlayerList list;
-      if (!this.qlstatsPlayerlists.TryGetValue(server, out list))
+      if (!this.qlstatsPlayerlists.TryGetValue(server, out list) || list.players == null)
         return;
       var cleanName = this.GetCleanPlayerName(player);
       var info = list.players.FirstOrDefault(p => this.GetCleanPlayerName(p.name) == cleanName);
