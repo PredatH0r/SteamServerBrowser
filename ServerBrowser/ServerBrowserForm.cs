@@ -30,7 +30,7 @@ namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.25.2";
+    private const string Version = "2.26";
     private const string DevExpressVersion = "v15.2";
     private const string CustomDetailColumnPrefix = "ServerInfo.";
     private const string CustomRuleColumnPrefix = "custRule.";
@@ -1153,7 +1153,13 @@ namespace ServerBrowser
 
       var menu = new List<PlayerContextMenuItem>();
       menu.Add(new PlayerContextMenuItem("Add to Buddy list", () => { AddBuddy(server.GameExtension.GetCleanPlayerName(player)); this.UpdateBuddyCount(server); }));
-      menu.Add(new PlayerContextMenuItem("Copy Name to Clipboard", () => { Clipboard.SetText(player.Name); }));
+      menu.Add(new PlayerContextMenuItem("Copy Name to Clipboard", () => 
+      {
+        if (string.IsNullOrEmpty(player.Name))
+          Clipboard.Clear();
+        else
+          Clipboard.SetText(player.Name);
+      }));
       server.GameExtension.CustomizePlayerContextMenu(server, player, menu);
       return menu;
     }

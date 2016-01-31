@@ -169,6 +169,11 @@ namespace ServerBrowser
         {
         }
       }
+
+      // override wrong geo-IP information (MS Azure IPs list Washington even for EU servers in NL)
+      cache[Ip4Utils.ToInt(104, 40, 213, 215)] = new GeoInfo("NL", "Netherlands", null, null, null, 0, 0);
+      cache[Ip4Utils.ToInt(104, 40, 134, 97)] = new GeoInfo("NL", "Netherlands", null, null, null, 0, 0);
+      cache[Ip4Utils.ToInt(45, 32, 205, 149)] = new GeoInfo("US", "United States", "TX", null, null, 0, 0); // listed as NL, but is TX
     }
     #endregion
 

@@ -219,6 +219,8 @@ namespace ServerBrowser
                   text = "";
               }
 
+              if (this.colSkill?.View?.GridControl == null)
+                return;
               this.colSkill.View.GridControl.BeginInvoke((Action) (() =>
               {
                 this.colSkill.ToolTip = SkillTooltip + text;
@@ -229,7 +231,7 @@ namespace ServerBrowser
           {
           }
         };
-        client.DownloadStringAsync(new Uri("http://qlstats.net:8080/glicko/" + steamid));
+        client.DownloadStringAsync(new Uri("http://qlstats.net/glicko/" + steamid));
       }
     }
 
@@ -253,7 +255,9 @@ namespace ServerBrowser
               this.skillInfo = dict;
 
               var view = this.colSkill.View;
-              var grid = view.GridControl;
+              var grid = view?.GridControl;
+              if (grid == null)
+                return;
               grid.BeginInvoke((Action) (() =>
               {
                 for (int i = 0, c = view.RowCount; i < c; i++)
@@ -270,7 +274,7 @@ namespace ServerBrowser
           {
           }
         };
-        client.DownloadStringAsync(new Uri("http://qlstats.net:8088/api/server/skillrating"));
+        client.DownloadStringAsync(new Uri("http://api.qlstats.net/api/server/skillrating"));
       }
     }
     #endregion
@@ -301,7 +305,7 @@ namespace ServerBrowser
           }
         };
 
-        client.DownloadStringAsync(new Uri("http://qlstats.net:8088/api/server/" + row.EndPoint + "/players"));
+        client.DownloadStringAsync(new Uri("http://api.qlstats.net/api/server/" + row.EndPoint + "/players"));
       }
     }
     #endregion
@@ -533,6 +537,7 @@ namespace ServerBrowser
       {
         foreach (var ch in "'\"<>") // some special characters which QL returns in the server query but strips out of ZMQ names
           name = name.Replace(ch.ToString(), "");
+        name = new Regex(@"\s{2,}").Replace(name, " "); // ZMQ names seem to replace 2 spaces with 1 space, but 5 spaces still leaves 3
       }
       return name;
     }
@@ -551,7 +556,7 @@ namespace ServerBrowser
 
       menu.Insert(0, new PlayerContextMenuItem("Open Steam Chat", () => { Process.Start("steam://friends/message/" + info.steamid); }, true));
       menu.Insert(1, new PlayerContextMenuItem("Show Steam Profile", () => { Process.Start("http://steamcommunity.com/profiles/" + info.steamid + "/"); }));
-      menu.Insert(2, new PlayerContextMenuItem("Show QLStats Profile", () => { Process.Start("http://qlstats.net:8080/player/" + info.steamid); }));
+      menu.Insert(2, new PlayerContextMenuItem("Show QLStats Profile", () => { Process.Start("http://qlstats.net/player/" + info.steamid); }));
       menu.Insert(3, new PlayerContextMenuItem("Add to Steam Friends", () => { Process.Start("steam://friends/add/" + info.steamid); }));
       menu.Add(new PlayerContextMenuItem("Copy Steam-ID to Clipboard", () => { Clipboard.SetText(info.steamid); }));
     }

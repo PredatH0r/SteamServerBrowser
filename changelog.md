@@ -1,3 +1,8 @@
+2.26
+---
+- QuakeLive: fixed incorrect player counts and join indicators
+- QuakeLive: manually corrected a few wrong Geo-IP lookups (in different MS Azure locations)
+
 2.25.2
 ---
 - fixed error in player list context menu when there is no qlstats.net data available for the server
