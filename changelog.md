@@ -1,3 +1,17 @@
+2.29
+---
+- switched to a different Geo-IP service
+
+2.28
+---
+- added Geo-IP overrides for incorrect Geo-IP data
+- upgraded UI control library
+- ignoring zombie processes when searching for running game processes and windows
+
+2.27
+---
+- fixed link to Steam Workshop item page
+
 2.26
 ---
 - QuakeLive: fixed incorrect player counts and join indicators

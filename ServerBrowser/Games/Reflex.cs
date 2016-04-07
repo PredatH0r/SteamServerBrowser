@@ -136,6 +136,10 @@ namespace ServerBrowser
     {
       foreach (Process proc in Process.GetProcessesByName("reflex"))
       {
+        // ignore zombie processes
+        if (proc.Threads.Count == 0)
+          continue;
+
         var hWnd = proc.MainWindowHandle;
         Win32.RECT rect;
 

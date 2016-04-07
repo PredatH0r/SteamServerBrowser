@@ -254,7 +254,7 @@ namespace ServerBrowser
                 dict[server.server] = server;
               this.skillInfo = dict;
 
-              var view = this.colSkill.View;
+              var view = this.colSkill?.View;
               var grid = view?.GridControl;
               if (grid == null)
                 return;
@@ -639,6 +639,10 @@ namespace ServerBrowser
     {
       foreach (var proc in Process.GetProcessesByName("quakelive_steam"))
       {
+        // ignore zombie processes
+        if (proc.Threads.Count == 0)
+          continue;
+
         var hWnd = proc.MainWindowHandle;
         return hWnd;
       }

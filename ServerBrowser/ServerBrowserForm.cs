@@ -30,7 +30,7 @@ namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.26";
+    private const string Version = "2.29";
     private const string DevExpressVersion = "v15.2";
     private const string CustomDetailColumnPrefix = "ServerInfo.";
     private const string CustomRuleColumnPrefix = "custRule.";
@@ -1542,7 +1542,7 @@ namespace ServerBrowser
 
     private void miAboutSteamWorkshop_ItemClick(object sender, ItemClickEventArgs e)
     {
-      Process.Start("http://steamcommunity.com/sharedfiles/filedetails/?id=543312745&tscn=1446330349");
+      Process.Start("http://steamcommunity.com/sharedfiles/filedetails/?id=543312745");
     }
 
     private void miAboutVersionHistory_ItemClick(object sender, ItemClickEventArgs e)

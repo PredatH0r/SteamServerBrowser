@@ -7,13 +7,15 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
+using System.Web.Script.Serialization;
 
 namespace ServerBrowser
 {
   class GeoIpClient
   {
     internal const int ThreadCount = 7;
-    private const string DefaultServiceUrlFormat = "http://freegeoip.net/csv/{0}";
+    private const string DefaultServiceUrlFormat = "http://geoip.nekudo.com/api/{0}/en/full";
+
     /// <summary>
     /// the cache holds either a GeoInfo object, or a multicast callback delegate waiting for a GeoInfo object
     /// </summary>
@@ -77,13 +79,14 @@ namespace ServerBrowser
     #region HandleResult()
     private GeoInfo HandleResult(uint ip, string result)
     {
-      var parts = result.Split(',');
-      if (parts.Length < 2)
-        return null;
-      decimal latitude, longitude;
-      decimal.TryParse(TryGet(parts, 8), NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, NumberFormatInfo.InvariantInfo, out latitude);
-      decimal.TryParse(TryGet(parts, 9), NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, NumberFormatInfo.InvariantInfo, out longitude);
-      var geoInfo = new GeoInfo(parts[1], TryGet(parts, 2), TryGet(parts, 3), TryGet(parts, 4), TryGet(parts, 5), latitude, longitude);
+      var ser = new JavaScriptSerializer();
+      var info = ser.Deserialize<NekudoGeopIpFullResponse>(result);
+      var subdiv = info.subdivisions?[info.subdivisions.Length - 1];
+      var geoInfo = new GeoInfo(
+        info.country?.iso_code, TryGet(info.country?.names, "en"), 
+        subdiv?.iso_code, TryGet(subdiv?.names, "en"), 
+        TryGet(info.city?.names, "en"), 
+        info.location?.latitude ?? 0, info.location?.longitude ?? 0);
       lock (cache)
       {
         cache[ip] = geoInfo;
@@ -93,9 +96,10 @@ namespace ServerBrowser
     #endregion
 
     #region TryGet()
-    private string TryGet(string[] parts, int index)
+    private string TryGet(IDictionary<string,string> dict, string key)
     {
-      return index < parts.Length ? parts[index] : null;
+      string ret;
+      return dict != null && dict.TryGetValue(key, out ret) ? ret : null;
     }
     #endregion
 
@@ -170,9 +174,12 @@ namespace ServerBrowser
         }
       }
 
-      // override wrong geo-IP information (MS Azure IPs list Washington even for EU servers in NL)
-      cache[Ip4Utils.ToInt(104, 40, 213, 215)] = new GeoInfo("NL", "Netherlands", null, null, null, 0, 0);
+      // override wrong geo-IP information (MS Azure IPs list Washington even for NL/EU servers)
       cache[Ip4Utils.ToInt(104, 40, 134, 97)] = new GeoInfo("NL", "Netherlands", null, null, null, 0, 0);
+      cache[Ip4Utils.ToInt(104, 40, 213, 215)] = new GeoInfo("NL", "Netherlands", null, null, null, 0, 0);
+      
+      // Vultr also spreads their IPs everywhere
+      cache[Ip4Utils.ToInt(45, 32, 153, 115)] = new GeoInfo("DE", "Germany", null, null, null, 0, 0); // listed as NL, but is DE
       cache[Ip4Utils.ToInt(45, 32, 205, 149)] = new GeoInfo("US", "United States", "TX", null, null, 0, 0); // listed as NL, but is TX
     }
     #endregion
@@ -236,6 +243,71 @@ namespace ServerBrowser
         sb.Append(", ").Append(City);
       return sb.ToString();
     }
+
   }
   #endregion
+
+#if false
+    private class NekudoGeopIpShortResponse
+    {
+      public class Country
+      {
+        public string name;
+        public string code;
+      }
+
+      public class Location
+      {
+        public decimal latitude;
+        public decimal longitude;
+        public string time_zone;
+      }
+
+      public string city;
+      public Country country;
+      public Location location;
+      public string ip;
+    }
+#endif
+
+  #region class NekudoGeopIpFullResponse
+  public class NekudoGeopIpFullResponse
+  {
+    public class City
+    {
+      public Dictionary<string, string> names;
+    }
+
+    public class Country
+    {
+      public string iso_code;
+      public Dictionary<string, string> names;
+    }
+
+    public class Location
+    {
+      public decimal latitude;
+      public decimal longitude;
+      public string time_zone;
+    }
+
+    public class Subdivision
+    {
+      public string iso_code;
+      public Dictionary<string, string> names;
+    }
+
+    public class Traits
+    {
+      public string ip_address;
+    }
+
+    public City city;
+    public Country country;
+    public Location location;
+    public Subdivision[] subdivisions;
+    public Traits traits;
+  }
+  #endregion
+
 }

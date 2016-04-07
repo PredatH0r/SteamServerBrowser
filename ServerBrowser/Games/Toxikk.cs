@@ -217,7 +217,8 @@ namespace ServerBrowser
     #region ConnectInBackground()
     private void ConnectInBackground(ServerRow server, string password, bool spectate)
     {
-      bool mustStart = Process.GetProcessesByName("toxikk").All(p => p.MainWindowTitle.Contains("players)"));
+      var procList = Process.GetProcessesByName("toxikk");
+      bool mustStart = procList.All(p => p.MainWindowTitle.Contains("players)") || p.Threads.Count == 0);
       if (mustStart)
         StartToxikk();
 
@@ -290,7 +291,7 @@ namespace ServerBrowser
       int toxikkProcessId = 0;
       foreach (var proc in procList)
       {
-        if (!proc.MainWindowTitle.Contains("players)")) // ignore locally running dedicated servers
+        if (!proc.MainWindowTitle.Contains("players)") && proc.Threads.Count > 0) // ignore locally running dedicated servers and zombie processes
         {
           toxikkProcessId = proc.Id;
           break;
