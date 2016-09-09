@@ -15,6 +15,10 @@ using ServerBrowser.Games;
 
 namespace ServerBrowser
 {
+  // TODO: implement steam://rungameid/324810//+connect%20138.201.84.93:7777
+  // then find window with title "Allow game launch?", Class USurface_801274921, Style 960F0000, Rect 420x220
+  // next window "Steam", prev window "Steam", parent "SteamSteam", owner "SteamSteamSteam"
+
   public class Toxikk : GameExtension
   {
     private const string MinCombatants = "p268435703";
@@ -25,6 +29,7 @@ namespace ServerBrowser
 
     private const int SecondsToWaitForMainWindowAfterLaunch = 45;
     private bool useKeystrokesToConnect;
+    private bool useSteamIdToConnect;
     private Keys consoleKey;
     private ServerRow serverForPlayerInfos;
     private long dataTimestamp;
@@ -45,8 +50,9 @@ namespace ServerBrowser
     public override void LoadConfig(IniFile ini)
     {
       var sec = ini.GetSection("Toxikk", true);
+      this.consoleKey = (Keys)sec.GetInt("consoleKey");
       this.useKeystrokesToConnect = sec.GetBool("useKeystrokesToConnect", true);
-      this.consoleKey = (Keys) sec.GetInt("consoleKey");
+      this.useSteamIdToConnect = sec.GetBool("useSteamIdToConnect", true);
     }
     #endregion
 
@@ -55,8 +61,9 @@ namespace ServerBrowser
     {
       ini.AppendLine();
       ini.AppendLine("[Toxikk]");
+      ini.AppendLine($"consoleKey={(int)this.consoleKey}");
       ini.AppendLine($"useKeystrokesToConnect={this.useKeystrokesToConnect}");
-      ini.AppendLine($"consoleKey={(int) this.consoleKey}");
+      ini.AppendLine($"useSteamIdToConnect={this.useSteamIdToConnect}");
     }
     #endregion
 
@@ -67,10 +74,12 @@ namespace ServerBrowser
       {
         dlg.UseKeystrokes = this.useKeystrokesToConnect;
         dlg.ConsoleKey = this.consoleKey;
+        dlg.UseSteamId = this.useSteamIdToConnect;
         if (dlg.ShowDialog(Form.ActiveForm) != DialogResult.OK)
           return;
         this.useKeystrokesToConnect = dlg.UseKeystrokes;
         this.consoleKey = dlg.ConsoleKey;
+        this.useSteamIdToConnect = dlg.UseSteamId;
       }
     }
     #endregion
@@ -111,16 +120,21 @@ namespace ServerBrowser
         case IsOfficial:
           return row.GetRule(fieldName) == "1";
         case "_gametype":
+        { 
           var gt = row.ServerInfo.Description;
           return gt == null ? null : 
-            gt.Contains("BloodLust") ? "BL" : 
-            gt.Contains("TeamGame") ? "SA" : 
-            gt.Contains("Cell") ? "CC" : 
-            gt.Contains("TRGame") ? "TR" : 
-            gt.Contains("TAGame") ? "TA" : 
-            gt.Contains("AreaDomination") ? "AD" : 
+            gt == "CRZBloodLust" ? "BL" : 
+            gt == "CRZTeamGame" ? "SA" : 
+            gt == "CRZCellCapture" ? "CC" :
+            gt == "CRZAreaDomination" ? "AD" :
+            gt == "CRZTimeTrial" ? "Tut" :
+            gt == "InfekktedGame" ? "Inf" :
+            gt == "TAGame" ? "TA" :
+            gt == "TTGame" ? "TR" :
+            gt == "D2DGame" ? "2D" :
             gt =="STBGame" ? "SB" : 
             gt;
+        }
         case Mutators:
           var mods = (row.GetRule(fieldName) ?? "").ToLower();
           var buff = new StringBuilder();
@@ -134,6 +148,30 @@ namespace ServerBrowser
           return buff.ToString();
       }
       return base.GetServerCellValue(row, fieldName);
+    }
+    #endregion
+
+    #region GetServerCellToolTip()
+    public override string GetServerCellToolTip(ServerRow row, string fieldName)
+    {
+      if (fieldName == "_gametype")
+      {
+        var gt = row.ServerInfo.Description;
+        return gt == null ? null :
+          gt == "CRZBloodLust" ? "Bloodlust" :
+          gt == "CRZTeamGame" ? "Squad Assault" :
+          gt == "CRZCellCapture" ? "Cell Capture" :
+          gt == "CRZAreaDomination" ? "Area Domination" :
+          gt == "CRZTimeTrial" ? "Tutorial" :
+          gt == "InfekktedGame" ? "InfeKKted" :
+          gt == "TAGame" ? "Team Arena" :
+          gt == "TTGame" ? "Trials" :
+          gt == "D2DGame" ? "Toxikk 2D" :
+          gt == "STBGame" ? "Score The Banshee" :
+          null;
+      }
+
+      return base.GetServerCellToolTip(row, fieldName);
     }
     #endregion
 
@@ -180,19 +218,6 @@ namespace ServerBrowser
 
     public override bool Connect(ServerRow server, string password, bool spectate)
     {
-      // servers with skill restrictions neither allow connections with "steam://connect" nor with an "open ip:port" console command
-      if ((string) this.GetServerCellValue(server, "_skillclass") != "1-12")
-      {
-        var res = XtraMessageBox.Show("This server has a skill restriction.\nOnly the in-game browser can connect to such servers.\nLaunch TOXIKK anyway?",
-          "Toxikk Server", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation);
-        if (res == DialogResult.No)
-          return false;
-        if (FindGameWindow() == IntPtr.Zero)
-          StartToxikk();
-        return true;
-      }
-        
-
       if (consoleKey == Keys.None && (this.useKeystrokesToConnect || spectate))
       {
         using (var dlg = new KeyBindForm("Please press your TOXIKK console key..."))
@@ -253,7 +278,11 @@ namespace ServerBrowser
       }
 
       // send the command string
-      var msg = "open " + server.EndPoint.Address + ":" + server.ServerInfo.Extra.Port;
+      var msg = "open ";
+      if (useSteamIdToConnect && server.ServerInfo.Extra.SteamID != 0)
+        msg += "steam." + server.ServerInfo.Extra.SteamID;
+      else
+        msg += server.EndPoint.Address + ":" + server.ServerInfo.Extra.Port;
       if (!string.IsNullOrEmpty(password))
         msg += "?password=" + password;
       if (spectate)

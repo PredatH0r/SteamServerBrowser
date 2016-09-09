@@ -1,3 +1,7 @@
+2.30
+---
+- TOXIKK now supports joining skill-restricted servers. Your skill class is validated by the server after you connect.
+
 2.29
 ---
 - switched to a different Geo-IP service

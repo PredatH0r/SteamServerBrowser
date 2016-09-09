@@ -28,6 +28,12 @@ namespace ServerBrowser.Games
       }
     }
 
+    public bool UseSteamId
+    {
+      get { return this.rbSteamId.Checked; }
+      set { (value ? this.rbSteamId : this.rbIpPort).Checked = true; }
+    }
+
     private void edConsoleKey_ButtonClick(object sender, DevExpress.XtraEditors.Controls.ButtonPressedEventArgs e)
     {
       using (var dlg = new KeyBindForm("Please press your TOXIKK console key ..."))

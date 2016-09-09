@@ -33,8 +33,13 @@
       this.edConsoleKey = new DevExpress.XtraEditors.ButtonEdit();
       this.btnOk = new DevExpress.XtraEditors.SimpleButton();
       this.btnCancel = new DevExpress.XtraEditors.SimpleButton();
+      this.labelControl2 = new DevExpress.XtraEditors.LabelControl();
+      this.rbIpPort = new DevExpress.XtraEditors.CheckEdit();
+      this.rbSteamId = new DevExpress.XtraEditors.CheckEdit();
       ((System.ComponentModel.ISupportInitialize)(this.cbSendKeystrokes.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.edConsoleKey.Properties)).BeginInit();
+      ((System.ComponentModel.ISupportInitialize)(this.rbIpPort.Properties)).BeginInit();
+      ((System.ComponentModel.ISupportInitialize)(this.rbSteamId.Properties)).BeginInit();
       this.SuspendLayout();
       // 
       // cbSendKeystrokes
@@ -47,7 +52,7 @@
       // 
       // labelControl1
       // 
-      this.labelControl1.Location = new System.Drawing.Point(34, 38);
+      this.labelControl1.Location = new System.Drawing.Point(34, 45);
       this.labelControl1.Name = "labelControl1";
       this.labelControl1.Size = new System.Drawing.Size(63, 13);
       this.labelControl1.TabIndex = 1;
@@ -55,7 +60,7 @@
       // 
       // edConsoleKey
       // 
-      this.edConsoleKey.Location = new System.Drawing.Point(116, 35);
+      this.edConsoleKey.Location = new System.Drawing.Point(137, 42);
       this.edConsoleKey.Name = "edConsoleKey";
       this.edConsoleKey.Properties.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
             new DevExpress.XtraEditors.Controls.EditorButton()});
@@ -68,7 +73,7 @@
       // 
       this.btnOk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
       this.btnOk.DialogResult = System.Windows.Forms.DialogResult.OK;
-      this.btnOk.Location = new System.Drawing.Point(254, 11);
+      this.btnOk.Location = new System.Drawing.Point(306, 11);
       this.btnOk.Name = "btnOk";
       this.btnOk.Size = new System.Drawing.Size(75, 23);
       this.btnOk.TabIndex = 3;
@@ -78,18 +83,51 @@
       // 
       this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
       this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-      this.btnCancel.Location = new System.Drawing.Point(254, 40);
+      this.btnCancel.Location = new System.Drawing.Point(306, 40);
       this.btnCancel.Name = "btnCancel";
       this.btnCancel.Size = new System.Drawing.Size(75, 23);
       this.btnCancel.TabIndex = 4;
       this.btnCancel.Text = "Cancel";
+      // 
+      // labelControl2
+      // 
+      this.labelControl2.Location = new System.Drawing.Point(34, 69);
+      this.labelControl2.Name = "labelControl2";
+      this.labelControl2.Size = new System.Drawing.Size(85, 13);
+      this.labelControl2.TabIndex = 5;
+      this.labelControl2.Text = "Connect through:";
+      // 
+      // rbIpPort
+      // 
+      this.rbIpPort.Location = new System.Drawing.Point(137, 66);
+      this.rbIpPort.Name = "rbIpPort";
+      this.rbIpPort.Properties.Caption = "IP:port";
+      this.rbIpPort.Properties.CheckStyle = DevExpress.XtraEditors.Controls.CheckStyles.Radio;
+      this.rbIpPort.Properties.RadioGroupIndex = 1;
+      this.rbIpPort.Size = new System.Drawing.Size(75, 19);
+      this.rbIpPort.TabIndex = 6;
+      this.rbIpPort.TabStop = false;
+      // 
+      // rbSteamId
+      // 
+      this.rbSteamId.EditValue = true;
+      this.rbSteamId.Location = new System.Drawing.Point(204, 66);
+      this.rbSteamId.Name = "rbSteamId";
+      this.rbSteamId.Properties.Caption = "Steam-ID";
+      this.rbSteamId.Properties.CheckStyle = DevExpress.XtraEditors.Controls.CheckStyles.Radio;
+      this.rbSteamId.Properties.RadioGroupIndex = 1;
+      this.rbSteamId.Size = new System.Drawing.Size(75, 19);
+      this.rbSteamId.TabIndex = 7;
       // 
       // ToxikkOptionsDialog
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.CancelButton = this.btnCancel;
-      this.ClientSize = new System.Drawing.Size(341, 85);
+      this.ClientSize = new System.Drawing.Size(393, 114);
+      this.Controls.Add(this.rbSteamId);
+      this.Controls.Add(this.rbIpPort);
+      this.Controls.Add(this.labelControl2);
       this.Controls.Add(this.btnCancel);
       this.Controls.Add(this.btnOk);
       this.Controls.Add(this.edConsoleKey);
@@ -101,6 +139,8 @@
       this.Text = "Options for TOXIKK";
       ((System.ComponentModel.ISupportInitialize)(this.cbSendKeystrokes.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.edConsoleKey.Properties)).EndInit();
+      ((System.ComponentModel.ISupportInitialize)(this.rbIpPort.Properties)).EndInit();
+      ((System.ComponentModel.ISupportInitialize)(this.rbSteamId.Properties)).EndInit();
       this.ResumeLayout(false);
       this.PerformLayout();
 
@@ -113,5 +153,8 @@
     private DevExpress.XtraEditors.ButtonEdit edConsoleKey;
     private DevExpress.XtraEditors.SimpleButton btnOk;
     private DevExpress.XtraEditors.SimpleButton btnCancel;
+    private DevExpress.XtraEditors.LabelControl labelControl2;
+    private DevExpress.XtraEditors.CheckEdit rbIpPort;
+    private DevExpress.XtraEditors.CheckEdit rbSteamId;
   }
 }

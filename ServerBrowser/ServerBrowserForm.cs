@@ -30,7 +30,7 @@ namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.29";
+    private const string Version = "2.32";
     private const string DevExpressVersion = "v15.2";
     private const string CustomDetailColumnPrefix = "ServerInfo.";
     private const string CustomRuleColumnPrefix = "custRule.";
@@ -1882,6 +1882,13 @@ namespace ServerBrowser
           var row = (ServerRow)this.gvServers.GetRow(hit.RowHandle);
           if (row?.GeoInfo != null)
             e.Info = new ToolTipControlInfo(row.EndPoint + "-" + hit.Column.FieldName, row.GeoInfo.ToString());
+        }
+        else if (hit.InRowCell)
+        {
+          var row = (ServerRow)this.gvServers.GetRow(hit.RowHandle);
+          var tip = row?.GameExtension.GetServerCellToolTip(row, hit.Column.FieldName);
+          if (tip != null)
+            e.Info = new ToolTipControlInfo(row.EndPoint + "-" + hit.Column.FieldName, tip);
         }
       }
     }

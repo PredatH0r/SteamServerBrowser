@@ -261,25 +261,15 @@ namespace ServerBrowser
 
     public bool BotsIncludedInPlayerList { get; set; }
 
-    public virtual int? GetMaxPlayers(ServerRow row)
-    {
-      return row?.ServerInfo?.MaxPlayers;
-    }
+    public virtual int? GetMaxPlayers(ServerRow row) => row?.ServerInfo?.MaxPlayers;
 
-    public virtual int? GetMaxClients(ServerRow row)
-    {
-      return row?.ServerInfo?.MaxPlayers;
-    }
+    public virtual int? GetMaxClients(ServerRow row) => row?.ServerInfo?.MaxPlayers;
 
-    public virtual int? GetPrivateClients(ServerRow row)
-    {
-      return 0;
-    }
+    public virtual int? GetPrivateClients(ServerRow row) => 0;
 
-    public virtual bool IsValidPlayer(ServerRow row, Player player)
-    {
-      return true;
-    }
+    public virtual bool IsValidPlayer(ServerRow row, Player player) => true;
+
+    public virtual string GetServerCellToolTip(ServerRow row, string fieldName) => null;
   }
   #endregion
 

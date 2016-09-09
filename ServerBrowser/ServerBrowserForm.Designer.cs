@@ -36,6 +36,15 @@ namespace ServerBrowser
       DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject1 = new DevExpress.Utils.SerializableAppearanceObject();
       DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject2 = new DevExpress.Utils.SerializableAppearanceObject();
       DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject3 = new DevExpress.Utils.SerializableAppearanceObject();
+      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject4 = new DevExpress.Utils.SerializableAppearanceObject();
+      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject5 = new DevExpress.Utils.SerializableAppearanceObject();
+      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject6 = new DevExpress.Utils.SerializableAppearanceObject();
+      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject7 = new DevExpress.Utils.SerializableAppearanceObject();
+      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject8 = new DevExpress.Utils.SerializableAppearanceObject();
+      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject9 = new DevExpress.Utils.SerializableAppearanceObject();
+      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject10 = new DevExpress.Utils.SerializableAppearanceObject();
+      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject11 = new DevExpress.Utils.SerializableAppearanceObject();
+      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject12 = new DevExpress.Utils.SerializableAppearanceObject();
       this.riCheckEdit = new DevExpress.XtraEditors.Repository.RepositoryItemCheckEdit();
       this.gcDetails = new DevExpress.XtraGrid.GridControl();
       this.gvDetails = new DevExpress.XtraGrid.Views.Grid.GridView();
@@ -337,7 +346,6 @@ namespace ServerBrowser
             this.colValue});
       this.gvDetails.GridControl = this.gcDetails;
       this.gvDetails.Name = "gvDetails";
-      this.gvDetails.OptionsBehavior.Editable = false;
       this.gvDetails.OptionsView.ShowGroupPanel = false;
       this.gvDetails.OptionsView.ShowIndicator = false;
       this.gvDetails.MouseDown += new System.Windows.Forms.MouseEventHandler(this.gvDetails_MouseDown);
@@ -347,6 +355,7 @@ namespace ServerBrowser
       this.colKey.Caption = "Setting";
       this.colKey.FieldName = "Item1";
       this.colKey.Name = "colKey";
+      this.colKey.OptionsColumn.ReadOnly = true;
       this.colKey.Visible = true;
       this.colKey.VisibleIndex = 0;
       this.colKey.Width = 100;
@@ -356,6 +365,7 @@ namespace ServerBrowser
       this.colValue.Caption = "Value";
       this.colValue.FieldName = "Item2";
       this.colValue.Name = "colValue";
+      this.colValue.OptionsColumn.ReadOnly = true;
       this.colValue.UnboundType = DevExpress.Data.UnboundColumnType.Object;
       this.colValue.Visible = true;
       this.colValue.VisibleIndex = 1;
@@ -1508,9 +1518,9 @@ namespace ServerBrowser
       this.riFindPlayer.AutoHeight = false;
       this.riFindPlayer.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
             new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo),
-            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Plus, "", -1, true, true, false, DevExpress.XtraEditors.ImageLocation.MiddleCenter, null, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), serializableAppearanceObject1, "Add to list", null, null, true),
-            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Minus, "", -1, true, true, false, DevExpress.XtraEditors.ImageLocation.MiddleCenter, null, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), serializableAppearanceObject2, "Remove from list", null, null, true),
-            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Search, "", -1, true, true, false, DevExpress.XtraEditors.ImageLocation.MiddleCenter, null, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), serializableAppearanceObject3, "Find", null, null, true)});
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Plus, "", -1, true, true, false, DevExpress.XtraEditors.ImageLocation.MiddleCenter, null, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), serializableAppearanceObject1, serializableAppearanceObject2, serializableAppearanceObject3, serializableAppearanceObject4, "Add to list", null, null, true),
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Minus, "", -1, true, true, false, DevExpress.XtraEditors.ImageLocation.MiddleCenter, null, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), serializableAppearanceObject5, serializableAppearanceObject6, serializableAppearanceObject7, serializableAppearanceObject8, "Remove from list", null, null, true),
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Search, "", -1, true, true, false, DevExpress.XtraEditors.ImageLocation.MiddleCenter, null, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), serializableAppearanceObject9, serializableAppearanceObject10, serializableAppearanceObject11, serializableAppearanceObject12, "Find", null, null, true)});
       this.riFindPlayer.Name = "riFindPlayer";
       this.riFindPlayer.NullValuePrompt = "min 3 chars, * as placeholder";
       this.riFindPlayer.NullValuePromptShowForEmptyValue = true;
