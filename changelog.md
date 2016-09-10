@@ -1,3 +1,12 @@
+2.33
+---
+- added "Ver" column for TOXIKK game version
+
+2.32
+---
+- added option in TOXIKK game configuration to either connect using "open <ip:port>" or "open steam.<steamid>"
+- data in server details grid can now be selected and copied
+
 2.30
 ---
 - TOXIKK now supports joining skill-restricted servers. Your skill class is validated by the server after you connect.

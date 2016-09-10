@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using DevExpress.Data;
-using DevExpress.XtraEditors;
 using DevExpress.XtraGrid.Columns;
 using DevExpress.XtraGrid.Views.Grid;
 using QueryMaster;
@@ -26,6 +25,7 @@ namespace ServerBrowser
     private const string TimeLimit = "p268435705";
     private const string Mutators = "p1073741828";
     private const string IsOfficial = "s15";
+    private const string GameVersion = "p1073741839";
 
     private const int SecondsToWaitForMainWindowAfterLaunch = 45;
     private bool useKeystrokesToConnect;
@@ -104,6 +104,7 @@ namespace ServerBrowser
       AddColumn(view, ScoreLimit, "GS", "Goal Score", 30, ++idx, UnboundColumnType.Integer);
       AddColumn(view, TimeLimit, "TL", "Time Limit", 30, ++idx, UnboundColumnType.Integer);
       AddColumn(view, IsOfficial, "Ofcl", "Official Server managed by REAKKTOR", 35, ++idx, UnboundColumnType.Boolean);
+      AddColumn(view, GameVersion, "Ver", "Game Version", 40);
     }
     #endregion
 
