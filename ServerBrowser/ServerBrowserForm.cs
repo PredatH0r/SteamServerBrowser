@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Media;
@@ -59,16 +60,16 @@ namespace ServerBrowser
     private const int PredefinedTabCount = 2;
 
     #region ctor()
-    public ServerBrowserForm()
+    public ServerBrowserForm(IniFile ini)
     {
       InitializeComponent();
 
+      this.iniFile = ini;
       var baseDir = Path.GetDirectoryName(this.GetType().Assembly.Location) ?? ".";
-      this.iniPath = Path.Combine(baseDir, "ServerBrowser.ini");
+      this.iniPath = ini.FileName;
       this.xmlLayoutPath = Path.Combine(baseDir, "WindowLayout.xml");
       this.geoIpCachePath = Path.Combine(baseDir, "locations.txt");
       this.MoveConfigFilesFromOldLocation();
-      this.iniFile = new IniFile(iniPath);
       this.geoIpClient = new GeoIpClient(this.geoIpCachePath);
 
       this.steam = new Steamworks();
@@ -366,6 +367,7 @@ namespace ServerBrowser
       this.comboMaxPing.Text = vm.MaxPing == 0 ? "" : vm.MaxPing.ToString();
       this.btnTagIncludeClient.Text = vm.TagsIncludeClient;
       this.btnTagExcludeClient.Text = vm.TagsExcludeClient;
+      this.txtVersion.Text = vm.VersionMatch;
 
       UpdatePanelVisibility();
       this.miFindServers.Enabled = vm.Source == TabViewModel.SourceType.MasterServer;
@@ -536,6 +538,7 @@ namespace ServerBrowser
       sb.AppendLine($"AutoUpdateWhilePlaying={!this.cbNoUpdateWhilePlaying.Checked}");
       sb.AppendLine($"UseSteamAPI={this.cbUseSteamApi.Checked}");
       sb.AppendLine($"Skin={UserLookAndFeel.Default.SkinName}");
+      sb.AppendLine("FontSize=" + AppearanceObject.DefaultFont.SizeInPoints.ToString("n2", NumberFormatInfo.InvariantInfo));
       sb.AppendLine($"TabIndex={this.tabControl.SelectedTabPageIndex}");
       sb.AppendLine($"ShowFilterPanelInfo={this.cbShowFilterPanelInfo.Checked}");
       sb.AppendLine($"ShowServerCounts={this.cbShowCounts.Checked}");
@@ -644,6 +647,7 @@ namespace ServerBrowser
       vm.MaxPing = num;
       vm.TagsIncludeClient = this.btnTagIncludeClient.Text;
       vm.TagsExcludeClient = this.btnTagExcludeClient.Text;
+      vm.VersionMatch = this.txtVersion.Text;
 
       vm.GridFilter = this.gvServers.ActiveFilterString;
       var strm = new MemoryStream();
@@ -796,6 +800,7 @@ namespace ServerBrowser
       filter.GameDirectory = this.viewModel.FilterMod;
       filter.Map = this.viewModel.FilterMap;
       filter.Sv_Tags = this.ParseTags(this.viewModel.TagsIncludeServer);
+      filter.VersionMatch = this.viewModel.VersionMatch;
       if (this.viewModel.TagsExcludeServer != "")
       {
         filter.Nor = new IpFilter();
@@ -869,7 +874,8 @@ namespace ServerBrowser
         if ((row.ServerInfo?.Ping ?? 0) > ping)
           return true;
       }
-      return false;
+
+      return row.GameExtension.FilterServerRow(row);
     }
 
     #endregion

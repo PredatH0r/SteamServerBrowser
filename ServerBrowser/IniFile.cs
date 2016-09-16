@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
 
@@ -94,7 +95,7 @@ namespace ServerBrowser
         if (val == "")
           return defaultValue;
         decimal intVal;
-        return decimal.TryParse(val, out intVal) ? intVal : defaultValue;
+        return decimal.TryParse(val, NumberStyles.Any, NumberFormatInfo.InvariantInfo, out intVal) ? intVal : defaultValue;
       }
       #endregion
 

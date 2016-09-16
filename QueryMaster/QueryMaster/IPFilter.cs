@@ -77,5 +77,6 @@ namespace QueryMaster
         public IpFilter Nor { get; set; }
         public IpFilter Nand { get; set; }
 
+        public string VersionMatch { get; set; }
     }
 }

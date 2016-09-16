@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Threading;
 using System.Windows.Forms;
+using DevExpress.Data.Async.Helpers;
 using DevExpress.LookAndFeel;
 using DevExpress.Skins;
 using DevExpress.Utils;
@@ -20,10 +22,14 @@ namespace ServerBrowser
       System.Threading.Thread.CurrentThread.CurrentUICulture = culture;
       System.Threading.Thread.CurrentThread.CurrentCulture = culture;
 #endif
-      // change font before creating the main form to get correct auto-scaling
-      Init(new Font("Segoe UI", AppearanceObject.DefaultFont.Size + 0.75f), "Office 2010 Black");
+      var iniPath = Path.Combine(Path.GetDirectoryName(typeof(Program).Assembly.Location), "ServerBrowser.ini");
+      var iniFile = new IniFile(iniPath);
 
-      var mainForm = new ServerBrowserForm();
+      var baseFontSize = iniFile.GetSection("Options")?.GetDecimal("FontSize", 9) ?? 9m;
+      // change font before creating the main form to get correct auto-scaling
+      Init(new Font("Segoe UI", (float)baseFontSize), "Office 2010 Black");
+
+      var mainForm = new ServerBrowserForm(iniFile);
       Application.Run(mainForm);
     }
 

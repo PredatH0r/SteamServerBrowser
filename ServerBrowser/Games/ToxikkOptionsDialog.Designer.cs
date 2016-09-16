@@ -36,10 +36,14 @@
       this.labelControl2 = new DevExpress.XtraEditors.LabelControl();
       this.rbIpPort = new DevExpress.XtraEditors.CheckEdit();
       this.rbSteamId = new DevExpress.XtraEditors.CheckEdit();
+      this.labelControl3 = new DevExpress.XtraEditors.LabelControl();
+      this.comboSkillClass = new DevExpress.XtraEditors.ComboBoxEdit();
+      this.labelControl4 = new DevExpress.XtraEditors.LabelControl();
       ((System.ComponentModel.ISupportInitialize)(this.cbSendKeystrokes.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.edConsoleKey.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.rbIpPort.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.rbSteamId.Properties)).BeginInit();
+      ((System.ComponentModel.ISupportInitialize)(this.comboSkillClass.Properties)).BeginInit();
       this.SuspendLayout();
       // 
       // cbSendKeystrokes
@@ -60,7 +64,7 @@
       // 
       // edConsoleKey
       // 
-      this.edConsoleKey.Location = new System.Drawing.Point(137, 42);
+      this.edConsoleKey.Location = new System.Drawing.Point(116, 42);
       this.edConsoleKey.Name = "edConsoleKey";
       this.edConsoleKey.Properties.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
             new DevExpress.XtraEditors.Controls.EditorButton()});
@@ -73,7 +77,7 @@
       // 
       this.btnOk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
       this.btnOk.DialogResult = System.Windows.Forms.DialogResult.OK;
-      this.btnOk.Location = new System.Drawing.Point(306, 11);
+      this.btnOk.Location = new System.Drawing.Point(348, 11);
       this.btnOk.Name = "btnOk";
       this.btnOk.Size = new System.Drawing.Size(75, 23);
       this.btnOk.TabIndex = 3;
@@ -83,7 +87,7 @@
       // 
       this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
       this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-      this.btnCancel.Location = new System.Drawing.Point(306, 40);
+      this.btnCancel.Location = new System.Drawing.Point(348, 40);
       this.btnCancel.Name = "btnCancel";
       this.btnCancel.Size = new System.Drawing.Size(75, 23);
       this.btnCancel.TabIndex = 4;
@@ -91,7 +95,7 @@
       // 
       // labelControl2
       // 
-      this.labelControl2.Location = new System.Drawing.Point(34, 69);
+      this.labelControl2.Location = new System.Drawing.Point(13, 69);
       this.labelControl2.Name = "labelControl2";
       this.labelControl2.Size = new System.Drawing.Size(85, 13);
       this.labelControl2.TabIndex = 5;
@@ -99,7 +103,7 @@
       // 
       // rbIpPort
       // 
-      this.rbIpPort.Location = new System.Drawing.Point(137, 66);
+      this.rbIpPort.Location = new System.Drawing.Point(116, 66);
       this.rbIpPort.Name = "rbIpPort";
       this.rbIpPort.Properties.Caption = "IP:port";
       this.rbIpPort.Properties.CheckStyle = DevExpress.XtraEditors.Controls.CheckStyles.Radio;
@@ -111,7 +115,7 @@
       // rbSteamId
       // 
       this.rbSteamId.EditValue = true;
-      this.rbSteamId.Location = new System.Drawing.Point(204, 66);
+      this.rbSteamId.Location = new System.Drawing.Point(184, 66);
       this.rbSteamId.Name = "rbSteamId";
       this.rbSteamId.Properties.Caption = "Steam-ID";
       this.rbSteamId.Properties.CheckStyle = DevExpress.XtraEditors.Controls.CheckStyles.Radio;
@@ -119,12 +123,55 @@
       this.rbSteamId.Size = new System.Drawing.Size(75, 19);
       this.rbSteamId.TabIndex = 7;
       // 
+      // labelControl3
+      // 
+      this.labelControl3.Location = new System.Drawing.Point(13, 97);
+      this.labelControl3.Name = "labelControl3";
+      this.labelControl3.Size = new System.Drawing.Size(76, 13);
+      this.labelControl3.TabIndex = 8;
+      this.labelControl3.Text = "Skill Class Filter:";
+      // 
+      // comboSkillClass
+      // 
+      this.comboSkillClass.EditValue = "ALL";
+      this.comboSkillClass.Location = new System.Drawing.Point(116, 94);
+      this.comboSkillClass.Name = "comboSkillClass";
+      this.comboSkillClass.Properties.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)});
+      this.comboSkillClass.Properties.Items.AddRange(new object[] {
+            "ALL",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12"});
+      this.comboSkillClass.Size = new System.Drawing.Size(57, 20);
+      this.comboSkillClass.TabIndex = 9;
+      // 
+      // labelControl4
+      // 
+      this.labelControl4.Location = new System.Drawing.Point(184, 97);
+      this.labelControl4.Name = "labelControl4";
+      this.labelControl4.Size = new System.Drawing.Size(230, 13);
+      this.labelControl4.TabIndex = 10;
+      this.labelControl4.Text = "set this to your SC to only see matching servers";
+      // 
       // ToxikkOptionsDialog
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.CancelButton = this.btnCancel;
-      this.ClientSize = new System.Drawing.Size(393, 114);
+      this.ClientSize = new System.Drawing.Size(435, 137);
+      this.Controls.Add(this.labelControl4);
+      this.Controls.Add(this.comboSkillClass);
+      this.Controls.Add(this.labelControl3);
       this.Controls.Add(this.rbSteamId);
       this.Controls.Add(this.rbIpPort);
       this.Controls.Add(this.labelControl2);
@@ -141,6 +188,7 @@
       ((System.ComponentModel.ISupportInitialize)(this.edConsoleKey.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.rbIpPort.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.rbSteamId.Properties)).EndInit();
+      ((System.ComponentModel.ISupportInitialize)(this.comboSkillClass.Properties)).EndInit();
       this.ResumeLayout(false);
       this.PerformLayout();
 
@@ -156,5 +204,8 @@
     private DevExpress.XtraEditors.LabelControl labelControl2;
     private DevExpress.XtraEditors.CheckEdit rbIpPort;
     private DevExpress.XtraEditors.CheckEdit rbSteamId;
+    private DevExpress.XtraEditors.LabelControl labelControl3;
+    private DevExpress.XtraEditors.ComboBoxEdit comboSkillClass;
+    private DevExpress.XtraEditors.LabelControl labelControl4;
   }
 }

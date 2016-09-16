@@ -88,6 +88,8 @@ namespace ServerBrowser
 
     // server list UI
 
+    public virtual bool FilterServerRow(ServerRow row) => false;
+
     #region CustomizeServerGridColumns()
     /// <summary>
     /// Allows server list columns to be customized for specific games.

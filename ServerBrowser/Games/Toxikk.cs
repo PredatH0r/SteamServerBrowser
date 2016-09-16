@@ -31,9 +31,10 @@ namespace ServerBrowser
     private bool useKeystrokesToConnect;
     private bool useSteamIdToConnect;
     private Keys consoleKey;
+    private int skillClassFilter;
     private ServerRow serverForPlayerInfos;
     private long dataTimestamp;
-    private readonly Dictionary<string,ToxikkPlayerInfo> playerInfos = new Dictionary<string, ToxikkPlayerInfo>();
+    private volatile Dictionary<string,ToxikkPlayerInfo> playerInfos = new Dictionary<string, ToxikkPlayerInfo>();
 
 
     public Toxikk()
@@ -53,6 +54,7 @@ namespace ServerBrowser
       this.consoleKey = (Keys)sec.GetInt("consoleKey");
       this.useKeystrokesToConnect = sec.GetBool("useKeystrokesToConnect", true);
       this.useSteamIdToConnect = sec.GetBool("useSteamIdToConnect", true);
+      this.skillClassFilter = sec.GetInt("skillClass", 0);
     }
     #endregion
 
@@ -64,6 +66,7 @@ namespace ServerBrowser
       ini.AppendLine($"consoleKey={(int)this.consoleKey}");
       ini.AppendLine($"useKeystrokesToConnect={this.useKeystrokesToConnect}");
       ini.AppendLine($"useSteamIdToConnect={this.useSteamIdToConnect}");
+      ini.AppendLine($"skillClass={this.skillClassFilter}");
     }
     #endregion
 
@@ -75,11 +78,13 @@ namespace ServerBrowser
         dlg.UseKeystrokes = this.useKeystrokesToConnect;
         dlg.ConsoleKey = this.consoleKey;
         dlg.UseSteamId = this.useSteamIdToConnect;
+        dlg.SkillClass = this.skillClassFilter;
         if (dlg.ShowDialog(Form.ActiveForm) != DialogResult.OK)
           return;
         this.useKeystrokesToConnect = dlg.UseKeystrokes;
         this.consoleKey = dlg.ConsoleKey;
         this.useSteamIdToConnect = dlg.UseSteamId;
+        this.skillClassFilter = dlg.SkillClass;
       }
     }
     #endregion
@@ -173,6 +178,19 @@ namespace ServerBrowser
       }
 
       return base.GetServerCellToolTip(row, fieldName);
+    }
+    #endregion
+
+    #region FilterServerRow()
+    public override bool FilterServerRow(ServerRow row)
+    {
+      if (this.skillClassFilter == 0 || row.Rules == null)
+        return false;
+
+      // remove server rows which are outside the skill class
+      var min = int.Parse(row.GetRule(ToxikkSkillInfo.MinSkillClass));
+      var max = int.Parse(row.GetRule(ToxikkSkillInfo.MaxSkillClass));
+      return this.skillClassFilter < min || this.skillClassFilter > max;
     }
     #endregion
 
@@ -421,12 +439,12 @@ namespace ServerBrowser
     private void UpdatePlayerInfos(ServerRow server)
     {
       // no need for update if it's the same server and update timestamp
-      if (server == this.serverForPlayerInfos && server.RequestTimestamp == this.dataTimestamp && playerInfos.Count > 0)
+      if (server == this.serverForPlayerInfos && server.RequestTimestamp == this.dataTimestamp && this.playerInfos.Count > 0)
         return;
 
       this.serverForPlayerInfos = server;
       this.dataTimestamp = server.RequestTimestamp;
-      this.playerInfos.Clear();
+      var newPlayerInfos = new Dictionary<string, ToxikkPlayerInfo>();
 
       var strNames = (server.GetRule("p1073741832") ?? "") + (server.GetRule("p1073741833") ?? "") + (server.GetRule("p1073741834") ?? "");
       if (string.IsNullOrEmpty(strNames))
@@ -455,10 +473,10 @@ namespace ServerBrowser
         int rank;
         if (i < ranks.Length && int.TryParse(ranks[i], out rank))
           info.Rank = rank;
-        this.playerInfos.Add(name, info);
+        newPlayerInfos.Add(name, info);
         ++i;
       }
-
+      this.playerInfos = newPlayerInfos;
       server.PlayerCount.Update();
     }
     #endregion

@@ -88,7 +88,8 @@ namespace QueryMaster
                 filterStr.Append(@"\collapse_addr_hash\1");
             if (!string.IsNullOrEmpty(filter.GameAddr))
                 filterStr.Append(@"\gameaddr\").Append(filter.GameAddr);
-
+            if (!string.IsNullOrEmpty(filter.VersionMatch))
+              filterStr.Append(@"\version_match\").Append(filter.VersionMatch);
             if (filter.Nor != null)
                 filterStr.Append(SubFilter(filter.Nor, "nor", inNorNand));
             if (filter.Nand != null)

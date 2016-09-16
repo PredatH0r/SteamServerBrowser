@@ -1,8 +1,10 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Windows.Forms;
+using DevExpress.Utils;
 using DevExpress.XtraEditors;
 
 namespace ServerBrowser
@@ -10,6 +12,7 @@ namespace ServerBrowser
   public partial class SkinPicker : XtraForm
   {
     string initialSkinName;
+    float initialFontSize;
     private readonly string bonusSkinDllPath;
 
     public SkinPicker(string bonusSkinDllPath)
@@ -22,7 +25,7 @@ namespace ServerBrowser
     #region SetBonusSkinLinkState()
     private void SetBonusSkinLinkState()
     {
-      if (File.Exists(bonusSkinDllPath)) 
+      if (File.Exists(bonusSkinDllPath) && new FileInfo(bonusSkinDllPath).Length > 0) 
         this.btnDownloadBonusSkins.Visible = false;
       else
       {
@@ -38,6 +41,7 @@ namespace ServerBrowser
     private void SkinPicker_Load(object sender, EventArgs e)
     {
       this.initialSkinName = DevExpress.LookAndFeel.UserLookAndFeel.Default.SkinName;
+      this.cbFontSize.Text = AppearanceObject.DefaultFont.SizeInPoints.ToString("n2");
       this.InitGallery();
     }
     #endregion
@@ -84,6 +88,7 @@ namespace ServerBrowser
       this.btnDownloadBonusSkins.Text = "Downloading...";
       this.btnDownloadBonusSkins.Enabled = false;
 
+      var dllPath = this.bonusSkinDllPath;
       var client = new WebClient();
       client.Proxy = null;
       client.DownloadFileCompleted += delegate(object o, AsyncCompletedEventArgs args)
@@ -92,6 +97,7 @@ namespace ServerBrowser
         if (args.Error != null)
         {
           XtraMessageBox.Show(this, "Failed to download bonus skin pack:\n" + args.Error, "Skin Pack", MessageBoxButtons.OK, MessageBoxIcon.Error);
+          File.Delete(dllPath);
           this.SetBonusSkinLinkState();
           return;
         }
@@ -100,8 +106,15 @@ namespace ServerBrowser
         this.InitGallery();
       };
 
-      var dllPath = this.bonusSkinDllPath;
-      client.DownloadFileAsync(new Uri("https://github.com/PredatH0r/SteamServerBrowser/raw/master/ServerBrowser/DLL/" + Path.GetFileName(dllPath)), dllPath);
+      client.DownloadFileAsync(new Uri("https://github.com/PredatH0r/SteamServerBrowser/blob/master/ServerBrowser/DLL/" + Path.GetFileName(dllPath) + "?raw=true"), dllPath);
+    }
+    #endregion
+
+    #region cbFontSize_SelectedIndexChanged
+    private void cbFontSize_SelectedIndexChanged(object sender, EventArgs e)
+    {
+      initialFontSize = int.Parse(this.cbFontSize.Text);
+      AppearanceObject.DefaultFont = new Font(AppearanceObject.DefaultFont.FontFamily, initialFontSize);
     }
     #endregion
 

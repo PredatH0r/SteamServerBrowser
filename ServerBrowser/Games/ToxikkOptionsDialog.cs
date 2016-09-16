@@ -34,6 +34,12 @@ namespace ServerBrowser.Games
       set { (value ? this.rbSteamId : this.rbIpPort).Checked = true; }
     }
 
+    public int SkillClass
+    {
+      get { return this.comboSkillClass.SelectedIndex; }
+      set { this.comboSkillClass.SelectedIndex = value; }
+    }
+
     private void edConsoleKey_ButtonClick(object sender, DevExpress.XtraEditors.Controls.ButtonPressedEventArgs e)
     {
       using (var dlg = new KeyBindForm("Please press your TOXIKK console key ..."))

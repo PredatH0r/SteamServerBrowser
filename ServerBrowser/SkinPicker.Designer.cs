@@ -31,14 +31,17 @@
       this.gallery = new DevExpress.XtraBars.Ribbon.GalleryControl();
       this.galleryControlClient1 = new DevExpress.XtraBars.Ribbon.GalleryControlClient();
       this.panelControl1 = new DevExpress.XtraEditors.PanelControl();
+      this.cbFontSize = new DevExpress.XtraEditors.ComboBoxEdit();
+      this.labelControl1 = new DevExpress.XtraEditors.LabelControl();
+      this.btnDownloadBonusSkins = new DevExpress.XtraEditors.SimpleButton();
       this.btnCancel = new DevExpress.XtraEditors.SimpleButton();
       this.btnOk = new DevExpress.XtraEditors.SimpleButton();
       this.btnReset = new DevExpress.XtraEditors.SimpleButton();
-      this.btnDownloadBonusSkins = new DevExpress.XtraEditors.SimpleButton();
       ((System.ComponentModel.ISupportInitialize)(this.gallery)).BeginInit();
       this.gallery.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.panelControl1)).BeginInit();
       this.panelControl1.SuspendLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.cbFontSize.Properties)).BeginInit();
       this.SuspendLayout();
       // 
       // gallery
@@ -69,6 +72,8 @@
       // 
       // panelControl1
       // 
+      this.panelControl1.Controls.Add(this.cbFontSize);
+      this.panelControl1.Controls.Add(this.labelControl1);
       this.panelControl1.Controls.Add(this.btnDownloadBonusSkins);
       this.panelControl1.Controls.Add(this.btnCancel);
       this.panelControl1.Controls.Add(this.btnOk);
@@ -78,6 +83,41 @@
       this.panelControl1.Name = "panelControl1";
       this.panelControl1.Size = new System.Drawing.Size(984, 35);
       this.panelControl1.TabIndex = 0;
+      // 
+      // cbFontSize
+      // 
+      this.cbFontSize.Location = new System.Drawing.Point(631, 9);
+      this.cbFontSize.Name = "cbFontSize";
+      this.cbFontSize.Properties.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)});
+      this.cbFontSize.Properties.Items.AddRange(new object[] {
+            "7",
+            "8",
+            "9",
+            "10"});
+      this.cbFontSize.Properties.TextEditStyle = DevExpress.XtraEditors.Controls.TextEditStyles.DisableTextEditor;
+      this.cbFontSize.Size = new System.Drawing.Size(60, 20);
+      this.cbFontSize.TabIndex = 5;
+      this.cbFontSize.Visible = false;
+      this.cbFontSize.SelectedIndexChanged += new System.EventHandler(this.cbFontSize_SelectedIndexChanged);
+      // 
+      // labelControl1
+      // 
+      this.labelControl1.Location = new System.Drawing.Point(377, 12);
+      this.labelControl1.Name = "labelControl1";
+      this.labelControl1.Size = new System.Drawing.Size(225, 13);
+      this.labelControl1.TabIndex = 4;
+      this.labelControl1.Text = "Font Size (requires restart for proper resizing):";
+      this.labelControl1.Visible = false;
+      // 
+      // btnDownloadBonusSkins
+      // 
+      this.btnDownloadBonusSkins.Location = new System.Drawing.Point(176, 7);
+      this.btnDownloadBonusSkins.Name = "btnDownloadBonusSkins";
+      this.btnDownloadBonusSkins.Size = new System.Drawing.Size(158, 23);
+      this.btnDownloadBonusSkins.TabIndex = 3;
+      this.btnDownloadBonusSkins.Text = "Download Bonus Skins";
+      this.btnDownloadBonusSkins.Click += new System.EventHandler(this.btnDownloadBonusSkins_Click);
       // 
       // btnCancel
       // 
@@ -110,15 +150,6 @@
       this.btnReset.Text = "Use standard skin";
       this.btnReset.Click += new System.EventHandler(this.btnReset_Click);
       // 
-      // btnDownloadBonusSkins
-      // 
-      this.btnDownloadBonusSkins.Location = new System.Drawing.Point(176, 7);
-      this.btnDownloadBonusSkins.Name = "btnDownloadBonusSkins";
-      this.btnDownloadBonusSkins.Size = new System.Drawing.Size(158, 23);
-      this.btnDownloadBonusSkins.TabIndex = 3;
-      this.btnDownloadBonusSkins.Text = "Download Bonus Skins";
-      this.btnDownloadBonusSkins.Click += new System.EventHandler(this.btnDownloadBonusSkins_Click);
-      // 
       // SkinPicker
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -135,6 +166,8 @@
       this.gallery.ResumeLayout(false);
       ((System.ComponentModel.ISupportInitialize)(this.panelControl1)).EndInit();
       this.panelControl1.ResumeLayout(false);
+      this.panelControl1.PerformLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.cbFontSize.Properties)).EndInit();
       this.ResumeLayout(false);
 
     }
@@ -148,5 +181,7 @@
     private DevExpress.XtraEditors.SimpleButton btnOk;
     private DevExpress.XtraEditors.SimpleButton btnReset;
     private DevExpress.XtraEditors.SimpleButton btnDownloadBonusSkins;
+    private DevExpress.XtraEditors.ComboBoxEdit cbFontSize;
+    private DevExpress.XtraEditors.LabelControl labelControl1;
   }
 }

@@ -144,6 +144,8 @@ namespace ServerBrowser
       this.txtGameServer = new DevExpress.XtraEditors.ButtonEdit();
       this.labelControl6 = new DevExpress.XtraEditors.LabelControl();
       this.panelQuery = new DevExpress.XtraEditors.PanelControl();
+      this.txtVersion = new DevExpress.XtraEditors.ButtonEdit();
+      this.labelControl20 = new DevExpress.XtraEditors.LabelControl();
       this.txtFilterInfoMaster = new DevExpress.XtraEditors.LabelControl();
       this.btnUpdateStatus = new DevExpress.XtraEditors.SimpleButton();
       this.comboQueryLimit = new DevExpress.XtraEditors.ComboBoxEdit();
@@ -263,6 +265,7 @@ namespace ServerBrowser
       ((System.ComponentModel.ISupportInitialize)(this.txtGameServer.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.panelQuery)).BeginInit();
       this.panelQuery.SuspendLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.txtVersion.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.comboQueryLimit.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbGetFull.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.txtMod.Properties)).BeginInit();
@@ -1750,6 +1753,8 @@ namespace ServerBrowser
       // panelQuery
       // 
       this.panelQuery.BorderStyle = DevExpress.XtraEditors.Controls.BorderStyles.NoBorder;
+      this.panelQuery.Controls.Add(this.txtVersion);
+      this.panelQuery.Controls.Add(this.labelControl20);
       this.panelQuery.Controls.Add(this.txtFilterInfoMaster);
       this.panelQuery.Controls.Add(this.btnUpdateStatus);
       this.panelQuery.Controls.Add(this.comboQueryLimit);
@@ -1775,10 +1780,33 @@ namespace ServerBrowser
       this.panelQuery.Size = new System.Drawing.Size(1650, 64);
       this.panelQuery.TabIndex = 2;
       // 
+      // txtVersion
+      // 
+      this.txtVersion.Location = new System.Drawing.Point(1086, 37);
+      this.txtVersion.MenuManager = this.barManager1;
+      this.txtVersion.Name = "txtVersion";
+      this.txtVersion.Properties.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
+      this.txtVersion.Properties.Appearance.Options.UseFont = true;
+      this.txtVersion.Properties.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Delete)});
+      this.txtVersion.Properties.NullValuePromptShowForEmptyValue = true;
+      this.txtVersion.Size = new System.Drawing.Size(53, 22);
+      this.txtVersion.TabIndex = 20;
+      this.txtVersion.ToolTip = "Tags are filtered by the Master Server to shorten the list of game servers.";
+      // 
+      // labelControl20
+      // 
+      this.labelControl20.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
+      this.labelControl20.Location = new System.Drawing.Point(1010, 39);
+      this.labelControl20.Name = "labelControl20";
+      this.labelControl20.Size = new System.Drawing.Size(42, 15);
+      this.labelControl20.TabIndex = 19;
+      this.labelControl20.Text = "Version:";
+      // 
       // txtFilterInfoMaster
       // 
       this.txtFilterInfoMaster.Appearance.Font = new System.Drawing.Font("Segoe UI", 8.25F);
-      this.txtFilterInfoMaster.Location = new System.Drawing.Point(1240, 6);
+      this.txtFilterInfoMaster.Location = new System.Drawing.Point(1292, 5);
       this.txtFilterInfoMaster.Name = "txtFilterInfoMaster";
       this.txtFilterInfoMaster.Size = new System.Drawing.Size(342, 52);
       this.txtFilterInfoMaster.TabIndex = 18;
@@ -1790,7 +1818,7 @@ namespace ServerBrowser
       this.btnUpdateStatus.Appearance.Options.UseFont = true;
       this.btnUpdateStatus.ImageIndex = 1;
       this.btnUpdateStatus.ImageList = this.imageCollection;
-      this.btnUpdateStatus.Location = new System.Drawing.Point(1101, 35);
+      this.btnUpdateStatus.Location = new System.Drawing.Point(1160, 36);
       this.btnUpdateStatus.Name = "btnUpdateStatus";
       this.btnUpdateStatus.Size = new System.Drawing.Size(115, 25);
       this.btnUpdateStatus.TabIndex = 17;
@@ -1801,7 +1829,7 @@ namespace ServerBrowser
       // comboQueryLimit
       // 
       this.comboQueryLimit.EditValue = "1000";
-      this.comboQueryLimit.Location = new System.Drawing.Point(1010, 37);
+      this.comboQueryLimit.Location = new System.Drawing.Point(1086, 8);
       this.comboQueryLimit.MenuManager = this.barManager1;
       this.comboQueryLimit.Name = "comboQueryLimit";
       this.comboQueryLimit.Properties.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
@@ -1896,7 +1924,7 @@ namespace ServerBrowser
       this.btnUpdateList.Appearance.Options.UseFont = true;
       this.btnUpdateList.ImageIndex = 0;
       this.btnUpdateList.ImageList = this.imageCollection;
-      this.btnUpdateList.Location = new System.Drawing.Point(1101, 6);
+      this.btnUpdateList.Location = new System.Drawing.Point(1160, 7);
       this.btnUpdateList.Name = "btnUpdateList";
       this.btnUpdateList.Size = new System.Drawing.Size(115, 25);
       this.btnUpdateList.TabIndex = 16;
@@ -2278,7 +2306,7 @@ namespace ServerBrowser
       // 
       this.btnSkin.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
       this.btnSkin.Appearance.Options.UseFont = true;
-      this.btnSkin.Location = new System.Drawing.Point(1101, 10);
+      this.btnSkin.Location = new System.Drawing.Point(1160, 10);
       this.btnSkin.Name = "btnSkin";
       this.btnSkin.Size = new System.Drawing.Size(115, 25);
       this.btnSkin.TabIndex = 15;
@@ -2889,6 +2917,7 @@ namespace ServerBrowser
       ((System.ComponentModel.ISupportInitialize)(this.panelQuery)).EndInit();
       this.panelQuery.ResumeLayout(false);
       this.panelQuery.PerformLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.txtVersion.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.comboQueryLimit.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.cbGetFull.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.txtMod.Properties)).EndInit();
@@ -3143,5 +3172,7 @@ namespace ServerBrowser
     private DevExpress.XtraBars.Docking.ControlContainer controlContainer4;
     private DevExpress.XtraBars.BarButtonItem miRestoreStandardLayout;
     protected CheckEdit cbHideGhosts;
+    protected ButtonEdit txtVersion;
+    protected LabelControl labelControl20;
   }
 }

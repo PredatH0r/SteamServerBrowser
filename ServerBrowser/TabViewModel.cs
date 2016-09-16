@@ -32,6 +32,7 @@ namespace ServerBrowser
     public string GridFilter { get; set; }
     public string TagsIncludeClient { get; set; }
     public string TagsExcludeClient { get; set; }
+    public string VersionMatch { get; set; }
 
     public MemoryStream ServerGridLayout { get; set; }
     public SourceType Source { get; set; }
@@ -71,6 +72,7 @@ namespace ServerBrowser
       this.TagsIncludeClient = opt.TagsIncludeClient;
       this.TagsExcludeClient = opt.TagsExcludeClient;
       this.ServerGridLayout = opt.ServerGridLayout;
+      this.VersionMatch = opt.VersionMatch;
       this.CustomDetailColumns.AddRange(opt.CustomDetailColumns);
       this.CustomRuleColumns.AddRange(opt.CustomRuleColumns);
       this.HideColumns.AddRange(opt.HideColumns);
@@ -87,6 +89,7 @@ namespace ServerBrowser
       this.FilterMap = ini.GetString("FilterMap");
       this.TagsIncludeServer = ini.GetString("TagsInclude");
       this.TagsExcludeServer = ini.GetString("TagsExclude");
+      this.VersionMatch = ini.GetString("VersionMatch");
       this.GetEmptyServers = ini.GetBool("GetEmptyServers", true);
       this.GetFullServers = ini.GetBool("GetFullServers", true);
       this.MasterServerQueryLimit = ini.GetInt("MasterServerQueryLimit", this.MasterServerQueryLimit);
@@ -169,6 +172,7 @@ namespace ServerBrowser
         ini.Append("FilterMap=").AppendLine(this.FilterMap);
         ini.Append("TagsInclude=").AppendLine(this.TagsIncludeServer);
         ini.Append("TagsExclude=").AppendLine(this.TagsExcludeServer);
+        ini.Append("VersionMatch=").AppendLine(this.VersionMatch);
         ini.Append("GetEmptyServers=").AppendLine(this.GetEmptyServers ? "1" : "0");
         ini.Append("GetFullServers=").AppendLine(this.GetFullServers ? "1" : "0");
         ini.Append("MasterServerQueryLimit=").Append(this.MasterServerQueryLimit).AppendLine();
