@@ -195,6 +195,11 @@ namespace QueryMaster
         /// Value of the rule. 
         /// </summary>
         public string Value { get; internal set; }
+
+      public override string ToString()
+      {
+        return Name + "=" + Value;
+      }
     }
 
 

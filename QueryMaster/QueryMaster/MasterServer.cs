@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using System.Xml.Serialization;
 
 namespace QueryMaster
 {
@@ -14,12 +16,38 @@ namespace QueryMaster
   /// <param name="endPoints">Server Sockets</param>
   public delegate void MasterIpCallback(ReadOnlyCollection<IPEndPoint> endPoints);
 
+  public class Message
+  {
+    [XmlElement("addr")]
+    public string Addr { get; set; }
+  }
+
+  [XmlRoot("response")]
+  public class Response
+  {
+    [XmlArray("servers")]
+    [XmlArrayItem("message")]
+    public Message[] Servers;
+  }
+
+  class XWebClient : WebClient
+  {
+    protected override WebRequest GetWebRequest(Uri address)
+    {
+      var req = base.GetWebRequest(address);
+      req.Timeout = 2000;
+      return req;
+    }
+  }
+
   /// <summary>
   ///   Provides methods to query master server.
   ///   An instance can only be used for a single request and is automatically disposed when the request completes or times out
   /// </summary>
   public class MasterServer
   {
+    const string SteamWebApiKey = "your-personal-steam-wep-api-key"; // create an account and get a steam web api key at http://steamcommunity.com/dev/apikey
+
     private static readonly IPEndPoint SeedEndpoint = new IPEndPoint(IPAddress.Any, 0);    
     private readonly IPEndPoint endPoint;
 
@@ -59,6 +87,38 @@ namespace QueryMaster
     {
       ThreadPool.QueueUserWorkItem(x =>
       {
+#if true
+        try
+        {
+          using (var cli = new XWebClient())
+          {
+            var filters = MasterUtil.ProcessFilter(filter);
+            var xml = cli.DownloadString(@"https://api.steampowered.com/IGameServersService/GetServerList/v1/?key=" + SteamWebApiKey + "&format=xml&filter=" + filters + "&limit=" + GetAddressesLimit);
+            var ser = new XmlSerializer(typeof (Response));
+            var resp = (Response) ser.Deserialize(new StringReader(xml));
+
+            var endpoints = new List<IPEndPoint>();
+            foreach (var msg in resp.Servers)
+            {
+              try
+              {
+                int i = msg.Addr.IndexOf(':');
+                if (i > 0)
+                  endpoints.Add(new IPEndPoint(IPAddress.Parse(msg.Addr.Substring(0, i)), int.Parse(msg.Addr.Substring(i + 1))));
+              }
+              catch
+              {
+              }
+            }
+            endpoints.Add(SeedEndpoint);
+            callback(new ReadOnlyCollection<IPEndPoint>(endpoints));
+          }
+        }
+        catch
+        {
+          callback(null);
+        }
+#else
         var udpSocket = new Socket(AddressFamily.InterNetwork, System.Net.Sockets.SocketType.Dgram, ProtocolType.Udp);
         udpSocket.SendTimeout = 500;
         udpSocket.ReceiveTimeout = 500;
@@ -92,6 +152,7 @@ namespace QueryMaster
           try { udpSocket.Close(); }
           catch { }
         }
+#endif
       });
     }
 

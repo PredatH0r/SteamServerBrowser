@@ -133,7 +133,8 @@ namespace ServerBrowser
             gt == "CRZTeamGame" ? "SA" : 
             gt == "CRZCellCapture" ? "CC" :
             gt == "CRZAreaDomination" ? "AD" :
-            gt == "CRZTimeTrial" ? "Tut" :
+            gt == "CRZTimeTrial" ? "TT" :
+            gt == "CRZArchRivals" ? "AR" :
             gt == "InfekktedGame" ? "Inf" :
             gt == "TAGame" ? "TA" :
             gt == "TTGame" ? "TR" :
@@ -162,7 +163,7 @@ namespace ServerBrowser
     {
       if (fieldName == "_gametype")
       {
-        var gt = row.ServerInfo.Description;
+        var gt = row.ServerInfo?.Description;
         return gt == null ? null :
           gt == "CRZBloodLust" ? "Bloodlust" :
           gt == "CRZTeamGame" ? "Squad Assault" :
@@ -214,6 +215,17 @@ namespace ServerBrowser
       if (row.Rules != null && int.TryParse(row.GetRule(MinCombatants), out bots))
         return bots;
       return 0;
+    }
+    #endregion
+
+    #region GetRealPlayerCount()
+    public override int? GetRealPlayerCount(ServerRow row)
+    {
+      if (row.Rules == null)
+        return base.GetRealPlayerCount(row);
+
+      var strSteamIds = (row.GetRule("p1073741829") ?? "") + (row.GetRule("p1073741830") ?? "") + (row.GetRule("p1073741831") ?? "");
+      return strSteamIds == "" ? 0 : strSteamIds.Split(',', ';').Length;
     }
     #endregion
 

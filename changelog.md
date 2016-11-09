@@ -1,3 +1,12 @@
+2.35
+---
+- using undocumented Steam Web API function to retrieve server list after the steam master server stopped responding to UDP requests on 2016-11-09
+
+2.34
+---
+- fixed errors when hovering over timed out TOXIKK servers
+- added "Skill Class" filter in Options / TOXIKK
+
 2.33
 ---
 - added "Ver" column for TOXIKK game version
