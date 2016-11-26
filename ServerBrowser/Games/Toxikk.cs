@@ -51,9 +51,10 @@ namespace ServerBrowser
     public override void LoadConfig(IniFile ini)
     {
       var sec = ini.GetSection("Toxikk", true);
+      var version = sec.GetString("version");
       this.consoleKey = (Keys)sec.GetInt("consoleKey");
       this.useKeystrokesToConnect = sec.GetBool("useKeystrokesToConnect", true);
-      this.useSteamIdToConnect = sec.GetBool("useSteamIdToConnect", true);
+      this.useSteamIdToConnect = version != null && sec.GetBool("useSteamIdToConnect", false);
       this.skillClassFilter = sec.GetInt("skillClass", 0);
     }
     #endregion
@@ -63,6 +64,7 @@ namespace ServerBrowser
     {
       ini.AppendLine();
       ini.AppendLine("[Toxikk]");
+      ini.AppendLine($"version=1.0.5");
       ini.AppendLine($"consoleKey={(int)this.consoleKey}");
       ini.AppendLine($"useKeystrokesToConnect={this.useKeystrokesToConnect}");
       ini.AppendLine($"useSteamIdToConnect={this.useSteamIdToConnect}");
