@@ -1,3 +1,12 @@
+2.37
+---
+- show exception message when master server list could not be retrieved
+- .NET 4.0 Client Profile is now sufficient to run the program
+
+2.36
+---
+- fix for TOXIKK 1.0.5: use IP:port now to connect instead of Steam-UID (public servers no longer use SteamSockets)
+
 2.35
 ---
 - using undocumented Steam Web API function to retrieve server list after the steam master server stopped responding to UDP requests on 2016-11-09

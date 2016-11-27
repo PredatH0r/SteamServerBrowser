@@ -14,7 +14,7 @@ namespace QueryMaster
   ///   Invoked when a reply from Master Server is received.
   /// </summary>
   /// <param name="endPoints">Server Sockets</param>
-  public delegate void MasterIpCallback(ReadOnlyCollection<IPEndPoint> endPoints);
+  public delegate void MasterIpCallback(ReadOnlyCollection<IPEndPoint> endPoints, Exception error);
 
   public class Message
   {
@@ -46,7 +46,7 @@ namespace QueryMaster
   /// </summary>
   public class MasterServer
   {
-    const string SteamWebApiKey = "your-personal-steam-wep-api-key"; // create an account and get a steam web api key at http://steamcommunity.com/dev/apikey
+    const string SteamWebApiKey = "put-your-steam-api-key-here"; // create an account and get a steam web api key at http://steamcommunity.com/dev/apikey
 
     private static readonly IPEndPoint SeedEndpoint = new IPEndPoint(IPAddress.Any, 0);    
     private readonly IPEndPoint endPoint;
@@ -111,12 +111,12 @@ namespace QueryMaster
               }
             }
             endpoints.Add(SeedEndpoint);
-            callback(new ReadOnlyCollection<IPEndPoint>(endpoints));
+            callback(new ReadOnlyCollection<IPEndPoint>(endpoints), null);
           }
         }
-        catch
+        catch(Exception ex)
         {
-          callback(null);
+          callback(null, ex);
         }
 #else
         var udpSocket = new Socket(AddressFamily.InterNetwork, System.Net.Sockets.SocketType.Dgram, ProtocolType.Udp);

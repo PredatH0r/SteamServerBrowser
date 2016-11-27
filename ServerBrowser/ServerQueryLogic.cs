@@ -148,20 +148,20 @@ namespace ServerBrowser
       var extension = this.gameExtensions.Get(filter.App);
       var request = new UpdateRequest(filter.App, maxResults, timeout, extension); // use local var for thread safety
       this.currentRequest = request;
-      serverSource.GetAddresses(region, filter, maxResults, endpoints => OnMasterServerReceive(request, endpoints));
+      serverSource.GetAddresses(region, filter, maxResults, (endpoints, error) => OnMasterServerReceive(request, endpoints, error));
     }
     #endregion
 
     #region OnMasterServerReceive()
-    private void OnMasterServerReceive(UpdateRequest request, ReadOnlyCollection<IPEndPoint> endPoints)
+    private void OnMasterServerReceive(UpdateRequest request, ReadOnlyCollection<IPEndPoint> endPoints, Exception error)
     {
       if (request.IsCancelled)
         return;
 
       string statusText;
-      if (endPoints == null)
+      if (error != null)
       {
-        statusText = $"Master server request timed out after returning {request.receivedServerCount} servers (clients are limited to receive 30 packets per minute)";
+        statusText = "Error requesting server list from Steam Web API: " + error.Message;
         if (request.receivedServerCount > 0)
           this.AllServersReceived(request);
       }

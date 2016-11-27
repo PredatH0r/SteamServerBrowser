@@ -31,7 +31,7 @@ namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.36";
+    private const string Version = "2.37";
     private const string DevExpressVersion = "v15.2";
     private const string CustomDetailColumnPrefix = "ServerInfo.";
     private const string CustomRuleColumnPrefix = "custRule.";
@@ -572,7 +572,7 @@ namespace ServerBrowser
     #region SaveGameSettings()
     private void SaveGameSettings(StringBuilder sb)
     {
-      return;
+#if false
 
       var sbCount = new StringBuilder();
       var sbList = new StringBuilder();
@@ -589,6 +589,7 @@ namespace ServerBrowser
       sb.AppendLine("[GameSpecific]");
       sb.Append("BotsIncludedInPlayerCount=").AppendLine(sbCount.ToString());
       sb.Append("BotsIncludedInPlayerList=").AppendLine(sbList.ToString());
+#endif
     }
     #endregion
 

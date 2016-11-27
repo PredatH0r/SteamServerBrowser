@@ -24,7 +24,7 @@ namespace ServerBrowser
           var text = client.DownloadString(this.url);
           if (text == null)
           {
-            callback(null);
+            callback(null, null);
             return;
           }
 
@@ -48,12 +48,12 @@ namespace ServerBrowser
           }
           endpoints.Add(new IPEndPoint(IPAddress.Any, 0));
 
-          callback(new ReadOnlyCollection<IPEndPoint>(endpoints));
+          callback(new ReadOnlyCollection<IPEndPoint>(endpoints), null);
         }
       }
-      catch
+      catch (Exception ex)
       {
-        callback(null);
+        callback(null, ex);
       }
     }
   }

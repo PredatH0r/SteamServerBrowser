@@ -5,9 +5,9 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Threading;
-using System.Web.Script.Serialization;
 
 namespace ServerBrowser
 {
@@ -79,8 +79,9 @@ namespace ServerBrowser
     #region HandleResult()
     private GeoInfo HandleResult(uint ip, string result)
     {
-      var ser = new JavaScriptSerializer();
-      var info = ser.Deserialize<NekudoGeopIpFullResponse>(result);
+      var ser = new DataContractJsonSerializer(typeof(NekudoGeopIpFullResponse));
+      var info = (NekudoGeopIpFullResponse)ser.ReadObject(new MemoryStream(Encoding.UTF8.GetBytes(result)));
+
       var subdiv = info.subdivisions?[info.subdivisions.Length - 1];
       var geoInfo = new GeoInfo(
         info.country?.iso_code, TryGet(info.country?.names, "en"), 
