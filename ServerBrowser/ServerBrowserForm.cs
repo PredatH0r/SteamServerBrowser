@@ -31,7 +31,7 @@ namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.38";
+    private const string Version = "2.39";
     private const string DevExpressVersion = "v15.2";
     private const string CustomDetailColumnPrefix = "ServerInfo.";
     private const string CustomRuleColumnPrefix = "custRule.";
@@ -848,7 +848,8 @@ namespace ServerBrowser
     {
       if (this.cbHideUnresponsiveServers.Checked)
       {
-        if (row.ServerInfo == null || row.ServerInfo.Ping == 0 || row.Status.StartsWith("Timeout"))
+        // behind-NAT servers will have ServerInfo from the master server API, but timeout on A2S_PLAYERS and A2S_RULES and 0 ping
+        if (row.ServerInfo == null || (row.ServerInfo.Ping != 0 && row.Status != null && row.Status.StartsWith("timeout")))
           return true;
       }
 

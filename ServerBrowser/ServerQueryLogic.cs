@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Net;
+using System.Security.Cryptography;
 using System.Threading;
 using QueryMaster;
 
@@ -365,8 +367,11 @@ namespace ServerBrowser
         return;
       bool ok = ExecuteUpdate(request, row, server, retryCallback =>
       {
-        var players = server.GetPlayers(retryCallback);
+        var sw = (row.ServerInfo?.Ping ?? -1) == 0 ? new Stopwatch() : null;
+        var players = server.GetPlayers(retryCallback, sw);
         if (players == null) return false;
+        if (sw != null)
+          row.ServerInfo.Ping = sw.ElapsedMilliseconds;
         row.Players =new List<Player>(players);
         return true;
       });

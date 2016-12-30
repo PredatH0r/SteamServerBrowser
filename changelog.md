@@ -1,3 +1,8 @@
+2.39
+---
+- fixed empty server list when "show timed out servers" was enabled
+- calculate ping after server refresh
+
 2.38
 ---
 - using the results from the Steam WebAPI call and skip the redundant A2S_INFO query.

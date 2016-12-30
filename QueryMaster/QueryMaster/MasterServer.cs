@@ -69,7 +69,6 @@ namespace QueryMaster
   {
     const string SteamWebApiKey = "B7D245299F6F990504A86FF91EC9D6BD"; // create an account and get a steam web api key at http://steamcommunity.com/dev/apikey
 
-    private static readonly IPEndPoint SeedEndpoint = new IPEndPoint(IPAddress.Any, 0);    
     private readonly IPEndPoint endPoint;
 
     public MasterServer(IPEndPoint endPoint)

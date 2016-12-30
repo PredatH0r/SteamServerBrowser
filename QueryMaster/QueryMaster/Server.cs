@@ -249,12 +249,12 @@ namespace QueryMaster
     ///   Retrieves information about the players currently on the server
     /// </summary>
     /// <returns>ReadOnlyCollection of Player instances</returns>
-    public virtual ReadOnlyCollection<Player> GetPlayers(Action<int> failedAttemptCallback = null)
+    public virtual ReadOnlyCollection<Player> GetPlayers(Action<int> failedAttemptCallback = null, Stopwatch sw = null)
     {
-      return Util.RunWithRetries(GetPlayersCore, this.Retries, failedAttemptCallback);
+      return Util.RunWithRetries(() => GetPlayersCore(sw), this.Retries, failedAttemptCallback);
     }
 
-    protected virtual ReadOnlyCollection<Player> GetPlayersCore()
+    protected virtual ReadOnlyCollection<Player> GetPlayersCore(Stopwatch sw = null)
     {
       byte[] recvData = null;
 
@@ -266,7 +266,7 @@ namespace QueryMaster
       {
         if (PlayerChallengeId == null)
         {
-          recvData = GetPlayerChallengeId();
+          recvData = GetPlayerChallengeId(sw);
           if (IsPlayerChallengeId)
             PlayerChallengeId = recvData;
         }
@@ -350,9 +350,9 @@ namespace QueryMaster
       }
     }
 
-    private byte[] GetPlayerChallengeId()
+    private byte[] GetPlayerChallengeId(Stopwatch sw = null)
     {
-      var recvBytes = socket.GetResponse(QueryMsg.PlayerChallengeQuery, Type);
+      var recvBytes = socket.GetResponse(QueryMsg.PlayerChallengeQuery, Type, sw);
       try
       {
         var parser = new Parser(recvBytes);

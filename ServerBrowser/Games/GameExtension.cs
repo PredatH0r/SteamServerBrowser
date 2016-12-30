@@ -299,8 +299,6 @@ namespace ServerBrowser
 
     public void Add(Game game, GameExtension extension)
     {
-      if (extension == null)
-        throw new ArgumentNullException(nameof(extension));
       extensions[game] = extension;
       extension.Steamworks = this.Steamworks;
     }
@@ -313,8 +311,6 @@ namespace ServerBrowser
         extension = new GameExtension();
         this.Add(game, extension);
       }
-      if (extension == null)
-        throw new InvalidOperationException("foo");
       return extension;
     }
 
