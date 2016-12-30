@@ -1,3 +1,13 @@
+2.38
+---
+- using the results from the Steam WebAPI call and skip the redundant A2S_INFO query.
+  With this the browser can now show information for servers behind NAT without forwarding,
+  when they use SteamSockets.
+- fixed wrong server list after switching tabs
+- fixed Steam API integration (old appid didn't work anymore)
+- fixed TOXIKK player counts (off by 1 when all real players were on team Blue)
+
+
 2.37
 ---
 - show exception message when master server list could not be retrieved

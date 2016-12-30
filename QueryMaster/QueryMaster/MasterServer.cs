@@ -14,12 +14,31 @@ namespace QueryMaster
   ///   Invoked when a reply from Master Server is received.
   /// </summary>
   /// <param name="endPoints">Server Sockets</param>
-  public delegate void MasterIpCallback(ReadOnlyCollection<IPEndPoint> endPoints, Exception error);
+  public delegate void MasterIpCallback(ReadOnlyCollection<Tuple<IPEndPoint,ServerInfo>> endPoints, Exception error);
 
+  #region WebAPI XML response mappings: class Response, Message
   public class Message
   {
-    [XmlElement("addr")]
-    public string Addr { get; set; }
+    /// <summary>
+    /// IP:port
+    /// </summary>
+    public string addr { get; set; }
+    public ushort gameport { get; set; }
+    public long steamid { get; set; }
+    public string name { get; set; }
+    public int appid { get; set; }
+    public string gamedir { get; set; }
+    public string version { get; set; }
+    public string product { get; set; }
+    public string region { get; set; }
+    public int players { get; set; }
+    public int max_players { get; set; }
+    public int bots { get; set; }
+    public string map { get; set; }
+    public bool secure { get; set; }
+    public bool dedicated { get; set; }
+    public string os { get; set; }
+    public string gametype { get; set; }
   }
 
   [XmlRoot("response")]
@@ -29,6 +48,8 @@ namespace QueryMaster
     [XmlArrayItem("message")]
     public Message[] Servers;
   }
+
+  #endregion
 
   class XWebClient : WebClient
   {
@@ -46,7 +67,7 @@ namespace QueryMaster
   /// </summary>
   public class MasterServer
   {
-    const string SteamWebApiKey = "put-your-steam-api-key-here"; // create an account and get a steam web api key at http://steamcommunity.com/dev/apikey
+    const string SteamWebApiKey = "B7D245299F6F990504A86FF91EC9D6BD"; // create an account and get a steam web api key at http://steamcommunity.com/dev/apikey
 
     private static readonly IPEndPoint SeedEndpoint = new IPEndPoint(IPAddress.Any, 0);    
     private readonly IPEndPoint endPoint;
@@ -93,25 +114,27 @@ namespace QueryMaster
           using (var cli = new XWebClient())
           {
             var filters = MasterUtil.ProcessFilter(filter);
-            var xml = cli.DownloadString(@"https://api.steampowered.com/IGameServersService/GetServerList/v1/?key=" + SteamWebApiKey + "&format=xml&filter=" + filters + "&limit=" + GetAddressesLimit);
+            var xml = cli.DownloadString($"https://api.steampowered.com/IGameServersService/GetServerList/v1/?key={SteamWebApiKey}&format=xml&filter={filters}&limit={GetAddressesLimit}");
             var ser = new XmlSerializer(typeof (Response));
             var resp = (Response) ser.Deserialize(new StringReader(xml));
 
-            var endpoints = new List<IPEndPoint>();
+            var endpoints = new List<Tuple<IPEndPoint,ServerInfo>>();
             foreach (var msg in resp.Servers)
             {
               try
               {
-                int i = msg.Addr.IndexOf(':');
+                int i = msg.addr.IndexOf(':');
                 if (i > 0)
-                  endpoints.Add(new IPEndPoint(IPAddress.Parse(msg.Addr.Substring(0, i)), int.Parse(msg.Addr.Substring(i + 1))));
+                {
+                  var info = ConvertToServerInfo(msg);
+                  endpoints.Add(new Tuple<IPEndPoint, ServerInfo>(info.EndPoint, info));
+                }
               }
               catch
               {
               }
             }
-            endpoints.Add(SeedEndpoint);
-            callback(new ReadOnlyCollection<IPEndPoint>(endpoints), null);
+            callback(new ReadOnlyCollection<Tuple<IPEndPoint,ServerInfo>>(endpoints), null);
           }
         }
         catch(Exception ex)
@@ -138,14 +161,14 @@ namespace QueryMaster
               callback(null);
               break;
             }
-            ThreadPool.QueueUserWorkItem(y => callback(endpoints));
+            ThreadPool.QueueUserWorkItem(y => callback(endpoints, null));
             totalCount += endpoints.Count;
             nextSeed = endpoints.Last();
           } while (!nextSeed.Equals(SeedEndpoint) && totalCount < GetAddressesLimit);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-          callback(null);
+          callback(null, ex);
         }
         finally
         {
@@ -154,6 +177,28 @@ namespace QueryMaster
         }
 #endif
       });
+    }
+
+    private ServerInfo ConvertToServerInfo(Message msg)
+    {
+      var si = new ServerInfo();
+      si.Address = msg.addr;
+      si.Bots = (byte)msg.bots;
+      si.Description = msg.gametype;
+      si.Directory = msg.gamedir;
+      si.Environment = msg.os;
+      si.Extra.GameId = msg.appid;
+      si.Extra.Port = msg.gameport;
+      si.Extra.SteamID = msg.steamid;
+      si.GameVersion = msg.version;
+      si.Id = msg.appid < 0x10000 ? (ushort) msg.appid : (ushort)0;
+      si.IsSecure = msg.secure;
+      si.Map = msg.map;
+      si.MaxPlayers = (byte)msg.max_players;
+      si.Name = msg.name;
+      si.Players = msg.players;
+      si.ServerType = msg.dedicated ? "Dedicated" : "Listen";
+      return si;
     }
 
     private ReadOnlyCollection<IPEndPoint> SendAndReceive(Socket udpSocket, byte[] recvData, Region region, IpFilter filter, IPEndPoint seed)

@@ -131,6 +131,7 @@ namespace ServerBrowser
         { 
           var gt = row.ServerInfo.Description;
           return gt == null ? null : 
+            gt == "CRZEntryGame" ? "Menu" :
             gt == "CRZBloodLust" ? "BL" : 
             gt == "CRZTeamGame" ? "SA" : 
             gt == "CRZCellCapture" ? "CC" :
@@ -227,7 +228,7 @@ namespace ServerBrowser
         return base.GetRealPlayerCount(row);
 
       var strSteamIds = (row.GetRule("p1073741829") ?? "") + (row.GetRule("p1073741830") ?? "") + (row.GetRule("p1073741831") ?? "");
-      return strSteamIds == "" ? 0 : strSteamIds.Split(',', ';').Length;
+      return strSteamIds == "" ? 0 : strSteamIds.Split(',', ';').Count(id => id != "");
     }
     #endregion
 
@@ -312,7 +313,7 @@ namespace ServerBrowser
 
       // send the command string
       var msg = "open ";
-      if (useSteamIdToConnect && server.ServerInfo.Extra.SteamID != 0)
+      if ((useSteamIdToConnect || server.Rules == null || server.Players == null) && server.ServerInfo.Extra.SteamID != 0)
         msg += "steam." + server.ServerInfo.Extra.SteamID;
       else
         msg += server.EndPoint.Address + ":" + server.ServerInfo.Extra.Port;

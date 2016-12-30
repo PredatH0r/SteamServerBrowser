@@ -54,14 +54,16 @@ namespace ServerBrowser
       public readonly int Timeout;
       public readonly GameExtension GameExtension;
       public readonly List<ServerRow> Servers = new List<ServerRow>();
+      public readonly bool CallGetInfo;
 
-      public UpdateRequest(Game appId, int maxResults, int timeout, GameExtension gameExtension)
+      public UpdateRequest(Game appId, int maxResults, int timeout, GameExtension gameExtension, bool callGetInfo)
       {
         this.Timestamp = DateTime.Now.Ticks;
         this.AppId = appId;
         this.MaxResults = maxResults;
         this.Timeout = timeout;
         this.GameExtension = gameExtension;
+        this.CallGetInfo = callGetInfo;
       }
 
       public int receivedServerCount;
@@ -108,7 +110,7 @@ namespace ServerBrowser
       this.gameExtensions = gameExtensions;
 
       // fake a completed request
-      this.currentRequest = new UpdateRequest(0, 0, 750, gameExtensions.Get(0));
+      this.currentRequest = new UpdateRequest(0, 0, 750, gameExtensions.Get(0), false);
       this.currentRequest.PendingTasks = new CountdownEvent(1);
       this.currentRequest.PendingTasks.Signal();
     }
@@ -135,6 +137,7 @@ namespace ServerBrowser
     public void Cancel()
     {
       this.currentRequest.IsCancelled = true;
+      this.UpdateStatus?.Invoke(this, new TextEventArgs("Update canceled"));
     }
     #endregion
     
@@ -146,14 +149,14 @@ namespace ServerBrowser
       this.currentRequest.IsCancelled = true;
 
       var extension = this.gameExtensions.Get(filter.App);
-      var request = new UpdateRequest(filter.App, maxResults, timeout, extension); // use local var for thread safety
+      var request = new UpdateRequest(filter.App, maxResults, timeout, extension, false); // use local var for thread safety
       this.currentRequest = request;
       serverSource.GetAddresses(region, filter, maxResults, (endpoints, error) => OnMasterServerReceive(request, endpoints, error));
     }
     #endregion
 
     #region OnMasterServerReceive()
-    private void OnMasterServerReceive(UpdateRequest request, ReadOnlyCollection<IPEndPoint> endPoints, Exception error)
+    private void OnMasterServerReceive(UpdateRequest request, ReadOnlyCollection<Tuple<IPEndPoint, ServerInfo>> endPoints, Exception error)
     {
       if (request.IsCancelled)
         return;
@@ -167,25 +170,21 @@ namespace ServerBrowser
       }
       else
       {
-        statusText = $"Requesting batch {++request.BatchNumber} of server list...";
+        statusText = $"Updating status of {endPoints.Count} servers...";
         foreach (var ep in endPoints)
         {
           if (request.IsCancelled)
             return;
-          if (ep.Address.Equals(IPAddress.Any))
-          {
-            statusText = $"Updating status of {request.Servers.Count} servers...";
-            this.AllServersReceived(request);
-          }
-          else if (++request.receivedServerCount >= request.MaxResults)
+
+          if (++request.receivedServerCount >= request.MaxResults)
           {
             statusText = $"Server list limited to {request.MaxResults} entries. Updating status...";
-            this.AllServersReceived(request);
             break;
           }
-          else if (request.GameExtension.AcceptGameServer(ep))
-            request.Servers.Add(new ServerRow(ep, request.GameExtension));
+          else if (request.GameExtension.AcceptGameServer(ep.Item1))
+            request.Servers.Add(new ServerRow(ep.Item2, request.GameExtension));
         }
+        this.AllServersReceived(request);
       }
 
       request.SetDataModified();
@@ -196,7 +195,7 @@ namespace ServerBrowser
     #region RefreshAllServers()
     public void RefreshAllServers(List<ServerRow> servers)
     {
-      var request = new UpdateRequest(this.currentRequest.AppId, this.currentRequest.MaxResults, this.currentRequest.Timeout, this.currentRequest.GameExtension);
+      var request = new UpdateRequest(this.currentRequest.AppId, this.currentRequest.MaxResults, this.currentRequest.Timeout, this.currentRequest.GameExtension, true);
       request.Servers.AddRange(servers);
       foreach (var server in servers)
         server.Status = "updating...";
@@ -221,7 +220,11 @@ namespace ServerBrowser
         {
           ServerRow oldServer;
           if (oldServers.TryGetValue(rows[i].EndPoint, out oldServer))
+          {
+            if (rows[i].ServerInfo != null) // use new ServerInfo retrieved from master server WebAPI
+              oldServer.ServerInfo = rows[i].ServerInfo;
             rows[i] = oldServer;
+          }
         }
       }
 
@@ -272,7 +275,7 @@ namespace ServerBrowser
       if (this.IsUpdating)
         return;
       row.Status = "updating...";
-      var req = new UpdateRequest(this.currentRequest.AppId, 1, this.currentRequest.Timeout, this.currentRequest.GameExtension);
+      var req = new UpdateRequest(this.currentRequest.AppId, 1, this.currentRequest.Timeout, this.currentRequest.GameExtension, true);
       req.PendingTasks = new CountdownEvent(1);
       this.currentRequest = req;
       ThreadPool.QueueUserWorkItem(dummy => this.UpdateServerAndDetails(req, row, true));
@@ -336,15 +339,15 @@ namespace ServerBrowser
     {
       bool ok = ExecuteUpdate(request, row, server, retryCallback =>
       {
-        var si = server.GetInfo(retryCallback);
+        var si = request.CallGetInfo || row.ServerInfo == null ? server.GetInfo(retryCallback) : row.ServerInfo;
         if (si == null)
           return false;
         row.ServerInfo = si;
         var gameId = si.Extra.GameId;
         if (gameId == 0) gameId = si.Id;
         if (gameId == 0) gameId = (int)request.AppId;
-        var extension = this.gameExtensions.Get((Game)gameId);
-        row.GameExtension = extension;
+        var extension = this.gameExtensions.Get((Game) gameId);
+        row.SetGameExtension(extension);
         row.QueryPlayers = extension.SupportsPlayersQuery(row);
         row.QueryRules = extension.SupportsRulesQuery(row);
         return true;

@@ -26,15 +26,28 @@ namespace ServerBrowser
     private int isModified;
     internal bool QueryPlayers { get; set; }
     internal bool QueryRules { get; set; }
-    internal GameExtension GameExtension { get; set; }
+    internal GameExtension GameExtension { get; private set; }
     public GeoInfo GeoInfo { get; set; }
     public string CachedName { get; set; }
 
     public ServerRow(IPEndPoint ep, GameExtension extension)
     {
       this.EndPoint = ep;
-      this.PlayerCount = new PlayerCountInfo(this);
       this.GameExtension = extension;
+      this.PlayerCount = new PlayerCountInfo(this);
+    }
+
+    public ServerRow(ServerInfo info, GameExtension extension)
+    {
+      this.ServerInfo = info;
+      this.EndPoint = info.EndPoint;
+      this.GameExtension = extension;
+      this.PlayerCount = new PlayerCountInfo(this);
+    }
+
+    public void SetGameExtension(GameExtension ext)
+    {
+      this.GameExtension = ext;
     }
 
     public string GetRule(string field)

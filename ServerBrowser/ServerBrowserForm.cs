@@ -31,7 +31,7 @@ namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.37";
+    private const string Version = "2.38";
     private const string DevExpressVersion = "v15.2";
     private const string CustomDetailColumnPrefix = "ServerInfo.";
     private const string CustomRuleColumnPrefix = "custRule.";
@@ -336,6 +336,10 @@ namespace ServerBrowser
     #region SetViewModel()
     private void SetViewModel(TabViewModel vm)
     {
+      if (vm == this.viewModel)
+        return;
+      this.queryLogic.Cancel();
+
       this.viewModel = vm;
       if (vm.Source == TabViewModel.SourceType.Favorites)
       {
@@ -1075,7 +1079,7 @@ namespace ServerBrowser
         props.Sort((a, b) => StringComparer.InvariantCultureIgnoreCase.Compare(a.Name, b.Name));
         foreach (var prop in props)
         {
-          if (prop.Name != "Extra" && prop.Name != "Item" && prop.Name != "ShipInfo")
+          if (!"Extra,Item,ShipInfo,EndPoint,IsObsolete,SpecInfo,ModInfo".Contains(prop.Name))
             result.Add(new Tuple<string, object, string>(prop.Name.ToLower(), prop.GetValue(obj, null)?.ToString(), prop.Name));
         }
       }

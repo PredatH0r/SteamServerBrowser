@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 
 namespace QueryMaster
 {
@@ -9,6 +10,11 @@ namespace QueryMaster
     [Serializable]
     public class ServerInfo
     {
+        public ServerInfo()
+        {
+          Extra = new ExtraInfo();
+        }
+
         /// <summary>
         /// Returns true if server replies with Obsolete response format.
         /// </summary>
@@ -96,6 +102,24 @@ namespace QueryMaster
         /// <remarks>Present only in Obsolete server responses.</remarks>
         public Mod ModInfo { get; internal set; }
 
+      private IPEndPoint endPoint = null;
+
+      public IPEndPoint EndPoint
+      {
+        get
+        {
+          if (endPoint == null && !string.IsNullOrEmpty(this.Address))
+          {
+            try
+            {
+              int i = this.Address.IndexOf(':');
+              endPoint = new IPEndPoint(IPAddress.Parse(this.Address.Substring(0, i)), int.Parse(this.Address.Substring(i + 1)));
+            }
+            catch { }
+          }
+          return endPoint;
+        }
+      }
     }
 
     /// <summary>
@@ -232,7 +256,7 @@ namespace QueryMaster
     /// Contains extra information about server
     /// </summary>
     [Serializable]
-    public struct ExtraInfo
+    public class ExtraInfo
     {
         /// <summary>
         /// The server's game port number.

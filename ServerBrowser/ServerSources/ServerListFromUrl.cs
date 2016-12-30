@@ -29,7 +29,7 @@ namespace ServerBrowser
           }
 
           var lines = text.Split('\n');
-          var endpoints = new List<IPEndPoint>(lines.Length);
+          var endpoints = new List<Tuple<IPEndPoint,ServerInfo>>(lines.Length);
           int i = 0;
           foreach (var line in lines)
           {
@@ -41,14 +41,12 @@ namespace ServerBrowser
             int port;
             if (IPAddress.TryParse(parts[0], out addr) && int.TryParse(parts[1].TrimEnd(), out port))
             {
-              endpoints.Add(new IPEndPoint(addr, port));
+              endpoints.Add(new Tuple<IPEndPoint, ServerInfo>(new IPEndPoint(addr, port), null));
               if (++i == maxResults)
                 break;
             }
           }
-          endpoints.Add(new IPEndPoint(IPAddress.Any, 0));
-
-          callback(new ReadOnlyCollection<IPEndPoint>(endpoints), null);
+          callback(new ReadOnlyCollection<Tuple<IPEndPoint, ServerInfo>>(endpoints), null);
         }
       }
       catch (Exception ex)

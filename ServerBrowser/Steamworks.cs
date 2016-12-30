@@ -2,7 +2,9 @@
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
+using System.Threading;
 
 namespace ServerBrowser
 {
@@ -31,8 +33,8 @@ namespace ServerBrowser
 
     [DllImport("steam_api.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     private static extern ulong SteamAPI_ISteamUser_GetSteamID(IntPtr instancePtr);
-    
-    /*
+
+    // /*
     [DllImport("steam_api.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     private static extern IntPtr SteamAPI_ISteamClient_CreateSteamPipe(IntPtr hInstance);
 
@@ -56,8 +58,14 @@ namespace ServerBrowser
     private static extern IntPtr SteamAPI_ISteamFriends_GetFriendRichPresenceKeyByIndex(IntPtr instancePtr, ulong streamIDFriend, int iKey);
 
     [DllImport("steam_api.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-    private static extern IntPtr SteamAPI_ISteamFriends_GetFriendRichPresence(IntPtr instancePtr, ulong steamIDFriend, IntPtr pchKey);
-    */
+    private static extern IntPtr SteamAPI_ISteamFriends_GetFriendRichPresence(IntPtr instancePtr, ulong steamIDFriend, [MarshalAs(UnmanagedType.LPStr)] string pchKey);
+
+    [DllImport("steam_api.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+    private static extern void SteamAPI_ISteamFriends_ClearRichPresence(IntPtr instancePtr);
+
+    [DllImport("steam_api.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+    private static extern bool SteamAPI_ISteamFriends_SetRichPresence(IntPtr instancePtr, [MarshalAs(UnmanagedType.LPStr)] string pchKey, [MarshalAs(UnmanagedType.LPStr)] string pchValue);
+    // */
 
     [DllImport("steam_api.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
     private static extern bool SteamAPI_ISteamFriends_GetFriendGamePlayed(IntPtr instancePtr, ulong steamIDFriend, ref FriendGameInfo_t pFriendGameInfo);
@@ -67,8 +75,8 @@ namespace ServerBrowser
 
     private bool initialized;
 
-    // using the QL Dedicated Linux Server app-id so it won't block the QL client (282440) from starting
-    public int AppID { get; set; } = 349090;
+    // using the "NVIDIA.SteamLauncher" app-id, which is under the "Config" category and won't change the status in the steam friend list (unlike 1007 = steamworks SDK [Tool])
+    public int AppID { get; set; } = 236600;
 
     public bool Init()
     {
@@ -84,7 +92,30 @@ namespace ServerBrowser
 
         var path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\steam_appid.txt";
         File.WriteAllText(path, AppID.ToString());
-        return initialized = SteamAPI_Init();
+        initialized = SteamAPI_Init();
+
+#if false
+        var handle = SteamFriends();
+        ulong steamid = 76561198336882885; // ModratH0r
+        //ulong steamid = 76561198137367816; // PredatH0r
+        SteamAPI_ISteamFriends_RequestFriendRichPresence(handle, steamid);
+
+        Thread.Sleep(1000);
+
+        int c = SteamAPI_ISteamFriends_GetFriendRichPresenceKeyCount(handle, steamid);
+        IntPtr ptr;
+        for (int i = 0; i < c; i++)
+        {
+          ptr = SteamAPI_ISteamFriends_GetFriendRichPresenceKeyByIndex(handle, steamid, i);
+          string key = Marshal.PtrToStringAnsi(ptr);
+          ptr = SteamAPI_ISteamFriends_GetFriendRichPresence(handle, steamid, key);
+          string value = Marshal.PtrToStringAnsi(ptr);
+          Console.WriteLine($"{key}={value}");
+        }
+
+        SteamAPI_ISteamFriends_SetRichPresence(handle, "foo", "bar");
+#endif
+        return initialized;
       }
       catch
       {
