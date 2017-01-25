@@ -185,7 +185,7 @@ namespace QueryMaster
       si.Bots = (byte)msg.bots;
       si.Description = msg.gametype;
       si.Directory = msg.gamedir;
-      si.Environment = msg.os;
+      si.Environment = msg.os == "w" ? "Windows" : msg.os == "l" ? "Linux" : msg.os;
       si.Extra.GameId = msg.appid;
       si.Extra.Port = msg.gameport;
       si.Extra.SteamID = msg.steamid;
@@ -195,6 +195,7 @@ namespace QueryMaster
       si.Map = msg.map;
       si.MaxPlayers = (byte)msg.max_players;
       si.Name = msg.name;
+      si.Ping = 0;
       si.Players = msg.players;
       si.ServerType = msg.dedicated ? "Dedicated" : "Listen";
       return si;

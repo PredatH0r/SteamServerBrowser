@@ -1,3 +1,8 @@
+2.40
+---
+- TOXIKK: auto-detect if steam sockets are supported by the server and if not, use IP:port to join the server
+- TOXIKK: show "Spec" and "Queue" status in player list
+
 2.39
 ---
 - fixed empty server list when "show timed out servers" was enabled

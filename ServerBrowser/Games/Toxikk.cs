@@ -227,7 +227,7 @@ namespace ServerBrowser
       if (row.Rules == null)
         return base.GetRealPlayerCount(row);
 
-      var strSteamIds = (row.GetRule("p1073741829") ?? "") + (row.GetRule("p1073741830") ?? "") + (row.GetRule("p1073741831") ?? "");
+      var strSteamIds = (row.GetRule("p1073741829") ?? "") + "," + (row.GetRule("p1073741830") ?? "") + "," + (row.GetRule("p1073741831") ?? "");
       return strSteamIds == "" ? 0 : strSteamIds.Split(',', ';').Count(id => id != "");
     }
     #endregion
@@ -313,7 +313,8 @@ namespace ServerBrowser
 
       // send the command string
       var msg = "open ";
-      if ((useSteamIdToConnect || server.Rules == null || server.Players == null) && server.ServerInfo.Extra.SteamID != 0)
+      bool steamSockets = server.Rules == null || !string.IsNullOrEmpty(server.GetRule("SteamServerId"));
+      if ((useSteamIdToConnect && steamSockets || server.Rules == null || server.Players == null) && server.ServerInfo.Extra.SteamID != 0)
         msg += "steam." + server.ServerInfo.Extra.SteamID;
       else
         msg += server.EndPoint.Address + ":" + server.ServerInfo.Extra.Port;
@@ -485,9 +486,22 @@ namespace ServerBrowser
         decimal sc;
         if (i < skills.Length && decimal.TryParse(skills[i], NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out sc))
           info.SkillClass = sc;
-        int rank;
-        if (i < ranks.Length && int.TryParse(ranks[i], out rank))
+        if (i < ranks.Length && ranks[i].Length > 0)
+        {
+          int rank;
+          if (!char.IsDigit(ranks[i][0]))
+          {
+            var teamInfo = ranks[i][0];
+            if (teamInfo == 29 || teamInfo == 'S')
+              info.Team = "Spec";
+            else if (teamInfo == 30 || teamInfo == 'Q')
+              info.Team = "Queue";
+            int.TryParse(ranks[i].Substring(1), out rank);
+          }
+          else
+            int.TryParse(ranks[i], out rank);
           info.Rank = rank;
+        }
         newPlayerInfos.Add(name, info);
         ++i;
       }
