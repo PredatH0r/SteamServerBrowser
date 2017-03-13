@@ -53,10 +53,15 @@ namespace QueryMaster
 
   class XWebClient : WebClient
   {
+    public XWebClient()
+    {
+      this.Proxy = null;
+    }
+
     protected override WebRequest GetWebRequest(Uri address)
     {
       var req = base.GetWebRequest(address);
-      req.Timeout = 2000;
+      req.Timeout = 5000;
       return req;
     }
   }
@@ -113,7 +118,8 @@ namespace QueryMaster
           using (var cli = new XWebClient())
           {
             var filters = MasterUtil.ProcessFilter(filter);
-            var xml = cli.DownloadString($"https://api.steampowered.com/IGameServersService/GetServerList/v1/?key={SteamWebApiKey}&format=xml&filter={filters}&limit={GetAddressesLimit}");
+            var url = $"https://api.steampowered.com/IGameServersService/GetServerList/v1/?key={SteamWebApiKey}&format=xml&filter={filters}&limit={GetAddressesLimit}";
+            var xml = cli.DownloadString(url);
             var ser = new XmlSerializer(typeof (Response));
             var resp = (Response) ser.Deserialize(new StringReader(xml));
 

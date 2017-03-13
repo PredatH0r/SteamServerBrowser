@@ -31,7 +31,7 @@ namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.40";
+    private const string Version = "2.42";
     private const string DevExpressVersion = "v15.2";
     private const string CustomDetailColumnPrefix = "ServerInfo.";
     private const string CustomRuleColumnPrefix = "custRule.";
@@ -2260,7 +2260,7 @@ namespace ServerBrowser
         return;
       var player = (Player)this.gvPlayers.GetRow(e.RowHandle);
       var server = (ServerRow)this.gvServers.GetFocusedRow();
-      if (!server.GameExtension.IsValidPlayer(server, player))
+      if (server != null && !server.GameExtension.IsValidPlayer(server, player))
         e.Appearance.ForeColor = Color.Silver;
     }
     #endregion

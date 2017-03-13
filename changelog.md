@@ -1,3 +1,12 @@
+2.42
+---
+- fixed steam master server timeout on Win 7
+
+2.41
+---
+- TOXIKK: players in ArchRival game mode no longer show up as team Red
+- fixed exception when hovering over a player and there is no selected server row
+
 2.40
 ---
 - TOXIKK: auto-detect if steam sockets are supported by the server and if not, use IP:port to join the server

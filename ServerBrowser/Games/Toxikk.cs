@@ -143,6 +143,8 @@ namespace ServerBrowser
             gt == "TTGame" ? "TR" :
             gt == "D2DGame" ? "2D" :
             gt =="STBGame" ? "SB" : 
+            gt == "Comp2v2" ? "2v2" :
+            gt == "Comp4v4" ? "4v4" :
             gt;
         }
         case Mutators:
@@ -229,6 +231,23 @@ namespace ServerBrowser
 
       var strSteamIds = (row.GetRule("p1073741829") ?? "") + "," + (row.GetRule("p1073741830") ?? "") + "," + (row.GetRule("p1073741831") ?? "");
       return strSteamIds == "" ? 0 : strSteamIds.Split(',', ';').Count(id => id != "");
+    }
+    #endregion
+
+    #region GetMaxPlayers()
+    public override int? GetMaxPlayers(ServerRow row)
+    {
+      var val = row.GetRule("NumPublicConnections");
+      if (val != null)
+        return int.Parse(val);
+      return base.GetMaxPlayers(row);
+    }
+    #endregion
+    
+    #region GetPrivateClients()
+    public override int? GetPrivateClients(ServerRow row)
+    {
+      return row.ServerInfo.MaxPlayers - (GetMaxPlayers(row) ?? 0);
     }
     #endregion
 
@@ -466,7 +485,7 @@ namespace ServerBrowser
       if (string.IsNullOrEmpty(strNames))
         return;
       var gameType = (string)server.GetExtenderCellValue("_gametype");
-      bool isTeamGame = gameType != "BL";
+      bool isTeamGame = "SA,CC,AD,TA,SB,IB,2v2,4v4".Contains(gameType);
       var strSteamIds = (server.GetRule("p1073741829") ?? "") + (server.GetRule("p1073741830") ?? "") + (server.GetRule("p1073741831") ?? "");
       var strSkill = server.GetRule("p1073741837") ?? "";
       var strRank = server.GetRule("p1073741838") ?? "";
