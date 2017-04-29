@@ -1,3 +1,8 @@
+2.43
+---
+- TOXIKK: added support for "Squad Survival" game type and added tooltip for "AR" (Arch Rivals)
+- updated to latest DevExpress control library
+
 2.42
 ---
 - fixed steam master server timeout on Win 7

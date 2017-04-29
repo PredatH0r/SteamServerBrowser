@@ -138,6 +138,7 @@ namespace ServerBrowser
             gt == "CRZAreaDomination" ? "AD" :
             gt == "CRZTimeTrial" ? "TT" :
             gt == "CRZArchRivals" ? "AR" :
+            gt == "CRZSquadSurvival" ? "SS" :
             gt == "InfekktedGame" ? "Inf" :
             gt == "TAGame" ? "TA" :
             gt == "TTGame" ? "TR" :
@@ -175,6 +176,8 @@ namespace ServerBrowser
           gt == "CRZCellCapture" ? "Cell Capture" :
           gt == "CRZAreaDomination" ? "Area Domination" :
           gt == "CRZTimeTrial" ? "Tutorial" :
+          gt == "CRZArchRivals" ? "Arch Rivals" :
+          gt == "CRZSquadSurvival" ? "Squad Survival" :
           gt == "InfekktedGame" ? "InfeKKted" :
           gt == "TAGame" ? "Team Arena" :
           gt == "TTGame" ? "Trials" :
@@ -485,7 +488,7 @@ namespace ServerBrowser
       if (string.IsNullOrEmpty(strNames))
         return;
       var gameType = (string)server.GetExtenderCellValue("_gametype");
-      bool isTeamGame = "SA,CC,AD,TA,SB,IB,2v2,4v4".Contains(gameType);
+      bool isTeamGame = "SA,CC,AD,SS,TA,SB,IB,2v2,4v4".Contains(gameType);
       var strSteamIds = (server.GetRule("p1073741829") ?? "") + (server.GetRule("p1073741830") ?? "") + (server.GetRule("p1073741831") ?? "");
       var strSkill = server.GetRule("p1073741837") ?? "";
       var strRank = server.GetRule("p1073741838") ?? "";
