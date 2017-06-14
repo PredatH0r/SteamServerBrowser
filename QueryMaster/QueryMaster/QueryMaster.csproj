@@ -83,6 +83,8 @@
     <Compile Include="Logs.cs" />
     <Compile Include="MasterQuery.cs" />
     <Compile Include="MasterServer.cs" />
+    <Compile Include="MasterServerUdp.cs" />
+    <Compile Include="MasterServerWebApi.cs" />
     <Compile Include="MasterUtil.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -99,6 +101,9 @@
     <Compile Include="TcpQuery.cs" />
     <Compile Include="UdpQuery.cs" />
     <Compile Include="Util.cs" />
+    <Compile Include="XWebClient.cs">
+      <SubType>Component</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Content Include="ExternalBin\Ionic.BZip2.dll" />

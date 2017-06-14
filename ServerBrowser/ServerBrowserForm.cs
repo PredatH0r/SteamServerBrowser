@@ -31,8 +31,9 @@ namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.43";
+    private const string Version = "2.44";
     private const string DevExpressVersion = "v15.2";
+    private const string SteamWebApiText = "<Steam Web API>";
     private const string CustomDetailColumnPrefix = "ServerInfo.";
     private const string CustomRuleColumnPrefix = "custRule.";
     private static readonly Game[] DefaultGames = {Game.QuakeLive, Game.Reflex, Game.Toxikk, Game.CounterStrike_Global_Offensive, Game.Team_Fortress_2};
@@ -58,6 +59,8 @@ namespace ServerBrowser
     private XtraTabPage dragPage;
     private bool isSingleRowUpdate = true;
     private const int PredefinedTabCount = 2;
+    private int iniVersion;
+    private string iniMasterServers;
 
     #region ctor()
     public ServerBrowserForm(IniFile ini)
@@ -273,12 +276,13 @@ namespace ServerBrowser
     {
       bool hasFavTab = false;
       int i = 0;
+      bool ignoreMasterServer = (ini.GetSection("Options")?.GetInt("ConfigVersion") ?? 0) < 2;
       foreach (var section in ini.Sections)
       {
         if (System.Text.RegularExpressions.Regex.IsMatch(section.Name, "^Tab[0-9]+$"))
         {
           var vm = new TabViewModel();
-          vm.LoadFromIni(ini, section, this.extenders);
+          vm.LoadFromIni(ini, section, this.extenders, ignoreMasterServer);
           var page = new XtraTabPage();
           page.Text = section.GetString("TabName") ?? this.GetGameCaption((Game) vm.InitialGameID);
           page.Tag = vm;
@@ -354,7 +358,7 @@ namespace ServerBrowser
 
       var info = vm.MasterServer;
       if (string.IsNullOrEmpty(info))
-        info = "hl2master.steampowered.com:27011";
+        info = SteamWebApiText;
       this.comboMasterServer.Text = info;
       this.SetSteamAppId(vm.InitialGameID);
       this.txtTagIncludeServer.Text = vm.TagsIncludeServer;
@@ -434,7 +438,11 @@ namespace ServerBrowser
     private int ApplyAppSettingsFromIni(IniFile ini, IniFile.Section options, out string[] masterServers)
     {
       UserLookAndFeel.Default.SkinName = options.GetString("Skin") ?? "Office 2010 Black";
-      masterServers = (options.GetString("ApplyAppSettingsFromXml") ?? "").Split(',');
+      iniMasterServers = options.GetString("MasterServers") ?? "";
+      if (iniMasterServers == "")
+        iniMasterServers = SteamWebApiText + ",hl2master.steampowered.com:27011";
+      masterServers = iniMasterServers.Split(',');
+      this.iniVersion = options.GetInt("ConfigVersion", 1);
       this.miShowOptions.Down = options.GetBool("ShowOptions", true);
       this.miShowServerQuery.Down = options.GetBool("ShowServerQuery", true);
       this.miShowFilter.Down = options.GetBool("ShowFilter", true);
@@ -462,7 +470,6 @@ namespace ServerBrowser
         {
           using (var stream = new FileStream(this.xmlLayoutPath, FileMode.Open))
             this.dockManager1.RestoreFromStream(stream);
-
         }
         catch
         {
@@ -529,6 +536,8 @@ namespace ServerBrowser
     protected virtual void SaveAppSettings(StringBuilder sb)
     {
       sb.AppendLine("[Options]");
+      sb.AppendLine("ConfigVersion=2");
+      sb.AppendLine($"MasterServers={iniMasterServers}");
       sb.AppendLine($"ShowOptions={this.miShowOptions.Down}");
       sb.AppendLine($"ShowServerQuery={this.miShowServerQuery.Down}");
       sb.AppendLine($"ShowFilter={this.miShowFilter.Down}");

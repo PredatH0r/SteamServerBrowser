@@ -1,3 +1,8 @@
+2.44
+---
+- "Master Server" can now be set to "<Steam Web API>" for WebAPI XML requests, or a valid host:port
+  number to send a UDP request. (Steam master servers seem to respond to UDP again)
+
 2.43
 ---
 - TOXIKK: added support for "Squad Survival" game type and added tooltip for "AR" (Arch Rivals)

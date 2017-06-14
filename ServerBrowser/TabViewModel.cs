@@ -80,10 +80,10 @@ namespace ServerBrowser
     #endregion
 
     #region LoadFromIni()
-    public void LoadFromIni(IniFile iniFile, IniFile.Section ini, GameExtensionPool pool)
+    public void LoadFromIni(IniFile iniFile, IniFile.Section ini, GameExtensionPool pool, bool ignoreMasterServer)
     {
       this.Source = (SourceType) ini.GetInt("Type");
-      this.MasterServer = ini.GetString("MasterServer") ?? "hl2master.steampowered.com:27011";
+      this.MasterServer = (ignoreMasterServer ? null : ini.GetString("MasterServer")) ?? "";
       this.InitialGameID = ini.GetInt("InitialGameID");
       this.FilterMod = ini.GetString("FilterMod");
       this.FilterMap = ini.GetString("FilterMap");

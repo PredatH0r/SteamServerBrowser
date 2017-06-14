@@ -26,11 +26,11 @@ namespace QueryMaster
         /// <returns>Master server instance</returns>
         public static MasterServer GetMasterServerInstance(EngineType type)
         {
-            MasterServer server = null;
+            MasterServerUdp server = null;
             switch (type)
             {
-                case EngineType.GoldSource: server = new MasterServer(GoldSrcServer); break;
-                case EngineType.Source: server = new MasterServer(SourceServer); break;
+                case EngineType.GoldSource: server = new MasterServerUdp(GoldSrcServer); break;
+                case EngineType.Source: server = new MasterServerUdp(SourceServer); break;
                 default: throw new FormatException("An invalid EngineType was specified.");
             }
             return server;

@@ -30,9 +30,18 @@ namespace ServerBrowser
       int port;
       if (parts.Length < 2 || !int.TryParse(parts[1], out port))
         port = 27011;
-      var ips = Dns.GetHostAddresses(parts[0]);
-      return ips.Length == 0 ? new IPEndPoint(IPAddress.None, 0) : new IPEndPoint(ips[0], port);
 
+      try
+      {
+        var ips = Dns.GetHostAddresses(parts[0]);
+        if (ips.Length > 0)
+          return new IPEndPoint(ips[0], port);
+      }
+      catch
+      {
+      }
+
+      return new IPEndPoint(IPAddress.None, 0);
     }
   }
 }

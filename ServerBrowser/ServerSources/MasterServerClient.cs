@@ -10,12 +10,11 @@ namespace ServerBrowser
     public MasterServerClient(IPEndPoint masterServerEndpoint)
     {
       this.masterServerEndPoint = masterServerEndpoint;
-
     }
 
     public void GetAddresses(Region region, IpFilter filter, int maxResults, MasterIpCallback callback)
     {
-      var master = new MasterServer(masterServerEndPoint);
+      var master = masterServerEndPoint.Port == 0 ? (MasterServer)new MasterServerWebApi() : new MasterServerUdp(masterServerEndPoint);
       master.GetAddressesLimit = maxResults;
       master.GetAddresses(region, callback, filter);
     }

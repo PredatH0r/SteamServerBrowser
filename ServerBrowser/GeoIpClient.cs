@@ -182,6 +182,9 @@ namespace ServerBrowser
       // Vultr also spreads their IPs everywhere
       cache[Ip4Utils.ToInt(45, 32, 153, 115)] = new GeoInfo("DE", "Germany", null, null, null, 0, 0); // listed as NL, but is DE
       cache[Ip4Utils.ToInt(45, 32, 205, 149)] = new GeoInfo("US", "United States", "TX", null, null, 0, 0); // listed as NL, but is TX
+
+      // i3d.net
+      cache[Ip4Utils.ToInt(185, 179, 200, 69)] = new GeoInfo("ZA", "South Africa", null, null, null, 0, 0); // listed as NL, but is ZA
     }
     #endregion
 

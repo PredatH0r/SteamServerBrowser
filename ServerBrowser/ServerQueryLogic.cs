@@ -164,9 +164,10 @@ namespace ServerBrowser
         return;
 
       string statusText;
-      if (error != null)
+      string errorMsg = error?.Message ?? (endPoints == null ? "Timeout" : null);
+      if (errorMsg != null)
       {
-        statusText = "Error requesting server list from Steam Web API: " + error.Message;
+        statusText = "Error requesting server list from master server: " + errorMsg;
         if (request.receivedServerCount > 0)
           this.AllServersReceived(request);
       }
@@ -184,7 +185,7 @@ namespace ServerBrowser
             break;
           }
           else if (request.GameExtension.AcceptGameServer(ep.Item1))
-            request.Servers.Add(new ServerRow(ep.Item2, request.GameExtension));
+            request.Servers.Add(new ServerRow(ep.Item1, request.GameExtension, ep.Item2));
         }
         this.AllServersReceived(request);
       }
@@ -303,6 +304,7 @@ namespace ServerBrowser
           status = "timeout";
           if (this.UpdateServerInfo(request, row, server))
           {
+            row.GameExtension = gameExtensions.Get((Game)(row.ServerInfo.Extra?.GameId ?? row.ServerInfo.Id));
             this.UpdatePlayers(request, row, server);
             this.UpdateRules(request, row, server);
             status = "ok";
