@@ -103,7 +103,7 @@ namespace QueryMaster
       var si = new ServerInfo();
       si.Address = msg.addr;
       si.Bots = (byte)msg.bots;
-      si.Description = msg.product;
+      si.Description = msg.gametype; // description has no exact match in the XML; msg.product has no match in A2S_INFO
       si.Directory = msg.gamedir;
       si.Environment = msg.os == "w" ? "Windows" : msg.os == "l" ? "Linux" : msg.os;
       si.Extra.GameId = msg.appid;

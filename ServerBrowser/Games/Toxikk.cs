@@ -129,7 +129,7 @@ namespace ServerBrowser
           return row.GetRule(fieldName) == "1";
         case "_gametype":
         { 
-          var gt = row.ServerInfo.Description;
+          var gt = row.ServerInfo.Extra.Keywords;
           return gt == null ? null : 
             gt == "CRZEntryGame" ? "Menu" :
             gt == "CRZBloodLust" ? "BL" : 
