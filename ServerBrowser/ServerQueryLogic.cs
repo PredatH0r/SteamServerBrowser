@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Net;
-using System.Security.Cryptography;
 using System.Threading;
 using QueryMaster;
 
@@ -128,6 +127,10 @@ namespace ServerBrowser
 
     #endregion
 
+    #region IsCancelled
+    public bool IsCancelled => this.currentRequest == null || this.currentRequest.IsCancelled;
+    #endregion
+
     #region GetAndResetDataModified()
     public bool GetAndResetDataModified()
     {
@@ -139,7 +142,8 @@ namespace ServerBrowser
     public void Cancel()
     {
       this.currentRequest.IsCancelled = true;
-      this.UpdateStatus?.Invoke(this, new TextEventArgs("Update canceled"));
+      if (this.currentRequest.PendingTasks.CurrentCount > 0)
+        this.UpdateStatus?.Invoke(this, new TextEventArgs("Update canceled"));
     }
     #endregion
     
@@ -153,12 +157,12 @@ namespace ServerBrowser
       var extension = this.gameExtensions.Get(filter.App);
       var request = new UpdateRequest(filter.App, maxResults, timeout, extension, false); // use local var for thread safety
       this.currentRequest = request;
-      serverSource.GetAddresses(region, filter, maxResults, (endpoints, error) => OnMasterServerReceive(request, endpoints, error));
+      serverSource.GetAddresses(region, filter, maxResults, (endpoints, error, partial) => OnMasterServerReceive(request, endpoints, error, partial));
     }
     #endregion
 
     #region OnMasterServerReceive()
-    private void OnMasterServerReceive(UpdateRequest request, ReadOnlyCollection<Tuple<IPEndPoint, ServerInfo>> endPoints, Exception error)
+    private void OnMasterServerReceive(UpdateRequest request, ReadOnlyCollection<Tuple<IPEndPoint, ServerInfo>> endPoints, Exception error, bool isPartialResult)
     {
       if (request.IsCancelled)
         return;
@@ -179,7 +183,7 @@ namespace ServerBrowser
           if (request.IsCancelled)
             return;
 
-          if (++request.receivedServerCount >= request.MaxResults)
+          if (++request.receivedServerCount > request.MaxResults)
           {
             statusText = $"Server list limited to {request.MaxResults} entries. Updating status...";
             break;
@@ -187,7 +191,9 @@ namespace ServerBrowser
           else if (request.GameExtension.AcceptGameServer(ep.Item1))
             request.Servers.Add(new ServerRow(ep.Item1, request.GameExtension, ep.Item2));
         }
-        this.AllServersReceived(request);
+
+        if (!isPartialResult)
+          this.AllServersReceived(request);
       }
 
       request.SetDataModified();
@@ -329,7 +335,7 @@ namespace ServerBrowser
         row.Update();
         request.SetDataModified();
 
-        if (fireRefreshSingleServerComplete)
+        if (fireRefreshSingleServerComplete && !request.IsCancelled)
           this.RefreshSingleServerComplete?.Invoke(this, new ServerEventArgs(row));
 
         if (!request.PendingTasks.IsSet)

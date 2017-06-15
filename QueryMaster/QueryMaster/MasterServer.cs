@@ -9,7 +9,7 @@ namespace QueryMaster
   ///   Invoked when a reply from Master Server is received.
   /// </summary>
   /// <param name="endPoints">Server Sockets</param>
-  public delegate void MasterIpCallback(ReadOnlyCollection<Tuple<IPEndPoint,ServerInfo>> endPoints, Exception error);
+  public delegate void MasterIpCallback(ReadOnlyCollection<Tuple<IPEndPoint,ServerInfo>> endPoints, Exception error, bool isPartialResult);
 
   /// <summary>
   ///   Provides methods to query master server.

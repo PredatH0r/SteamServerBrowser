@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
@@ -34,7 +35,7 @@ namespace QueryMaster
       {
         var udpSocket = new Socket(AddressFamily.InterNetwork, System.Net.Sockets.SocketType.Dgram, ProtocolType.Udp);
         udpSocket.SendTimeout = 500;
-        udpSocket.ReceiveTimeout = 1000;
+        udpSocket.ReceiveTimeout = 500;
         udpSocket.Connect(endPoint);
         byte[] recvData = new byte[1400];
 
@@ -42,23 +43,33 @@ namespace QueryMaster
         {
           var nextSeed = SeedEndpoint;
           int totalCount = 0;
-          do
+          bool atEnd = false;
+          while (!atEnd)
           {
             var curSeed = nextSeed;
             var endpoints = Util.RunWithRetries(() => SendAndReceive(udpSocket, recvData, region, filter, curSeed), this.Retries);
             if (endpoints == null)
             {
-              callback(null, null);
+              callback(null, null, false);
               break;
             }
-            ThreadPool.QueueUserWorkItem(y => callback(endpoints, null));
+
+            nextSeed = endpoints.Last();
+
+            atEnd = nextSeed.Equals(SeedEndpoint);
+            var serverList = endpoints.Select(ep => new Tuple<IPEndPoint, ServerInfo>(ep, null)).ToList();
+            if (atEnd)
+              serverList.RemoveAt(serverList.Count - 1); // remove the 0.0.0.0:0 end-of-list marker
+
+            ThreadPool.QueueUserWorkItem(y => callback(new ReadOnlyCollection<Tuple<IPEndPoint, ServerInfo>>(serverList), null, !atEnd));
             totalCount += endpoints.Count;
-            nextSeed = endpoints.Last().Item1;
-          } while (!nextSeed.Equals(SeedEndpoint) && totalCount < GetAddressesLimit);
+
+            atEnd |= totalCount >= GetAddressesLimit;
+          } //while (!nextSeed.Equals(SeedEndpoint) && totalCount < GetAddressesLimit);
         }
         catch (Exception ex)
         {
-          callback(null, ex);
+          callback(null, ex, false);
         }
         finally
         {
@@ -68,7 +79,7 @@ namespace QueryMaster
       });
     }
 
-    private ReadOnlyCollection<Tuple<IPEndPoint, ServerInfo>> SendAndReceive(Socket udpSocket, byte[] recvData, Region region, IpFilter filter, IPEndPoint seed)
+    private ReadOnlyCollection<IPEndPoint> SendAndReceive(Socket udpSocket, byte[] recvData, Region region, IpFilter filter, IPEndPoint seed)
     {
       var msg = MasterUtil.BuildPacket(seed.ToString(), region, filter);
       udpSocket.Send(msg);
@@ -76,8 +87,7 @@ namespace QueryMaster
       int len = udpSocket.Receive(recvData, 0, recvData.Length, SocketFlags.None);
       byte[] data = new byte[len];
       Array.Copy(recvData, data, data.Length);
-      var endpoints = MasterUtil.ProcessPacket(data);
-      return new ReadOnlyCollection<Tuple<IPEndPoint, ServerInfo>>(endpoints.Select(ep => new Tuple<IPEndPoint, ServerInfo>(ep, null)).ToList());
+      return MasterUtil.ProcessPacket(data);
     }
   }
 }

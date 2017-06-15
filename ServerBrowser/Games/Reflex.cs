@@ -20,7 +20,7 @@ namespace ServerBrowser
     public Reflex()
     {
       // Reflex doesn't reply to A2S_GETRULES queries and would thus show "timeout" for all servers.
-      this.supportsRulesQuery = false;
+      //this.supportsRulesQuery = false;
       this.OptionMenuCaption = "Reflex...";
     }
 
@@ -72,12 +72,12 @@ namespace ServerBrowser
     {
       if (fieldName == "_gametype")
       {
-        var parts = row.ServerInfo?.Extra.Keywords?.Split('|');
+        var parts = row.ServerInfo?.Extra.Keywords?.Split(',', '|');
         return parts?[0];
       }
       if (fieldName == "_location")
       {
-        var parts = row.ServerInfo?.Extra.Keywords?.Split('|');
+        var parts = row.ServerInfo?.Extra.Keywords?.Split(',', '|');
         return parts?.Length > 1 ? parts[1] : null;
       }
 

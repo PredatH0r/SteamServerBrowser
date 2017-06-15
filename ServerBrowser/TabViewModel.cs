@@ -8,7 +8,7 @@ namespace ServerBrowser
 {
   class TabViewModel
   {
-    internal List<ServerRow> servers;
+    private List<ServerRow> servers;
     internal ServerRow lastSelectedServer;
     internal ServerRow currentServer;
     internal IServerSource serverSource;
@@ -16,6 +16,7 @@ namespace ServerBrowser
 
     public enum SourceType { MasterServer, CustomList, Favorites }
 
+    public string Caption { get; set; }
     public string MasterServer { get; set; }
     public int InitialGameID { get; set; }
     public string FilterMod { get; set; }
@@ -48,6 +49,20 @@ namespace ServerBrowser
       this.MasterServerQueryLimit = 1000;
     }
 
+    public List<ServerRow> Servers
+    {
+      get { return this.servers; }
+      set
+      {
+        if (value == this.servers) return;
+        this.servers = value;
+        if (!this.servers.Contains(lastSelectedServer))
+          this.lastSelectedServer = null;
+        if (!this.servers.Contains(currentServer))
+          this.currentServer = null;
+      }
+    }
+
     #region AssignFrom()
     public void AssignFrom(TabViewModel opt)
     {
@@ -63,7 +78,7 @@ namespace ServerBrowser
 
       this.Source = opt.Source;
       this.serverSource = opt.serverSource;
-      this.servers = opt.servers;
+      this.Servers = new List<ServerRow>(opt.Servers);
       this.gameExtension = opt.gameExtension;
       this.GridFilter = opt.GridFilter;
       this.MinPlayers = opt.MinPlayers;
@@ -83,6 +98,7 @@ namespace ServerBrowser
     public void LoadFromIni(IniFile iniFile, IniFile.Section ini, GameExtensionPool pool, bool ignoreMasterServer)
     {
       this.Source = (SourceType) ini.GetInt("Type");
+      this.Caption = ini.GetString("TabName");
       this.MasterServer = (ignoreMasterServer ? null : ini.GetString("MasterServer")) ?? "";
       this.InitialGameID = ini.GetInt("InitialGameID");
       this.FilterMod = ini.GetString("FilterMod");
@@ -129,7 +145,7 @@ namespace ServerBrowser
 
       if (this.Source == SourceType.CustomList)
       {
-        this.servers = new List<ServerRow>();
+        this.Servers = new List<ServerRow>();
 
         // new config format
         var sec = iniFile.GetSection(ini.Name + "_Servers");
@@ -139,7 +155,7 @@ namespace ServerBrowser
           {
             var row = new ServerRow(Ip4Utils.ParseEndpoint(key), this.gameExtension);
             row.CachedName = sec.GetString(key);
-            this.servers.Add(row);
+            this.Servers.Add(row);
           }
         }
         else
@@ -150,7 +166,7 @@ namespace ServerBrowser
           {
             var s = server.Trim();
             if (s == "") continue;
-            this.servers.Add(new ServerRow(Ip4Utils.ParseEndpoint(s), this.gameExtension));
+            this.Servers.Add(new ServerRow(Ip4Utils.ParseEndpoint(s), this.gameExtension));
           }
         }
       }
@@ -205,7 +221,7 @@ namespace ServerBrowser
       {
         ini.AppendLine();
         ini.AppendLine($"[{sectionName}_Servers]");
-        foreach (var row in this.servers)
+        foreach (var row in this.Servers)
           ini.AppendLine($"{row.EndPoint}={row.ServerInfo?.Name ?? row.CachedName}");
       }
     }
@@ -218,6 +234,13 @@ namespace ServerBrowser
       stream.Seek(0, SeekOrigin.Begin);
       var len = stream.Read(buf, 0, buf.Length);
       return Convert.ToBase64String(buf, 0, len);
+    }
+    #endregion
+
+    #region ToString()
+    public override string ToString()
+    {
+      return this.Caption + ": " + (this.servers?.Count ?? 0);
     }
     #endregion
   }

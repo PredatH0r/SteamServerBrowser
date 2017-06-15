@@ -1,3 +1,11 @@
+2.45
+---
+- server lists now persist when switching between game tabs
+- fixed issue with UDP master server queries when more servers than the set limit are returned
+- fixed: Using Steam Web API as master server showed tags/keywords/description in wrong columns / fields
+- Reflex Arena: game type and location can now be extracted from the tags with both comma and pipe as separator
+- Reflex Arena: added server rules tab
+
 2.44
 ---
 - "Master Server" can now be set to "<Steam Web API>" for WebAPI XML requests, or a valid host:port

@@ -88,12 +88,12 @@ namespace QueryMaster
               {
               }
             }
-            callback(new ReadOnlyCollection<Tuple<IPEndPoint,ServerInfo>>(endpoints), null);
+            callback(new ReadOnlyCollection<Tuple<IPEndPoint,ServerInfo>>(endpoints), null, false);
           }
         }
         catch(Exception ex)
         {
-          callback(null, ex);
+          callback(null, ex, false);
         }
       });
     }
@@ -103,10 +103,11 @@ namespace QueryMaster
       var si = new ServerInfo();
       si.Address = msg.addr;
       si.Bots = (byte)msg.bots;
-      si.Description = msg.gametype;
+      si.Description = msg.product;
       si.Directory = msg.gamedir;
       si.Environment = msg.os == "w" ? "Windows" : msg.os == "l" ? "Linux" : msg.os;
       si.Extra.GameId = msg.appid;
+      si.Extra.Keywords = msg.gametype;
       si.Extra.Port = msg.gameport;
       si.Extra.SteamID = msg.steamid;
       si.GameVersion = msg.version;

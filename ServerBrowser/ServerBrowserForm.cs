@@ -31,7 +31,7 @@ namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.44";
+    private const string Version = "2.45";
     private const string DevExpressVersion = "v15.2";
     private const string SteamWebApiText = "<Steam Web API>";
     private const string CustomDetailColumnPrefix = "ServerInfo.";
@@ -100,6 +100,7 @@ namespace ServerBrowser
 
       var vm = new TabViewModel();
       vm.Source = TabViewModel.SourceType.Favorites;
+      vm.Caption = this.tabFavorites.Text;
       this.tabFavorites.Tag = vm;
     }
     #endregion
@@ -325,7 +326,7 @@ namespace ServerBrowser
     {
       var vm = new TabViewModel();
       vm.Source = sourceType;
-      vm.servers = new List<ServerRow>();
+      vm.Servers = new List<ServerRow>();
       vm.gameExtension = unknownGame;
 
       var page = new XtraTabPage();
@@ -347,12 +348,12 @@ namespace ServerBrowser
       this.viewModel = vm;
       if (vm.Source == TabViewModel.SourceType.Favorites)
       {
-        vm.servers = new List<ServerRow>();
+        vm.Servers = new List<ServerRow>();
         foreach (var fav in this.favServers)
         {
           var row = new ServerRow(fav.Key, this.extenders.Get(0));
           row.CachedName = fav.Value;
-          vm.servers.Add(row);
+          vm.Servers.Add(row);
         }
       }
 
@@ -378,6 +379,8 @@ namespace ServerBrowser
       this.txtVersion.Text = vm.VersionMatch;
 
       UpdatePanelVisibility();
+      this.isSingleRowUpdate = false;
+      UpdateViews(true);
       this.miFindServers.Enabled = vm.Source == TabViewModel.SourceType.MasterServer;
     }
     #endregion
@@ -637,7 +640,10 @@ namespace ServerBrowser
       var vm = this.viewModel;
       if (vm == null)
         return;
+
       vm.MasterServer = this.comboMasterServer.Text;
+      if (vm.Source == TabViewModel.SourceType.MasterServer && !this.queryLogic.IsCancelled)
+        vm.Servers = this.queryLogic.Servers;
 
       if (this.comboGames.SelectedIndex < 0)
       {
@@ -836,9 +842,9 @@ namespace ServerBrowser
       this.isSingleRowUpdate = false;
       this.miStopUpdate.Enabled = true;
       this.timerReloadServers.Stop();
-      this.SetStatusMessage("Updating status of " + this.viewModel.servers.Count + " servers...");
+      this.SetStatusMessage("Updating status of " + this.viewModel.Servers.Count + " servers...");
       this.RefreshGameExtensions();
-      this.queryLogic.RefreshAllServers(this.viewModel.servers);
+      this.queryLogic.RefreshAllServers(this.viewModel.Servers);
     }
     #endregion
 
@@ -969,14 +975,14 @@ namespace ServerBrowser
       this.LookupGeoIps();
       this.UpdateCachedServerNames();
       
-      this.gcServers.DataSource = this.viewModel.servers;
+      this.gcServers.DataSource = this.viewModel.Servers;
       this.gvServers.EndDataUpdate();
       this.gvServers.TopRowIndex = topRow;
       
       if (this.viewModel.lastSelectedServer != null)
       {
         int i = 0;
-        foreach (var server in this.viewModel.servers)
+        foreach (var server in this.viewModel.Servers)
         {
           if (server.EndPoint.Equals(this.viewModel.lastSelectedServer.EndPoint))
           {
@@ -1017,9 +1023,9 @@ namespace ServerBrowser
     #region UpdateCachedServerNames()
     private void UpdateCachedServerNames()
     {
-      if (this.viewModel?.servers != null)
+      if (this.viewModel?.Servers != null)
       {
-        foreach (var server in this.viewModel.servers)
+        foreach (var server in this.viewModel.Servers)
         {
           if (server.ServerInfo?.Name != null && this.favServers.ContainsKey(server.EndPoint))
             this.favServers[server.EndPoint] = server.CachedName = server.ServerInfo.Name;
@@ -1237,8 +1243,8 @@ namespace ServerBrowser
     #region LookupGeoIps()
     private void LookupGeoIps()
     {
-      if (this.viewModel?.servers == null) return;
-      foreach (var server in this.viewModel.servers)
+      if (this.viewModel?.Servers == null) return;
+      foreach (var server in this.viewModel.Servers)
       {
         if (server.GeoInfo != null)
           continue;
@@ -1373,7 +1379,7 @@ namespace ServerBrowser
     #region queryLogic_ServerListReceived
     private void queryLogic_ServerListReceived()
     {
-      this.viewModel.servers = this.queryLogic.Servers;
+      this.viewModel.Servers = this.queryLogic.Servers;
       this.UpdateViews();
     }
     #endregion
@@ -1383,7 +1389,7 @@ namespace ServerBrowser
     {
       this.UpdateBuddyCount();
       this.UpdateViews();
-      this.SetStatusMessage("Update of " + this.viewModel.servers.Count + " servers complete");
+      this.SetStatusMessage("Update of " + this.viewModel.Servers.Count + " servers complete");
       this.miStopUpdate.Enabled = false;
       this.CheckAlertCondition();
       if (this.spinRefreshInterval.Value > 0)
@@ -1397,7 +1403,7 @@ namespace ServerBrowser
     protected virtual void queryLogic_RefreshSingleServerComplete(ServerEventArgs e)
     {
       this.UpdateBuddyCount(e.Server);
-      var idx = this.viewModel?.servers?.IndexOf(e.Server) ?? -1;
+      var idx = this.viewModel?.Servers?.IndexOf(e.Server) ?? -1;
       if (idx >= 0)      
         this.gvServers.RefreshRow(this.gvServers.GetRowHandle(idx));
       this.UpdateGridDataSources();
@@ -1706,7 +1712,7 @@ namespace ServerBrowser
         var endpoint = new IPEndPoint(addr[i], parts.Length > 1 ? int.Parse(parts[1]) : 27015);
         if (endpoint.Address.ToString() == "0.0.0.0") return;
         ServerRow serverRow = null;
-        foreach (var row in this.viewModel.servers)
+        foreach (var row in this.viewModel.Servers)
         {
           if (row.EndPoint.Equals(endpoint))
           {
@@ -1719,10 +1725,10 @@ namespace ServerBrowser
         {
           this.gvServers.BeginDataUpdate();
           serverRow = new ServerRow(endpoint, this.extenders.Get(0));
-          this.viewModel.servers.Add(serverRow);
+          this.viewModel.Servers.Add(serverRow);
           this.gvServers.EndDataUpdate();
           serverRow.SetModified();
-          var handle = this.gvServers.GetRowHandle(this.viewModel.servers.Count - 1);
+          var handle = this.gvServers.GetRowHandle(this.viewModel.Servers.Count - 1);
           this.gvServers.FocusedRowHandle = handle;
           this.gvServers.SelectRow(handle);          
         }
@@ -1831,7 +1837,7 @@ namespace ServerBrowser
     #region gvServers_CustomRowFilter
     private void gvServers_CustomRowFilter(object sender, RowFilterEventArgs e)
     {
-      var row = this.viewModel.servers[e.ListSourceRow];
+      var row = this.viewModel.Servers[e.ListSourceRow];
 
       if (FilterServerRow(row))
       {
@@ -1884,9 +1890,9 @@ namespace ServerBrowser
     {
       if (e.Column == this.colLocation)
       {
-        if (e.ListSourceRowIndex < 0 || e.ListSourceRowIndex >= this.viewModel.servers.Count)
+        if (e.ListSourceRowIndex < 0 || e.ListSourceRowIndex >= this.viewModel.Servers.Count)
           return;
-        var row = this.viewModel.servers[e.ListSourceRowIndex];
+        var row = this.viewModel.Servers[e.ListSourceRowIndex];
         var geoInfo = row.GeoInfo;
         if (geoInfo != null && geoInfo.Iso2 == "US" && !string.IsNullOrEmpty(geoInfo.State))
           e.DisplayText = geoInfo.State;
@@ -2079,7 +2085,7 @@ namespace ServerBrowser
 
       int offset = 0;
       foreach (var index in indices)
-        this.viewModel.servers.RemoveAt(index - offset++);
+        this.viewModel.Servers.RemoveAt(index - offset++);
       this.UpdateViews();
     }
     #endregion
@@ -2118,12 +2124,12 @@ namespace ServerBrowser
           if (regex.IsMatch(addr))
           {
             var endpoint = Ip4Utils.ParseEndpoint(addr);
-            var row = this.viewModel.servers.FirstOrDefault(r => r.EndPoint.Equals(endpoint));
+            var row = this.viewModel.Servers.FirstOrDefault(r => r.EndPoint.Equals(endpoint));
             if (row == null)
             {
               row = new ServerRow(endpoint, unknownGame);
               row.SetModified();
-              this.viewModel.servers.Add(row);
+              this.viewModel.Servers.Add(row);
               this.queryLogic.RefreshSingleServer(row);
             }
           }
@@ -2392,9 +2398,8 @@ namespace ServerBrowser
     {
       if (this.ignoreUiEvents > 0) return;
       this.SetViewModel((TabViewModel)e.Page.Tag);
-      this.UpdateViews(true);
 
-      if (this.viewModel.servers == null)
+      if (this.viewModel.Servers == null)
         this.ReloadServerList();
       else if (this.viewModel.Source != TabViewModel.SourceType.MasterServer)
         this.RefreshServerInfo();
@@ -2494,9 +2499,9 @@ namespace ServerBrowser
       page.Tag = vm;
       page.ImageIndex = vm.ImageIndex;
 
-      vm.servers = new List<ServerRow>();
+      vm.Servers = new List<ServerRow>();
       for(int i=0, c= this.gvServers.RowCount; i<c; i++)
-        vm.servers.Add((ServerRow)this.gvServers.GetRow(i));
+        vm.Servers.Add((ServerRow)this.gvServers.GetRow(i));
 
       this.tabControl.TabPages.Insert(this.tabControl.TabPages.Count - 1, page);
       this.tabControl.SelectedTabPage = page;
