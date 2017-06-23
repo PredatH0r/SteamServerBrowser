@@ -1,3 +1,8 @@
+2.46
+---
+- upgraded to latest version of DevExpress user controls
+- added "Copy steam://... URL to clipboard" (Ctrl+U) to server list context menu
+
 2.45
 ---
 - server lists now persist when switching between game tabs

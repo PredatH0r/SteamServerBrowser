@@ -33,18 +33,9 @@ namespace ServerBrowser
     {
       this.components = new System.ComponentModel.Container();
       System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ServerBrowserForm));
-      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject1 = new DevExpress.Utils.SerializableAppearanceObject();
-      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject2 = new DevExpress.Utils.SerializableAppearanceObject();
-      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject3 = new DevExpress.Utils.SerializableAppearanceObject();
-      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject4 = new DevExpress.Utils.SerializableAppearanceObject();
-      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject5 = new DevExpress.Utils.SerializableAppearanceObject();
-      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject6 = new DevExpress.Utils.SerializableAppearanceObject();
-      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject7 = new DevExpress.Utils.SerializableAppearanceObject();
-      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject8 = new DevExpress.Utils.SerializableAppearanceObject();
-      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject9 = new DevExpress.Utils.SerializableAppearanceObject();
-      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject10 = new DevExpress.Utils.SerializableAppearanceObject();
-      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject11 = new DevExpress.Utils.SerializableAppearanceObject();
-      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject12 = new DevExpress.Utils.SerializableAppearanceObject();
+      DevExpress.XtraEditors.Controls.EditorButtonImageOptions editorButtonImageOptions1 = new DevExpress.XtraEditors.Controls.EditorButtonImageOptions();
+      DevExpress.XtraEditors.Controls.EditorButtonImageOptions editorButtonImageOptions2 = new DevExpress.XtraEditors.Controls.EditorButtonImageOptions();
+      DevExpress.XtraEditors.Controls.EditorButtonImageOptions editorButtonImageOptions3 = new DevExpress.XtraEditors.Controls.EditorButtonImageOptions();
       this.riCheckEdit = new DevExpress.XtraEditors.Repository.RepositoryItemCheckEdit();
       this.gcDetails = new DevExpress.XtraGrid.GridControl();
       this.gvDetails = new DevExpress.XtraGrid.Views.Grid.GridView();
@@ -233,6 +224,7 @@ namespace ServerBrowser
       this.menuDetails = new DevExpress.XtraBars.PopupMenu(this.components);
       this.splashScreenManager1 = new DevExpress.XtraSplashScreen.SplashScreenManager(this, typeof(global::ServerBrowser.ConnectingWaitForm), false, true);
       this.timerHideWaitForm = new System.Windows.Forms.Timer(this.components);
+      this.miSteamUrl = new DevExpress.XtraBars.BarButtonItem();
       ((System.ComponentModel.ISupportInitialize)(this.riCheckEdit)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.gcDetails)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.gvDetails)).BeginInit();
@@ -337,7 +329,7 @@ namespace ServerBrowser
       this.gcDetails.Location = new System.Drawing.Point(0, 0);
       this.gcDetails.MainView = this.gvDetails;
       this.gcDetails.Name = "gcDetails";
-      this.gcDetails.Size = new System.Drawing.Size(354, 386);
+      this.gcDetails.Size = new System.Drawing.Size(353, 386);
       this.gcDetails.TabIndex = 13;
       this.gcDetails.ViewCollection.AddRange(new DevExpress.XtraGrid.Views.Base.BaseView[] {
             this.gvDetails});
@@ -381,7 +373,7 @@ namespace ServerBrowser
       this.gcPlayers.Location = new System.Drawing.Point(0, 0);
       this.gcPlayers.MainView = this.gvPlayers;
       this.gcPlayers.Name = "gcPlayers";
-      this.gcPlayers.Size = new System.Drawing.Size(354, 386);
+      this.gcPlayers.Size = new System.Drawing.Size(353, 386);
       this.gcPlayers.TabIndex = 0;
       this.gcPlayers.ViewCollection.AddRange(new DevExpress.XtraGrid.Views.Base.BaseView[] {
             this.gvPlayers});
@@ -454,7 +446,7 @@ namespace ServerBrowser
             this.riJoinStatus,
             this.riPrivate,
             this.riDedicated});
-      this.gcServers.Size = new System.Drawing.Size(1288, 306);
+      this.gcServers.Size = new System.Drawing.Size(1288, 305);
       this.gcServers.TabIndex = 0;
       this.gcServers.ToolTipController = this.toolTipController;
       this.gcServers.ViewCollection.AddRange(new DevExpress.XtraGrid.Views.Base.BaseView[] {
@@ -1197,8 +1189,9 @@ namespace ServerBrowser
             this.miAboutGithub,
             this.miAboutSteamWorkshop,
             this.miAboutVersionHistory,
-            this.miRestoreStandardLayout});
-      this.barManager1.MaxItemId = 35;
+            this.miRestoreStandardLayout,
+            this.miSteamUrl});
+      this.barManager1.MaxItemId = 36;
       this.barManager1.RepositoryItems.AddRange(new DevExpress.XtraEditors.Repository.RepositoryItem[] {
             this.riFindPlayer});
       // 
@@ -1249,7 +1242,7 @@ namespace ServerBrowser
       this.miShowOptions.Caption = "General Preferences";
       this.miShowOptions.CategoryGuid = new System.Guid("dce44941-9e20-4803-823c-6829c76924c5");
       this.miShowOptions.Id = 9;
-      this.miShowOptions.ImageIndex = 4;
+      this.miShowOptions.ImageOptions.ImageIndex = 4;
       this.miShowOptions.ItemShortcut = new DevExpress.XtraBars.BarShortcut((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.P));
       this.miShowOptions.Name = "miShowOptions";
       this.miShowOptions.DownChanged += new DevExpress.XtraBars.ItemClickEventHandler(this.miShowOptions_DownChanged);
@@ -1262,7 +1255,7 @@ namespace ServerBrowser
       this.miShowServerQuery.Down = true;
       this.miShowServerQuery.Hint = "Show/hide steam master server query fields";
       this.miShowServerQuery.Id = 11;
-      this.miShowServerQuery.ImageIndex = 9;
+      this.miShowServerQuery.ImageOptions.ImageIndex = 9;
       this.miShowServerQuery.ItemShortcut = new DevExpress.XtraBars.BarShortcut((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Q));
       this.miShowServerQuery.Name = "miShowServerQuery";
       this.miShowServerQuery.DownChanged += new DevExpress.XtraBars.ItemClickEventHandler(this.miServerQuery_DownChanged);
@@ -1274,7 +1267,7 @@ namespace ServerBrowser
       this.miShowFilter.CategoryGuid = new System.Guid("dce44941-9e20-4803-823c-6829c76924c5");
       this.miShowFilter.Down = true;
       this.miShowFilter.Id = 27;
-      this.miShowFilter.ImageIndex = 13;
+      this.miShowFilter.ImageOptions.ImageIndex = 13;
       this.miShowFilter.Name = "miShowFilter";
       this.miShowFilter.DownChanged += new DevExpress.XtraBars.ItemClickEventHandler(this.miShowFilter_DownChanged);
       // 
@@ -1311,7 +1304,7 @@ namespace ServerBrowser
       this.miRenameTab.Caption = "Rename Tab";
       this.miRenameTab.CategoryGuid = new System.Guid("158c025f-2f73-461e-bcf0-81b692caae52");
       this.miRenameTab.Id = 12;
-      this.miRenameTab.ImageIndex = 11;
+      this.miRenameTab.ImageOptions.ImageIndex = 11;
       this.miRenameTab.ItemShortcut = new DevExpress.XtraBars.BarShortcut(System.Windows.Forms.Keys.F2);
       this.miRenameTab.Name = "miRenameTab";
       this.miRenameTab.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miRenameTab_ItemClick);
@@ -1321,7 +1314,7 @@ namespace ServerBrowser
       this.miCloneTab.Caption = "Duplicate";
       this.miCloneTab.CategoryGuid = new System.Guid("158c025f-2f73-461e-bcf0-81b692caae52");
       this.miCloneTab.Id = 13;
-      this.miCloneTab.ImageIndex = 6;
+      this.miCloneTab.ImageOptions.ImageIndex = 6;
       this.miCloneTab.ItemShortcut = new DevExpress.XtraBars.BarShortcut((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.N));
       this.miCloneTab.Name = "miCloneTab";
       this.miCloneTab.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miCloneTab_ItemClick);
@@ -1332,7 +1325,7 @@ namespace ServerBrowser
       this.miCreateSnapshot.CategoryGuid = new System.Guid("158c025f-2f73-461e-bcf0-81b692caae52");
       this.miCreateSnapshot.Hint = "Copies the currently visible servers to a new custom editable list";
       this.miCreateSnapshot.Id = 14;
-      this.miCreateSnapshot.ImageIndex = 12;
+      this.miCreateSnapshot.ImageOptions.ImageIndex = 12;
       this.miCreateSnapshot.ItemShortcut = new DevExpress.XtraBars.BarShortcut(System.Windows.Forms.Keys.F9);
       this.miCreateSnapshot.Name = "miCreateSnapshot";
       this.miCreateSnapshot.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miCreateSnapshot_ItemClick);
@@ -1342,7 +1335,7 @@ namespace ServerBrowser
       this.miAddMasterServerTab.Caption = "New Master Server Query";
       this.miAddMasterServerTab.CategoryGuid = new System.Guid("158c025f-2f73-461e-bcf0-81b692caae52");
       this.miAddMasterServerTab.Id = 18;
-      this.miAddMasterServerTab.ImageIndex = 0;
+      this.miAddMasterServerTab.ImageOptions.ImageIndex = 0;
       this.miAddMasterServerTab.ItemShortcut = new DevExpress.XtraBars.BarShortcut(System.Windows.Forms.Keys.F10);
       this.miAddMasterServerTab.Name = "miAddMasterServerTab";
       this.miAddMasterServerTab.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miAddMasterServerTab_ItemClick);
@@ -1352,7 +1345,7 @@ namespace ServerBrowser
       this.miAddCustomServerTab.Caption = "New Custom Server List";
       this.miAddCustomServerTab.CategoryGuid = new System.Guid("158c025f-2f73-461e-bcf0-81b692caae52");
       this.miAddCustomServerTab.Id = 19;
-      this.miAddCustomServerTab.ImageIndex = 12;
+      this.miAddCustomServerTab.ImageOptions.ImageIndex = 12;
       this.miAddCustomServerTab.ItemShortcut = new DevExpress.XtraBars.BarShortcut(System.Windows.Forms.Keys.F11);
       this.miAddCustomServerTab.Name = "miAddCustomServerTab";
       this.miAddCustomServerTab.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miAddCustomServerTab_ItemClick);
@@ -1362,7 +1355,7 @@ namespace ServerBrowser
       this.miNewFavoritesTab.Caption = "New Favorites Tab";
       this.miNewFavoritesTab.CategoryGuid = new System.Guid("158c025f-2f73-461e-bcf0-81b692caae52");
       this.miNewFavoritesTab.Id = 20;
-      this.miNewFavoritesTab.ImageIndex = 3;
+      this.miNewFavoritesTab.ImageOptions.ImageIndex = 3;
       this.miNewFavoritesTab.ItemShortcut = new DevExpress.XtraBars.BarShortcut(System.Windows.Forms.Keys.F12);
       this.miNewFavoritesTab.Name = "miNewFavoritesTab";
       this.miNewFavoritesTab.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miNewFavoritesTab_ItemClick);
@@ -1385,7 +1378,7 @@ namespace ServerBrowser
       this.miFindServers.CategoryGuid = new System.Guid("dce44941-9e20-4803-823c-6829c76924c5");
       this.miFindServers.Hint = "Get new server list from Steam Master Server ";
       this.miFindServers.Id = 10;
-      this.miFindServers.ImageIndex = 0;
+      this.miFindServers.ImageOptions.ImageIndex = 0;
       this.miFindServers.ItemShortcut = new DevExpress.XtraBars.BarShortcut(System.Windows.Forms.Keys.F4);
       this.miFindServers.Name = "miFindServers";
       this.miFindServers.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miFindServers_ItemClick);
@@ -1396,7 +1389,7 @@ namespace ServerBrowser
       this.miQuickRefresh.CategoryGuid = new System.Guid("dce44941-9e20-4803-823c-6829c76924c5");
       this.miQuickRefresh.Hint = "Update status of all server in the list";
       this.miQuickRefresh.Id = 4;
-      this.miQuickRefresh.ImageIndex = 1;
+      this.miQuickRefresh.ImageOptions.ImageIndex = 1;
       this.miQuickRefresh.ItemShortcut = new DevExpress.XtraBars.BarShortcut(System.Windows.Forms.Keys.F5);
       this.miQuickRefresh.Name = "miQuickRefresh";
       this.miQuickRefresh.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miQuickRefresh_ItemClick);
@@ -1417,7 +1410,7 @@ namespace ServerBrowser
       this.miStopUpdate.CategoryGuid = new System.Guid("dce44941-9e20-4803-823c-6829c76924c5");
       this.miStopUpdate.Enabled = false;
       this.miStopUpdate.Id = 29;
-      this.miStopUpdate.ImageIndex = 23;
+      this.miStopUpdate.ImageOptions.ImageIndex = 23;
       this.miStopUpdate.Name = "miStopUpdate";
       this.miStopUpdate.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miStopUpdate_ItemClick);
       // 
@@ -1441,7 +1434,7 @@ namespace ServerBrowser
       this.miConnect.Caption = "Connect";
       this.miConnect.CategoryGuid = new System.Guid("b1e08833-8d08-415c-9522-c31e9bf3c2de");
       this.miConnect.Id = 0;
-      this.miConnect.ImageIndex = 7;
+      this.miConnect.ImageOptions.ImageIndex = 7;
       this.miConnect.ItemShortcut = new DevExpress.XtraBars.BarShortcut((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Enter));
       this.miConnect.Name = "miConnect";
       this.miConnect.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miConnect_ItemClick);
@@ -1460,7 +1453,7 @@ namespace ServerBrowser
       this.miCopyAddress.Caption = "Copy Addresses to Clipboard";
       this.miCopyAddress.CategoryGuid = new System.Guid("b1e08833-8d08-415c-9522-c31e9bf3c2de");
       this.miCopyAddress.Id = 2;
-      this.miCopyAddress.ImageIndex = 6;
+      this.miCopyAddress.ImageOptions.ImageIndex = 6;
       this.miCopyAddress.ItemShortcut = new DevExpress.XtraBars.BarShortcut((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.C));
       this.miCopyAddress.Name = "miCopyAddress";
       this.miCopyAddress.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miCopyAddress_ItemClick);
@@ -1470,7 +1463,7 @@ namespace ServerBrowser
       this.miPasteAddress.Caption = "Paste Addresses from Clipboard";
       this.miPasteAddress.CategoryGuid = new System.Guid("b1e08833-8d08-415c-9522-c31e9bf3c2de");
       this.miPasteAddress.Id = 16;
-      this.miPasteAddress.ImageIndex = 17;
+      this.miPasteAddress.ImageOptions.ImageIndex = 17;
       this.miPasteAddress.ItemShortcut = new DevExpress.XtraBars.BarShortcut((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.V));
       this.miPasteAddress.Name = "miPasteAddress";
       this.miPasteAddress.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miPasteAddress_ItemClick);
@@ -1480,7 +1473,7 @@ namespace ServerBrowser
       this.miFavServer.Caption = "Add to Favorites";
       this.miFavServer.CategoryGuid = new System.Guid("b1e08833-8d08-415c-9522-c31e9bf3c2de");
       this.miFavServer.Id = 8;
-      this.miFavServer.ImageIndex = 3;
+      this.miFavServer.ImageOptions.ImageIndex = 3;
       this.miFavServer.ItemShortcut = new DevExpress.XtraBars.BarShortcut((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Add));
       this.miFavServer.Name = "miFavServer";
       this.miFavServer.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miFavServer_ItemClick);
@@ -1490,7 +1483,7 @@ namespace ServerBrowser
       this.miUnfavServer.Caption = "Remove from Favorites";
       this.miUnfavServer.CategoryGuid = new System.Guid("b1e08833-8d08-415c-9522-c31e9bf3c2de");
       this.miUnfavServer.Id = 15;
-      this.miUnfavServer.ImageIndex = 10;
+      this.miUnfavServer.ImageOptions.ImageIndex = 10;
       this.miUnfavServer.ItemShortcut = new DevExpress.XtraBars.BarShortcut((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Subtract));
       this.miUnfavServer.Name = "miUnfavServer";
       this.miUnfavServer.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miUnfavServer_ItemClick);
@@ -1500,7 +1493,7 @@ namespace ServerBrowser
       this.miDelete.Caption = "Remove from List";
       this.miDelete.CategoryGuid = new System.Guid("b1e08833-8d08-415c-9522-c31e9bf3c2de");
       this.miDelete.Id = 17;
-      this.miDelete.ImageIndex = 18;
+      this.miDelete.ImageOptions.ImageIndex = 18;
       this.miDelete.ItemShortcut = new DevExpress.XtraBars.BarShortcut((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.D));
       this.miDelete.Name = "miDelete";
       this.miDelete.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miDelete_ItemClick);
@@ -1521,9 +1514,9 @@ namespace ServerBrowser
       this.riFindPlayer.AutoHeight = false;
       this.riFindPlayer.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
             new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo),
-            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Plus, "", -1, true, true, false, DevExpress.XtraEditors.ImageLocation.MiddleCenter, null, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), serializableAppearanceObject1, serializableAppearanceObject2, serializableAppearanceObject3, serializableAppearanceObject4, "Add to list", null, null, true),
-            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Minus, "", -1, true, true, false, DevExpress.XtraEditors.ImageLocation.MiddleCenter, null, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), serializableAppearanceObject5, serializableAppearanceObject6, serializableAppearanceObject7, serializableAppearanceObject8, "Remove from list", null, null, true),
-            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Search, "", -1, true, true, false, DevExpress.XtraEditors.ImageLocation.MiddleCenter, null, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), serializableAppearanceObject9, serializableAppearanceObject10, serializableAppearanceObject11, serializableAppearanceObject12, "Find", null, null, true)});
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Plus, "", -1, true, true, false, editorButtonImageOptions1, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), "Add to list"),
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Minus, "", -1, true, true, false, editorButtonImageOptions2, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), "Remove from list"),
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Search, "", -1, true, true, false, editorButtonImageOptions3, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), "Find")});
       this.riFindPlayer.Name = "riFindPlayer";
       this.riFindPlayer.NullValuePrompt = "min 3 chars, * as placeholder";
       this.riFindPlayer.NullValuePromptShowForEmptyValue = true;
@@ -1569,6 +1562,7 @@ namespace ServerBrowser
       this.barDockControlTop.CausesValidation = false;
       this.barDockControlTop.Dock = System.Windows.Forms.DockStyle.Top;
       this.barDockControlTop.Location = new System.Drawing.Point(0, 0);
+      this.barDockControlTop.Manager = this.barManager1;
       this.barDockControlTop.Size = new System.Drawing.Size(1658, 29);
       // 
       // barDockControlBottom
@@ -1576,6 +1570,7 @@ namespace ServerBrowser
       this.barDockControlBottom.CausesValidation = false;
       this.barDockControlBottom.Dock = System.Windows.Forms.DockStyle.Bottom;
       this.barDockControlBottom.Location = new System.Drawing.Point(0, 802);
+      this.barDockControlBottom.Manager = this.barManager1;
       this.barDockControlBottom.Size = new System.Drawing.Size(1658, 0);
       // 
       // barDockControlLeft
@@ -1583,6 +1578,7 @@ namespace ServerBrowser
       this.barDockControlLeft.CausesValidation = false;
       this.barDockControlLeft.Dock = System.Windows.Forms.DockStyle.Left;
       this.barDockControlLeft.Location = new System.Drawing.Point(0, 29);
+      this.barDockControlLeft.Manager = this.barManager1;
       this.barDockControlLeft.Size = new System.Drawing.Size(0, 773);
       // 
       // barDockControlRight
@@ -1590,6 +1586,7 @@ namespace ServerBrowser
       this.barDockControlRight.CausesValidation = false;
       this.barDockControlRight.Dock = System.Windows.Forms.DockStyle.Right;
       this.barDockControlRight.Location = new System.Drawing.Point(1658, 29);
+      this.barDockControlRight.Manager = this.barManager1;
       this.barDockControlRight.Size = new System.Drawing.Size(0, 773);
       // 
       // miAddRulesColumnText
@@ -1706,6 +1703,7 @@ namespace ServerBrowser
       // labelControl18
       // 
       this.labelControl18.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
+      this.labelControl18.Appearance.Options.UseFont = true;
       this.labelControl18.Location = new System.Drawing.Point(17, 37);
       this.labelControl18.Name = "labelControl18";
       this.labelControl18.Size = new System.Drawing.Size(750, 15);
@@ -1717,8 +1715,8 @@ namespace ServerBrowser
       // 
       this.btnPasteAddresses.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
       this.btnPasteAddresses.Appearance.Options.UseFont = true;
-      this.btnPasteAddresses.ImageIndex = 17;
-      this.btnPasteAddresses.ImageList = this.imageCollection;
+      this.btnPasteAddresses.ImageOptions.ImageIndex = 17;
+      this.btnPasteAddresses.ImageOptions.ImageList = this.imageCollection;
       this.btnPasteAddresses.Location = new System.Drawing.Point(401, 6);
       this.btnPasteAddresses.Name = "btnPasteAddresses";
       this.btnPasteAddresses.Size = new System.Drawing.Size(213, 25);
@@ -1744,6 +1742,7 @@ namespace ServerBrowser
       // labelControl6
       // 
       this.labelControl6.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
+      this.labelControl6.Appearance.Options.UseFont = true;
       this.labelControl6.Location = new System.Drawing.Point(17, 11);
       this.labelControl6.Name = "labelControl6";
       this.labelControl6.Size = new System.Drawing.Size(94, 15);
@@ -1797,6 +1796,7 @@ namespace ServerBrowser
       // labelControl20
       // 
       this.labelControl20.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
+      this.labelControl20.Appearance.Options.UseFont = true;
       this.labelControl20.Location = new System.Drawing.Point(1010, 39);
       this.labelControl20.Name = "labelControl20";
       this.labelControl20.Size = new System.Drawing.Size(42, 15);
@@ -1806,6 +1806,7 @@ namespace ServerBrowser
       // txtFilterInfoMaster
       // 
       this.txtFilterInfoMaster.Appearance.Font = new System.Drawing.Font("Segoe UI", 8.25F);
+      this.txtFilterInfoMaster.Appearance.Options.UseFont = true;
       this.txtFilterInfoMaster.Location = new System.Drawing.Point(1292, 5);
       this.txtFilterInfoMaster.Name = "txtFilterInfoMaster";
       this.txtFilterInfoMaster.Size = new System.Drawing.Size(342, 52);
@@ -1816,8 +1817,8 @@ namespace ServerBrowser
       // 
       this.btnUpdateStatus.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
       this.btnUpdateStatus.Appearance.Options.UseFont = true;
-      this.btnUpdateStatus.ImageIndex = 1;
-      this.btnUpdateStatus.ImageList = this.imageCollection;
+      this.btnUpdateStatus.ImageOptions.ImageIndex = 1;
+      this.btnUpdateStatus.ImageOptions.ImageList = this.imageCollection;
       this.btnUpdateStatus.Location = new System.Drawing.Point(1160, 36);
       this.btnUpdateStatus.Name = "btnUpdateStatus";
       this.btnUpdateStatus.Size = new System.Drawing.Size(115, 25);
@@ -1853,6 +1854,7 @@ namespace ServerBrowser
       // labelControl16
       // 
       this.labelControl16.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
+      this.labelControl16.Appearance.Options.UseFont = true;
       this.labelControl16.Location = new System.Drawing.Point(1010, 12);
       this.labelControl16.Name = "labelControl16";
       this.labelControl16.Size = new System.Drawing.Size(70, 15);
@@ -1903,6 +1905,7 @@ namespace ServerBrowser
       // labelControl2
       // 
       this.labelControl2.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
+      this.labelControl2.Appearance.Options.UseFont = true;
       this.labelControl2.Location = new System.Drawing.Point(640, 12);
       this.labelControl2.Name = "labelControl2";
       this.labelControl2.Size = new System.Drawing.Size(70, 15);
@@ -1912,6 +1915,7 @@ namespace ServerBrowser
       // labelControl12
       // 
       this.labelControl12.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
+      this.labelControl12.Appearance.Options.UseFont = true;
       this.labelControl12.Location = new System.Drawing.Point(401, 11);
       this.labelControl12.Name = "labelControl12";
       this.labelControl12.Size = new System.Drawing.Size(28, 15);
@@ -1922,8 +1926,8 @@ namespace ServerBrowser
       // 
       this.btnUpdateList.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
       this.btnUpdateList.Appearance.Options.UseFont = true;
-      this.btnUpdateList.ImageIndex = 0;
-      this.btnUpdateList.ImageList = this.imageCollection;
+      this.btnUpdateList.ImageOptions.ImageIndex = 0;
+      this.btnUpdateList.ImageOptions.ImageList = this.imageCollection;
       this.btnUpdateList.Location = new System.Drawing.Point(1160, 7);
       this.btnUpdateList.Name = "btnUpdateList";
       this.btnUpdateList.Size = new System.Drawing.Size(115, 25);
@@ -1935,6 +1939,7 @@ namespace ServerBrowser
       // labelControl8
       // 
       this.labelControl8.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
+      this.labelControl8.Appearance.Options.UseFont = true;
       this.labelControl8.Location = new System.Drawing.Point(639, 41);
       this.labelControl8.Name = "labelControl8";
       this.labelControl8.Size = new System.Drawing.Size(71, 15);
@@ -1957,6 +1962,7 @@ namespace ServerBrowser
       // labelControl4
       // 
       this.labelControl4.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
+      this.labelControl4.Appearance.Options.UseFont = true;
       this.labelControl4.Location = new System.Drawing.Point(77, 39);
       this.labelControl4.Name = "labelControl4";
       this.labelControl4.Size = new System.Drawing.Size(34, 15);
@@ -1967,6 +1973,7 @@ namespace ServerBrowser
       // labelControl11
       // 
       this.labelControl11.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
+      this.labelControl11.Appearance.Options.UseFont = true;
       this.labelControl11.Location = new System.Drawing.Point(401, 40);
       this.labelControl11.Name = "labelControl11";
       this.labelControl11.Size = new System.Drawing.Size(27, 15);
@@ -1988,6 +1995,7 @@ namespace ServerBrowser
       // labelControl7
       // 
       this.labelControl7.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
+      this.labelControl7.Appearance.Options.UseFont = true;
       this.labelControl7.Location = new System.Drawing.Point(38, 11);
       this.labelControl7.Name = "labelControl7";
       this.labelControl7.Size = new System.Drawing.Size(73, 15);
@@ -2194,6 +2202,7 @@ namespace ServerBrowser
       // labelControl19
       // 
       this.labelControl19.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
+      this.labelControl19.Appearance.Options.UseFont = true;
       this.labelControl19.Location = new System.Drawing.Point(182, 15);
       this.labelControl19.Name = "labelControl19";
       this.labelControl19.Size = new System.Drawing.Size(43, 15);
@@ -2287,6 +2296,7 @@ namespace ServerBrowser
       // labelControl10
       // 
       this.labelControl10.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
+      this.labelControl10.Appearance.Options.UseFont = true;
       this.labelControl10.Location = new System.Drawing.Point(639, 15);
       this.labelControl10.Name = "labelControl10";
       this.labelControl10.Size = new System.Drawing.Size(80, 15);
@@ -2296,6 +2306,7 @@ namespace ServerBrowser
       // labelControl9
       // 
       this.labelControl9.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
+      this.labelControl9.Appearance.Options.UseFont = true;
       this.labelControl9.Location = new System.Drawing.Point(13, 15);
       this.labelControl9.Name = "labelControl9";
       this.labelControl9.Size = new System.Drawing.Size(72, 15);
@@ -2416,12 +2427,12 @@ namespace ServerBrowser
       this.panelPlayers.Controls.Add(this.dockPanel1_Container);
       this.panelPlayers.Dock = DevExpress.XtraBars.Docking.DockingStyle.Fill;
       this.panelPlayers.ID = new System.Guid("5ff9161d-077a-43fb-9f49-f8a0728b7b57");
-      this.panelPlayers.Location = new System.Drawing.Point(4, 25);
+      this.panelPlayers.Location = new System.Drawing.Point(5, 25);
       this.panelPlayers.Name = "panelPlayers";
       this.panelPlayers.Options.AllowFloating = false;
       this.panelPlayers.Options.ShowCloseButton = false;
-      this.panelPlayers.OriginalSize = new System.Drawing.Size(354, 422);
-      this.panelPlayers.Size = new System.Drawing.Size(354, 386);
+      this.panelPlayers.OriginalSize = new System.Drawing.Size(354, 386);
+      this.panelPlayers.Size = new System.Drawing.Size(353, 386);
       this.panelPlayers.Text = "Players";
       // 
       // dockPanel1_Container
@@ -2429,7 +2440,7 @@ namespace ServerBrowser
       this.dockPanel1_Container.Controls.Add(this.gcPlayers);
       this.dockPanel1_Container.Location = new System.Drawing.Point(0, 0);
       this.dockPanel1_Container.Name = "dockPanel1_Container";
-      this.dockPanel1_Container.Size = new System.Drawing.Size(354, 386);
+      this.dockPanel1_Container.Size = new System.Drawing.Size(353, 386);
       this.dockPanel1_Container.TabIndex = 0;
       // 
       // panelServerDetails
@@ -2437,12 +2448,12 @@ namespace ServerBrowser
       this.panelServerDetails.Controls.Add(this.dockPanel2_Container);
       this.panelServerDetails.Dock = DevExpress.XtraBars.Docking.DockingStyle.Fill;
       this.panelServerDetails.ID = new System.Guid("adca8b15-d626-4469-97cf-a6cc21c21f6e");
-      this.panelServerDetails.Location = new System.Drawing.Point(4, 25);
+      this.panelServerDetails.Location = new System.Drawing.Point(5, 25);
       this.panelServerDetails.Name = "panelServerDetails";
       this.panelServerDetails.Options.AllowFloating = false;
       this.panelServerDetails.Options.ShowCloseButton = false;
-      this.panelServerDetails.OriginalSize = new System.Drawing.Size(354, 422);
-      this.panelServerDetails.Size = new System.Drawing.Size(354, 386);
+      this.panelServerDetails.OriginalSize = new System.Drawing.Size(354, 386);
+      this.panelServerDetails.Size = new System.Drawing.Size(353, 386);
       this.panelServerDetails.Text = "Server Details";
       // 
       // dockPanel2_Container
@@ -2450,7 +2461,7 @@ namespace ServerBrowser
       this.dockPanel2_Container.Controls.Add(this.gcDetails);
       this.dockPanel2_Container.Location = new System.Drawing.Point(0, 0);
       this.dockPanel2_Container.Name = "dockPanel2_Container";
-      this.dockPanel2_Container.Size = new System.Drawing.Size(354, 386);
+      this.dockPanel2_Container.Size = new System.Drawing.Size(353, 386);
       this.dockPanel2_Container.TabIndex = 0;
       // 
       // panelRules
@@ -2458,10 +2469,10 @@ namespace ServerBrowser
       this.panelRules.Controls.Add(this.controlContainer2);
       this.panelRules.Dock = DevExpress.XtraBars.Docking.DockingStyle.Fill;
       this.panelRules.ID = new System.Guid("7cfd1891-8f2c-4d0a-bd2c-1bb030d15a66");
-      this.panelRules.Location = new System.Drawing.Point(4, 25);
+      this.panelRules.Location = new System.Drawing.Point(5, 25);
       this.panelRules.Name = "panelRules";
-      this.panelRules.OriginalSize = new System.Drawing.Size(354, 422);
-      this.panelRules.Size = new System.Drawing.Size(354, 386);
+      this.panelRules.OriginalSize = new System.Drawing.Size(354, 386);
+      this.panelRules.Size = new System.Drawing.Size(353, 386);
       this.panelRules.Text = "Rules";
       // 
       // controlContainer2
@@ -2469,7 +2480,7 @@ namespace ServerBrowser
       this.controlContainer2.Controls.Add(this.gcRules);
       this.controlContainer2.Location = new System.Drawing.Point(0, 0);
       this.controlContainer2.Name = "controlContainer2";
-      this.controlContainer2.Size = new System.Drawing.Size(354, 386);
+      this.controlContainer2.Size = new System.Drawing.Size(353, 386);
       this.controlContainer2.TabIndex = 0;
       // 
       // gcRules
@@ -2479,7 +2490,7 @@ namespace ServerBrowser
       this.gcRules.Location = new System.Drawing.Point(0, 0);
       this.gcRules.MainView = this.gvRules;
       this.gcRules.Name = "gcRules";
-      this.gcRules.Size = new System.Drawing.Size(354, 386);
+      this.gcRules.Size = new System.Drawing.Size(353, 386);
       this.gcRules.TabIndex = 31;
       this.gcRules.ViewCollection.AddRange(new DevExpress.XtraGrid.Views.Base.BaseView[] {
             this.gvRules});
@@ -2541,9 +2552,9 @@ namespace ServerBrowser
       // 
       this.controlContainer1.Controls.Add(this.gcServers);
       this.controlContainer1.Controls.Add(this.grpQuickFilter);
-      this.controlContainer1.Location = new System.Drawing.Point(4, 25);
+      this.controlContainer1.Location = new System.Drawing.Point(4, 26);
       this.controlContainer1.Name = "controlContainer1";
-      this.controlContainer1.Size = new System.Drawing.Size(1288, 372);
+      this.controlContainer1.Size = new System.Drawing.Size(1288, 371);
       this.controlContainer1.TabIndex = 0;
       // 
       // grpQuickFilter
@@ -2572,6 +2583,7 @@ namespace ServerBrowser
       // txtFilterInfoClient
       // 
       this.txtFilterInfoClient.Appearance.Font = new System.Drawing.Font("Segoe UI", 8.25F);
+      this.txtFilterInfoClient.Appearance.Options.UseFont = true;
       this.txtFilterInfoClient.Location = new System.Drawing.Point(980, 8);
       this.txtFilterInfoClient.Name = "txtFilterInfoClient";
       this.txtFilterInfoClient.Size = new System.Drawing.Size(270, 39);
@@ -2610,6 +2622,7 @@ namespace ServerBrowser
       // labelControl17
       // 
       this.labelControl17.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
+      this.labelControl17.Appearance.Options.UseFont = true;
       this.labelControl17.Location = new System.Drawing.Point(431, 38);
       this.labelControl17.Name = "labelControl17";
       this.labelControl17.Size = new System.Drawing.Size(71, 15);
@@ -2635,6 +2648,7 @@ namespace ServerBrowser
       // labelControl5
       // 
       this.labelControl5.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
+      this.labelControl5.Appearance.Options.UseFont = true;
       this.labelControl5.Location = new System.Drawing.Point(432, 10);
       this.labelControl5.Name = "labelControl5";
       this.labelControl5.Size = new System.Drawing.Size(70, 15);
@@ -2660,6 +2674,8 @@ namespace ServerBrowser
       // linkFilter1
       // 
       this.linkFilter1.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
+      this.linkFilter1.Appearance.Options.UseFont = true;
+      this.linkFilter1.Appearance.Options.UseTextOptions = true;
       this.linkFilter1.Appearance.TextOptions.WordWrap = DevExpress.Utils.WordWrap.Wrap;
       this.linkFilter1.AutoSizeMode = DevExpress.XtraEditors.LabelAutoSizeMode.None;
       this.linkFilter1.Cursor = System.Windows.Forms.Cursors.Hand;
@@ -2688,9 +2704,9 @@ namespace ServerBrowser
       // 
       this.btnApplyFilter.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
       this.btnApplyFilter.Appearance.Options.UseFont = true;
-      this.btnApplyFilter.ImageIndex = 13;
-      this.btnApplyFilter.ImageList = this.imageCollection;
-      this.btnApplyFilter.ImageToTextIndent = 10;
+      this.btnApplyFilter.ImageOptions.ImageIndex = 13;
+      this.btnApplyFilter.ImageOptions.ImageList = this.imageCollection;
+      this.btnApplyFilter.ImageOptions.ImageToTextIndent = 10;
       this.btnApplyFilter.Location = new System.Drawing.Point(867, 6);
       this.btnApplyFilter.Name = "btnApplyFilter";
       this.btnApplyFilter.Size = new System.Drawing.Size(98, 25);
@@ -2702,6 +2718,8 @@ namespace ServerBrowser
       // labelControl1
       // 
       this.labelControl1.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
+      this.labelControl1.Appearance.Options.UseFont = true;
+      this.labelControl1.Appearance.Options.UseTextOptions = true;
       this.labelControl1.Appearance.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Far;
       this.labelControl1.Location = new System.Drawing.Point(10, 38);
       this.labelControl1.Name = "labelControl1";
@@ -2736,6 +2754,8 @@ namespace ServerBrowser
       // labelControl3
       // 
       this.labelControl3.Appearance.Font = new System.Drawing.Font("Segoe UI", 9F);
+      this.labelControl3.Appearance.Options.UseFont = true;
+      this.labelControl3.Appearance.Options.UseTextOptions = true;
       this.labelControl3.Appearance.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Far;
       this.labelControl3.AutoSizeMode = DevExpress.XtraEditors.LabelAutoSizeMode.Vertical;
       this.labelControl3.Location = new System.Drawing.Point(267, 38);
@@ -2750,10 +2770,10 @@ namespace ServerBrowser
       this.cbAlert.Appearance.Options.UseFont = true;
       this.cbAlert.Appearance.Options.UseTextOptions = true;
       this.cbAlert.Appearance.TextOptions.HAlignment = DevExpress.Utils.HorzAlignment.Near;
-      this.cbAlert.ImageIndex = 5;
-      this.cbAlert.ImageList = this.imageCollection;
-      this.cbAlert.ImageToTextAlignment = DevExpress.XtraEditors.ImageAlignToText.LeftCenter;
-      this.cbAlert.ImageToTextIndent = 10;
+      this.cbAlert.ImageOptions.ImageIndex = 5;
+      this.cbAlert.ImageOptions.ImageList = this.imageCollection;
+      this.cbAlert.ImageOptions.ImageToTextAlignment = DevExpress.XtraEditors.ImageAlignToText.LeftCenter;
+      this.cbAlert.ImageOptions.ImageToTextIndent = 10;
       this.cbAlert.Location = new System.Drawing.Point(867, 34);
       this.cbAlert.Name = "cbAlert";
       this.cbAlert.Size = new System.Drawing.Size(98, 25);
@@ -2792,6 +2812,7 @@ namespace ServerBrowser
             new DevExpress.XtraBars.LinkPersistInfo(this.miConnect),
             new DevExpress.XtraBars.LinkPersistInfo(this.miConnectSpectator),
             new DevExpress.XtraBars.LinkPersistInfo(this.miCopyAddress, true),
+            new DevExpress.XtraBars.LinkPersistInfo(this.miSteamUrl),
             new DevExpress.XtraBars.LinkPersistInfo(this.miPasteAddress),
             new DevExpress.XtraBars.LinkPersistInfo(this.miFavServer),
             new DevExpress.XtraBars.LinkPersistInfo(this.miUnfavServer),
@@ -2863,6 +2884,14 @@ namespace ServerBrowser
       // 
       this.timerHideWaitForm.Interval = 5000;
       this.timerHideWaitForm.Tick += new System.EventHandler(this.timerHideWaitForm_Tick);
+      // 
+      // miSteamUrl
+      // 
+      this.miSteamUrl.Caption = "Copy steam://... URL to Clipboard";
+      this.miSteamUrl.Id = 35;
+      this.miSteamUrl.ItemShortcut = new DevExpress.XtraBars.BarShortcut((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.U));
+      this.miSteamUrl.Name = "miSteamUrl";
+      this.miSteamUrl.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miSteamUrl_ItemClick);
       // 
       // ServerBrowserForm
       // 
@@ -3174,5 +3203,6 @@ namespace ServerBrowser
     protected CheckEdit cbHideGhosts;
     protected ButtonEdit txtVersion;
     protected LabelControl labelControl20;
+    private DevExpress.XtraBars.BarButtonItem miSteamUrl;
   }
 }

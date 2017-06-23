@@ -2107,6 +2107,25 @@ namespace ServerBrowser
     }
     #endregion
 
+    #region miSteamUrl_ItemClick
+    private void miSteamUrl_ItemClick(object sender, ItemClickEventArgs e)
+    {
+      var sb = new StringBuilder();
+      foreach (var handle in this.gvServers.GetSelectedRows())
+      {
+        var row = (ServerRow)this.gvServers.GetRow(handle);
+        if (row.ServerInfo == null)
+          continue;
+        if (sb.Length > 0)
+          sb.AppendLine();
+        sb.Append($"steam://connect/{row.ServerInfo.Address}\n");
+      }
+
+      if (sb.Length > 0)
+        Clipboard.SetText(sb.ToString());
+    }
+    #endregion
+
     #region miPasteAddress_ItemClick
     private void miPasteAddress_ItemClick(object sender, ItemClickEventArgs e)
     {
