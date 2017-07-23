@@ -33,9 +33,9 @@ namespace ServerBrowser
     {
       this.components = new System.ComponentModel.Container();
       System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ServerBrowserForm));
-      DevExpress.XtraEditors.Controls.EditorButtonImageOptions editorButtonImageOptions1 = new DevExpress.XtraEditors.Controls.EditorButtonImageOptions();
-      DevExpress.XtraEditors.Controls.EditorButtonImageOptions editorButtonImageOptions2 = new DevExpress.XtraEditors.Controls.EditorButtonImageOptions();
-      DevExpress.XtraEditors.Controls.EditorButtonImageOptions editorButtonImageOptions3 = new DevExpress.XtraEditors.Controls.EditorButtonImageOptions();
+      DevExpress.XtraEditors.Controls.EditorButtonImageOptions editorButtonImageOptions4 = new DevExpress.XtraEditors.Controls.EditorButtonImageOptions();
+      DevExpress.XtraEditors.Controls.EditorButtonImageOptions editorButtonImageOptions5 = new DevExpress.XtraEditors.Controls.EditorButtonImageOptions();
+      DevExpress.XtraEditors.Controls.EditorButtonImageOptions editorButtonImageOptions6 = new DevExpress.XtraEditors.Controls.EditorButtonImageOptions();
       this.riCheckEdit = new DevExpress.XtraEditors.Repository.RepositoryItemCheckEdit();
       this.gcDetails = new DevExpress.XtraGrid.GridControl();
       this.gvDetails = new DevExpress.XtraGrid.Views.Grid.GridView();
@@ -123,6 +123,7 @@ namespace ServerBrowser
       this.miAddRulesColumnText = new DevExpress.XtraBars.BarButtonItem();
       this.miAddRulesColumnNumeric = new DevExpress.XtraBars.BarButtonItem();
       this.miAddDetailColumn = new DevExpress.XtraBars.BarButtonItem();
+      this.miSteamUrl = new DevExpress.XtraBars.BarButtonItem();
       this.txtRconConsole = new DevExpress.XtraEditors.MemoEdit();
       this.txtRconCommand = new DevExpress.XtraEditors.ButtonEdit();
       this.labelControl14 = new DevExpress.XtraEditors.LabelControl();
@@ -192,8 +193,8 @@ namespace ServerBrowser
       this.gcRules = new DevExpress.XtraGrid.GridControl();
       this.dsRules = new System.Windows.Forms.BindingSource(this.components);
       this.gvRules = new DevExpress.XtraGrid.Views.Grid.GridView();
-      this.gridColumn1 = new DevExpress.XtraGrid.Columns.GridColumn();
-      this.gridColumn2 = new DevExpress.XtraGrid.Columns.GridColumn();
+      this.colRuleName = new DevExpress.XtraGrid.Columns.GridColumn();
+      this.colRuleValue = new DevExpress.XtraGrid.Columns.GridColumn();
       this.panelServerList = new DevExpress.XtraBars.Docking.DockPanel();
       this.controlContainer1 = new DevExpress.XtraBars.Docking.ControlContainer();
       this.grpQuickFilter = new DevExpress.XtraEditors.GroupControl();
@@ -224,7 +225,6 @@ namespace ServerBrowser
       this.menuDetails = new DevExpress.XtraBars.PopupMenu(this.components);
       this.splashScreenManager1 = new DevExpress.XtraSplashScreen.SplashScreenManager(this, typeof(global::ServerBrowser.ConnectingWaitForm), false, true);
       this.timerHideWaitForm = new System.Windows.Forms.Timer(this.components);
-      this.miSteamUrl = new DevExpress.XtraBars.BarButtonItem();
       ((System.ComponentModel.ISupportInitialize)(this.riCheckEdit)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.gcDetails)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.gvDetails)).BeginInit();
@@ -1514,9 +1514,9 @@ namespace ServerBrowser
       this.riFindPlayer.AutoHeight = false;
       this.riFindPlayer.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
             new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo),
-            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Plus, "", -1, true, true, false, editorButtonImageOptions1, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), "Add to list"),
-            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Minus, "", -1, true, true, false, editorButtonImageOptions2, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), "Remove from list"),
-            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Search, "", -1, true, true, false, editorButtonImageOptions3, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), "Find")});
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Plus, "", -1, true, true, false, editorButtonImageOptions4, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), "Add to list"),
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Minus, "", -1, true, true, false, editorButtonImageOptions5, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), "Remove from list"),
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Search, "", -1, true, true, false, editorButtonImageOptions6, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), "Find")});
       this.riFindPlayer.Name = "riFindPlayer";
       this.riFindPlayer.NullValuePrompt = "min 3 chars, * as placeholder";
       this.riFindPlayer.NullValuePromptShowForEmptyValue = true;
@@ -1612,6 +1612,14 @@ namespace ServerBrowser
       this.miAddDetailColumn.Id = 26;
       this.miAddDetailColumn.Name = "miAddDetailColumn";
       this.miAddDetailColumn.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miAddDetailColumnString_ItemClick);
+      // 
+      // miSteamUrl
+      // 
+      this.miSteamUrl.Caption = "Copy steam://... URL to Clipboard";
+      this.miSteamUrl.Id = 35;
+      this.miSteamUrl.ItemShortcut = new DevExpress.XtraBars.BarShortcut((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.U));
+      this.miSteamUrl.Name = "miSteamUrl";
+      this.miSteamUrl.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miSteamUrl_ItemClick);
       // 
       // txtRconConsole
       // 
@@ -2409,7 +2417,7 @@ namespace ServerBrowser
       // 
       // panelContainer1
       // 
-      this.panelContainer1.ActiveChild = this.panelPlayers;
+      this.panelContainer1.ActiveChild = this.panelRules;
       this.panelContainer1.Controls.Add(this.panelPlayers);
       this.panelContainer1.Controls.Add(this.panelServerDetails);
       this.panelContainer1.Controls.Add(this.panelRules);
@@ -2492,6 +2500,7 @@ namespace ServerBrowser
       this.gcRules.Name = "gcRules";
       this.gcRules.Size = new System.Drawing.Size(353, 386);
       this.gcRules.TabIndex = 31;
+      this.gcRules.ToolTipController = this.toolTipController;
       this.gcRules.ViewCollection.AddRange(new DevExpress.XtraGrid.Views.Base.BaseView[] {
             this.gvRules});
       // 
@@ -2502,33 +2511,34 @@ namespace ServerBrowser
       // gvRules
       // 
       this.gvRules.Columns.AddRange(new DevExpress.XtraGrid.Columns.GridColumn[] {
-            this.gridColumn1,
-            this.gridColumn2});
+            this.colRuleName,
+            this.colRuleValue});
       this.gvRules.GridControl = this.gcRules;
       this.gvRules.Name = "gvRules";
       this.gvRules.OptionsView.ShowGroupPanel = false;
       this.gvRules.OptionsView.ShowIndicator = false;
+      this.gvRules.CustomColumnDisplayText += new DevExpress.XtraGrid.Views.Base.CustomColumnDisplayTextEventHandler(this.gvRules_CustomColumnDisplayText);
       this.gvRules.MouseDown += new System.Windows.Forms.MouseEventHandler(this.gvRules_MouseDown);
       // 
-      // gridColumn1
+      // colRuleName
       // 
-      this.gridColumn1.Caption = "Setting";
-      this.gridColumn1.FieldName = "Name";
-      this.gridColumn1.Name = "gridColumn1";
-      this.gridColumn1.OptionsColumn.ReadOnly = true;
-      this.gridColumn1.Visible = true;
-      this.gridColumn1.VisibleIndex = 0;
-      this.gridColumn1.Width = 100;
+      this.colRuleName.Caption = "Setting";
+      this.colRuleName.FieldName = "Name";
+      this.colRuleName.Name = "colRuleName";
+      this.colRuleName.OptionsColumn.ReadOnly = true;
+      this.colRuleName.Visible = true;
+      this.colRuleName.VisibleIndex = 0;
+      this.colRuleName.Width = 100;
       // 
-      // gridColumn2
+      // colRuleValue
       // 
-      this.gridColumn2.Caption = "Value";
-      this.gridColumn2.FieldName = "Value";
-      this.gridColumn2.Name = "gridColumn2";
-      this.gridColumn2.OptionsColumn.ReadOnly = true;
-      this.gridColumn2.Visible = true;
-      this.gridColumn2.VisibleIndex = 1;
-      this.gridColumn2.Width = 150;
+      this.colRuleValue.Caption = "Value";
+      this.colRuleValue.FieldName = "Value";
+      this.colRuleValue.Name = "colRuleValue";
+      this.colRuleValue.OptionsColumn.ReadOnly = true;
+      this.colRuleValue.Visible = true;
+      this.colRuleValue.VisibleIndex = 1;
+      this.colRuleValue.Width = 150;
       // 
       // panelServerList
       // 
@@ -2885,14 +2895,6 @@ namespace ServerBrowser
       this.timerHideWaitForm.Interval = 5000;
       this.timerHideWaitForm.Tick += new System.EventHandler(this.timerHideWaitForm_Tick);
       // 
-      // miSteamUrl
-      // 
-      this.miSteamUrl.Caption = "Copy steam://... URL to Clipboard";
-      this.miSteamUrl.Id = 35;
-      this.miSteamUrl.ItemShortcut = new DevExpress.XtraBars.BarShortcut((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.U));
-      this.miSteamUrl.Name = "miSteamUrl";
-      this.miSteamUrl.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miSteamUrl_ItemClick);
-      // 
       // ServerBrowserForm
       // 
       this.Appearance.Options.UseFont = true;
@@ -3053,8 +3055,8 @@ namespace ServerBrowser
     protected DevExpress.XtraBars.Docking.ControlContainer controlContainer2;
     protected DevExpress.XtraGrid.GridControl gcRules;
     protected DevExpress.XtraGrid.Views.Grid.GridView gvRules;
-    protected DevExpress.XtraGrid.Columns.GridColumn gridColumn1;
-    protected DevExpress.XtraGrid.Columns.GridColumn gridColumn2;
+    protected DevExpress.XtraGrid.Columns.GridColumn colRuleName;
+    protected DevExpress.XtraGrid.Columns.GridColumn colRuleValue;
     protected System.Windows.Forms.BindingSource dsRules;
     protected DevExpress.XtraGrid.Columns.GridColumn colDedicated;
     protected ComboBoxEdit comboGames;

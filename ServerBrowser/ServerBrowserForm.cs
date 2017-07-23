@@ -31,7 +31,7 @@ namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.45.2";
+    private const string Version = "2.47";
     private const string DevExpressVersion = "v15.2";
     private const string SteamWebApiText = "<Steam Web API>";
     private const string CustomDetailColumnPrefix = "ServerInfo.";
@@ -1920,6 +1920,18 @@ namespace ServerBrowser
             e.Info = new ToolTipControlInfo(row.EndPoint + "-" + hit.Column.FieldName, tip);
         }
       }
+      else if (e.Info == null && e.SelectedControl == this.gcRules)
+      {
+        var hit = this.gvRules.CalcHitInfo(e.ControlMousePosition);
+        if (hit.InRowCell && hit.Column == this.colRuleName)
+        {
+          var rule = (Rule)this.gvRules.GetRow(hit.RowHandle);
+          var server = (ServerRow) this.gvServers.GetFocusedRow();
+          var pretty = server?.GameExtension?.GetPrettyNameForRule(server, rule.Name);
+          if (pretty != null)
+            e.Info = new ToolTipControlInfo(rule.Name, rule.Name);
+        }
+      }
     }
     #endregion
 
@@ -2322,6 +2334,16 @@ namespace ServerBrowser
     #endregion
 
     // Rules grid
+
+    #region gvRules_CustomColumnDisplayText
+    private void gvRules_CustomColumnDisplayText(object sender, CustomColumnDisplayTextEventArgs e)
+    {
+      var server = (ServerRow)this.gvServers.GetFocusedRow();
+      var text = server?.GameExtension?.GetPrettyNameForRule(server, e.Value as string);
+      if (text != null)
+        e.DisplayText = text;
+    }
+    #endregion
 
     #region gvRules_MouseDown
     private void gvRules_MouseDown(object sender, MouseEventArgs e)

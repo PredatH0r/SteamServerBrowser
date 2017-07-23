@@ -24,7 +24,9 @@ namespace ServerBrowser
     private const string ScoreLimit = "p268435704";
     private const string TimeLimit = "p268435705";
     private const string Mutators = "p1073741828";
-    private const string IsOfficial = "s15";
+    private const string OldOfficialNewRanked = "s15";
+    private const string NewOfficial = "s18";
+    private const string ModdingLevel = "s19";
     private const string GameVersion = "p1073741839";
 
     private const int SecondsToWaitForMainWindowAfterLaunch = 45;
@@ -110,7 +112,9 @@ namespace ServerBrowser
       AddColumn(view, "_best", "Best", "Best player's Skill Class", 40, ++idx, UnboundColumnType.Integer);
       AddColumn(view, ScoreLimit, "GS", "Goal Score", 30, ++idx, UnboundColumnType.Integer);
       AddColumn(view, TimeLimit, "TL", "Time Limit", 30, ++idx, UnboundColumnType.Integer);
-      AddColumn(view, IsOfficial, "Ofcl", "Official Server managed by REAKKTOR", 35, ++idx, UnboundColumnType.Boolean);
+      AddColumn(view, NewOfficial, "Ofcl", "Official Server managed by REAKKTOR", 35, ++idx, UnboundColumnType.Boolean);
+      AddColumn(view, OldOfficialNewRanked, "Ranked", "MXP/SC saved", 35, ++idx, UnboundColumnType.Boolean);
+      AddColumn(view, ModdingLevel, "Modded", "unmodded, server-only, server+client", 35, ++idx, UnboundColumnType.String);
       AddColumn(view, GameVersion, "Ver", "Game Version", 40);
     }
     #endregion
@@ -125,8 +129,24 @@ namespace ServerBrowser
           //return new ToxikkSkillInfo(row, this);
         case "_best":
           return Math.Round(this.GetBestPlayerSC(row), 1, MidpointRounding.AwayFromZero);
-        case IsOfficial:
-          return row.GetRule(fieldName) == "1";
+        case NewOfficial:
+        {
+          var ver = row.GetRule(GameVersion);
+          if (ver != null && CompareVersion(ver, "1.1.71") > 0)
+            return row.GetRule(NewOfficial) == "1";
+          return row.GetRule(OldOfficialNewRanked) == "1";
+        }
+        case OldOfficialNewRanked:
+        {
+          var ver = row.GetRule(GameVersion);
+          if (ver == null || CompareVersion(ver, "1.1.71") <= 0)
+            return null;
+          var val = row.GetRule(fieldName);
+          return val == null ? (object)null : val == "1";
+        }
+        case ModdingLevel:
+          var level = row.GetRule(ModdingLevel);
+          return level == "0" ? "-" : level == "1" ? "S" : level == "2" ? "S+C" : "";
         case "_gametype":
         { 
           var gt = row.ServerInfo.Extra.Keywords;
@@ -161,6 +181,30 @@ namespace ServerBrowser
           return buff.ToString();
       }
       return base.GetServerCellValue(row, fieldName);
+    }
+    #endregion
+
+    #region CompareVersion()
+    /// <summary>
+    /// Compares 2 version strings in the form of a.b.c
+    /// a and b are compared numerically, c alphanumerical so that .8 > .71
+    /// </summary>
+    public static int CompareVersion(string v1, string v2)
+    {
+      var p1 = v1.Split('.');
+      var p2 = v2.Split('.');
+      for (int i = 0; i < p1.Length; i++)
+      {
+        if (i > p2.Length)
+          return +1;
+        int c;
+        c = i <= 1 ? Comparer<int>.Default.Compare(int.Parse(p1[i]), int.Parse(p2[i])) : StringComparer.InvariantCulture.Compare(p1[i], p2[i]);
+        if (c != 0)
+          return c;
+      }
+      if (p2.Length > p1.Length)
+        return -1;
+      return 0;
     }
     #endregion
 
@@ -529,6 +573,40 @@ namespace ServerBrowser
       }
       this.playerInfos = newPlayerInfos;
       server.PlayerCount.Update();
+    }
+    #endregion
+
+    #region GetPrettyNameForRule()
+    public override string GetPrettyNameForRule(ServerRow row, string ruleName)
+    {
+      switch (ruleName)
+      {
+        case MinCombatants: return "min. Combatants";
+        case ScoreLimit: return "Score Limit";
+        case TimeLimit: return "Time Limit";
+        case Mutators: return "Mutators";
+        case GameVersion: return "GameVersion";
+        case OldOfficialNewRanked: return "Ranked (pre-1.1.8: Official)";
+        case NewOfficial: return "Official (since 1.1.8)";
+        case ModdingLevel: return "Modding level";
+        case ToxikkSkillInfo.MinSkillClass: return "Min SC";
+        case ToxikkSkillInfo.MaxSkillClass: return "Max SC";
+        case "p1073741825": return "Map";
+        case "p1073741826": return "Gametype Class";
+        case "p1073741827": return "Server Description";
+        case "p1073741829": return "Player IDs #1";
+        case "p1073741830": return "Player IDs #2";
+        case "p1073741831": return "Player IDs #3";
+        case "p1073741832": return "Player names #1";
+        case "p1073741833": return "Player names #2";
+        case "p1073741834": return "Player names #3";
+        case "p1073741837": return "Player SCs";
+        case "p1073741838": return "Player ranks";
+        case "s0": return "Bot difficulty";
+        case "p268435706": return "Max. players";
+        case "p1073741840": return "Map list";
+      }
+      return null;
     }
     #endregion
   }

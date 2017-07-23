@@ -272,6 +272,8 @@ namespace ServerBrowser
     public virtual bool IsValidPlayer(ServerRow row, Player player) => true;
 
     public virtual string GetServerCellToolTip(ServerRow row, string fieldName) => null;
+
+    public virtual string GetPrettyNameForRule(ServerRow row, string ruleName) => ruleName;
   }
   #endregion
 

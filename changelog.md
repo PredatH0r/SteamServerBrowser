@@ -1,3 +1,7 @@
+2.47
+---
+- TOXIKK: showing user friendly rule names instead of engine internal property numbers
+
 2.46
 ---
 - upgraded to latest version of DevExpress user controls
