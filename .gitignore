@@ -27,3 +27,4 @@ SteamServerBrowser.sdf
 /SteamServerBrowser/
 SteamServerBrowser*.zip
 .vs/config/applicationhost.config
+/.vs/
