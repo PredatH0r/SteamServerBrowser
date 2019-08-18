@@ -31,8 +31,8 @@ namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.47";
-    private const string DevExpressVersion = "v15.2";
+    private const string Version = "2.50";
+    private const string DevExpressVersion = "v19.1";
     private const string SteamWebApiText = "<Steam Web API>";
     private const string CustomDetailColumnPrefix = "ServerInfo.";
     private const string CustomRuleColumnPrefix = "custRule.";

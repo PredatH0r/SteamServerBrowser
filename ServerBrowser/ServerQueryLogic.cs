@@ -142,7 +142,7 @@ namespace ServerBrowser
     public void Cancel()
     {
       this.currentRequest.IsCancelled = true;
-      if (this.currentRequest.PendingTasks.CurrentCount > 0)
+      if (this.currentRequest.PendingTasks?.CurrentCount > 0)
         this.UpdateStatus?.Invoke(this, new TextEventArgs("Update canceled"));
     }
     #endregion

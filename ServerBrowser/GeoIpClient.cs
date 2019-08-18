@@ -14,7 +14,8 @@ namespace ServerBrowser
   class GeoIpClient
   {
     internal const int ThreadCount = 7;
-    private const string DefaultServiceUrlFormat = "http://geoip.nekudo.com/api/{0}/en/full";
+    private const string DefaultServiceUrlFormat = "http://api.ipapi.com/{0}?access_key=9c5fc4375488ed26aa2f26b613324f4a&language=en&output=json";
+    private DateTime usageExceeded = DateTime.MinValue;
 
     /// <summary>
     /// the cache holds either a GeoInfo object, or a multicast callback delegate waiting for a GeoInfo object
@@ -57,13 +58,14 @@ namespace ServerBrowser
               lock (cache)
                 callbacks = cache.TryGetValue(ipInt, out o) ? o as Action<GeoInfo> : null;
               var geoInfo = this.HandleResult(ipInt, result);
-              if (callbacks != null)
+              if (callbacks != null && geoInfo != null)
                 ThreadPool.QueueUserWorkItem(ctx => callbacks(geoInfo));
               err = false;
             }
           }
           catch
           {
+            // ignore
           }
 
           if (err)
@@ -82,12 +84,16 @@ namespace ServerBrowser
       var ser = new DataContractJsonSerializer(typeof(NekudoGeopIpFullResponse));
       var info = (NekudoGeopIpFullResponse)ser.ReadObject(new MemoryStream(Encoding.UTF8.GetBytes(result)));
 
-      var subdiv = info.subdivisions?[info.subdivisions.Length - 1];
-      var geoInfo = new GeoInfo(
-        info.country?.iso_code, TryGet(info.country?.names, "en"), 
-        subdiv?.iso_code, TryGet(subdiv?.names, "en"), 
-        TryGet(info.city?.names, "en"), 
-        info.location?.latitude ?? 0, info.location?.longitude ?? 0);
+      if (!info.success)
+      {
+        if (info.error?.code == 104)
+          this.usageExceeded = DateTime.UtcNow.Date;
+        lock (cache)
+          this.cache.Remove(ip);
+        return null;
+      }
+
+      var geoInfo = new GeoInfo(info.country_code, info.country_name, info.region_code, info.region_name, info.city, info.latitude, info.longitude);
       lock (cache)
       {
         cache[ip] = geoInfo;
@@ -108,22 +114,28 @@ namespace ServerBrowser
     public void Lookup(IPAddress ip, Action<GeoInfo> callback)
     {
       uint ipInt = Ip4Utils.ToInt(ip);
-      GeoInfo geoInfo;
+      GeoInfo geoInfo = null;
       lock (cache)
       {
-        object cached;
-        if (!cache.TryGetValue(ipInt, out cached))
-        {
-          cache.Add(ipInt, callback);
-          this.queue.Add(ip);
-          return;
-        }
-        geoInfo = cached as GeoInfo;
+        if (cache.TryGetValue(ipInt, out var cached))
+          geoInfo = cached as GeoInfo;
+
         if (geoInfo == null)
         {
-          var callbacks = (Action<GeoInfo>) cached;
-          callbacks += callback;
-          cache[ipInt] = callbacks;
+          if (this.usageExceeded == DateTime.UtcNow.Date)
+            return;
+
+          if (cached == null)
+          {
+            cache.Add(ipInt, callback);
+            this.queue.Add(ip);
+          }
+          else
+          {
+            var callbacks = (Action<GeoInfo>) cached;
+            callbacks += callback;
+            cache[ipInt] = callbacks;
+          }
           return;
         }
       }
@@ -156,35 +168,44 @@ namespace ServerBrowser
     {
       if (!File.Exists(this.cacheFile))
         return;
-      foreach (var line in File.ReadAllLines(this.cacheFile))
+      lock (cache)
       {
-        try
+        foreach (var line in File.ReadAllLines(this.cacheFile))
         {
-          var parts = line.Split(new [] {'='}, 2);
-          uint ipInt = 0;
-          var octets = parts[0].Split('.');
-          foreach (var octet in octets)
-            ipInt = (ipInt << 8) + uint.Parse(octet);
-          var loc = parts[1].Split('|');
-          var geoInfo = new GeoInfo(loc[0], loc[1], loc[2], loc[3], loc[4], decimal.Parse(loc[5], NumberFormatInfo.InvariantInfo), decimal.Parse(loc[6], NumberFormatInfo.InvariantInfo));
-          lock (cache)
-            cache[ipInt] = geoInfo;
+          try
+          {
+            var parts = line.Split(new[] {'='}, 2);
+            uint ipInt = 0;
+            var octets = parts[0].Split('.');
+            foreach (var octet in octets)
+              ipInt = (ipInt << 8) + uint.Parse(octet);
+            var loc = parts[1].Split('|');
+            var countryCode = loc[0];
+            var latitude = decimal.Parse(loc[5], NumberFormatInfo.InvariantInfo);
+            var longitude = decimal.Parse(loc[6], NumberFormatInfo.InvariantInfo);
+            if (countryCode != "")
+            {
+              var geoInfo = new GeoInfo(countryCode, loc[1], loc[2], loc[3], loc[4], latitude, longitude);
+              cache[ipInt] = geoInfo;
+            }
+          }
+          catch
+          {
+            // ignore
+          }
         }
-        catch
-        {
-        }
+
+        // override wrong geo-IP information (MS Azure IPs list Washington even for NL/EU servers)
+        cache[Ip4Utils.ToInt(104, 40, 134, 97)] = new GeoInfo("NL", "Netherlands", null, null, null, 0, 0);
+        cache[Ip4Utils.ToInt(104, 40, 213, 215)] = new GeoInfo("NL", "Netherlands", null, null, null, 0, 0);
+
+        // Vultr also spreads their IPs everywhere
+        cache[Ip4Utils.ToInt(45, 32, 153, 115)] = new GeoInfo("DE", "Germany", null, null, null, 0, 0); // listed as NL, but is DE
+        cache[Ip4Utils.ToInt(45, 32, 205, 149)] = new GeoInfo("US", "United States", "TX", null, null, 0, 0); // listed as NL, but is TX
+
+        // i3d.net
+        cache[Ip4Utils.ToInt(185, 179, 200, 69)] = new GeoInfo("ZA", "South Africa", null, null, null, 0, 0); // listed as NL, but is ZA
       }
-
-      // override wrong geo-IP information (MS Azure IPs list Washington even for NL/EU servers)
-      cache[Ip4Utils.ToInt(104, 40, 134, 97)] = new GeoInfo("NL", "Netherlands", null, null, null, 0, 0);
-      cache[Ip4Utils.ToInt(104, 40, 213, 215)] = new GeoInfo("NL", "Netherlands", null, null, null, 0, 0);
-      
-      // Vultr also spreads their IPs everywhere
-      cache[Ip4Utils.ToInt(45, 32, 153, 115)] = new GeoInfo("DE", "Germany", null, null, null, 0, 0); // listed as NL, but is DE
-      cache[Ip4Utils.ToInt(45, 32, 205, 149)] = new GeoInfo("US", "United States", "TX", null, null, 0, 0); // listed as NL, but is TX
-
-      // i3d.net
-      cache[Ip4Utils.ToInt(185, 179, 200, 69)] = new GeoInfo("ZA", "South Africa", null, null, null, 0, 0); // listed as NL, but is ZA
     }
     #endregion
 
@@ -277,40 +298,24 @@ namespace ServerBrowser
   #region class NekudoGeopIpFullResponse
   public class NekudoGeopIpFullResponse
   {
-    public class City
+    public class NekudoGeoIpError
     {
-      public Dictionary<string, string> names;
+      public int code;
+      public string type;
+      public string info;
     }
 
-    public class Country
-    {
-      public string iso_code;
-      public Dictionary<string, string> names;
-    }
+    public bool success;
+    public NekudoGeoIpError error;
 
-    public class Location
-    {
-      public decimal latitude;
-      public decimal longitude;
-      public string time_zone;
-    }
-
-    public class Subdivision
-    {
-      public string iso_code;
-      public Dictionary<string, string> names;
-    }
-
-    public class Traits
-    {
-      public string ip_address;
-    }
-
-    public City city;
-    public Country country;
-    public Location location;
-    public Subdivision[] subdivisions;
-    public Traits traits;
+    public string ip;
+    public string country_code;
+    public string country_name;
+    public string region_code;
+    public string region_name;
+    public string city;
+    public decimal latitude;
+    public decimal longitude;
   }
   #endregion
 

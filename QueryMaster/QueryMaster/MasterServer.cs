@@ -8,7 +8,6 @@ namespace QueryMaster
   ///   Encapsulates a method that has a parameter of type ReadOnlyCollection which accepts IPEndPoint instances.
   ///   Invoked when a reply from Master Server is received.
   /// </summary>
-  /// <param name="endPoints">Server Sockets</param>
   public delegate void MasterIpCallback(ReadOnlyCollection<Tuple<IPEndPoint,ServerInfo>> endPoints, Exception error, bool isPartialResult);
 
   /// <summary>
