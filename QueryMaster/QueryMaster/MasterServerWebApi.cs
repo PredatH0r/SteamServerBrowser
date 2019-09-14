@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Net;
+using System.Text;
 using System.Threading;
 using System.Xml.Serialization;
 
@@ -70,6 +71,20 @@ namespace QueryMaster
             var url = $"https://api.steampowered.com/IGameServersService/GetServerList/v1/?key={SteamWebApiKey}&format=xml&filter={filters}&limit={GetAddressesLimit}";
             var xml = cli.DownloadString(url);
             var ser = new XmlSerializer(typeof (Response));
+
+            // replace invalid XML chars ( < 32 ) with char reference
+            var sb = new StringBuilder(xml);
+            for (int i = 0, c = xml.Length; i < c; i++)
+            {
+              if (sb[i] < 32 && !char.IsWhiteSpace(sb[i]))
+                //{
+                //  sb.Insert(i+1, "#" + ((int)sb[i]).ToString() + ";");
+                //  sb[i] = '&';
+                //}
+                sb[i] = ' ';
+            }
+            xml = sb.ToString();
+
             var resp = (Response) ser.Deserialize(new StringReader(xml));
 
             var endpoints = new List<Tuple<IPEndPoint,ServerInfo>>();
