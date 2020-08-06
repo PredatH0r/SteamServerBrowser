@@ -197,8 +197,8 @@ namespace ServerBrowser
       {
         if (i > p2.Length)
           return +1;
-        int c;
-        c = i <= 1 ? Comparer<int>.Default.Compare(int.Parse(p1[i]), int.Parse(p2[i])) : StringComparer.InvariantCulture.Compare(p1[i], p2[i]);
+        var isNumeric = int.TryParse(p1[i], out var a) & int.TryParse(p2[i], out var b);
+        var c = i <= 1 && isNumeric ? Comparer<int>.Default.Compare(a, b) : StringComparer.InvariantCulture.Compare(p1[i], p2[i]);
         if (c != 0)
           return c;
       }
