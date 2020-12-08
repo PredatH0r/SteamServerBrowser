@@ -201,6 +201,8 @@ namespace ServerBrowser
         {
           try
           {
+            if (args.Error != null)
+              return;
             using (var strm = new MemoryStream(Encoding.UTF8.GetBytes(args.Result)))
             {
               var result = (QlstatsGlickoRating)personalSkillJsonParser.ReadObject(strm);
@@ -246,6 +248,8 @@ namespace ServerBrowser
         {
           try
           {
+            if (args.Error != null)
+              return;
             using (var strm = new MemoryStream(Encoding.UTF8.GetBytes(args.Result)))
             {
               var servers = (QlStatsSkillInfo[])serverSkillJsonParser.ReadObject(strm);
@@ -291,12 +295,15 @@ namespace ServerBrowser
         {
           try
           {
-            using (var strm = new MemoryStream(Encoding.UTF8.GetBytes(args.Result)))
+            if (args.Error == null)
             {
-              var playerList = (QlstatsPlayerList) playerListJsonParser.ReadObject(strm);
-              this.qlstatsPlayerlists[row] = playerList;
-              if (playerList.serverinfo != null)
-                this.skillInfo[row.EndPoint.ToString()] = playerList.serverinfo;
+              using (var strm = new MemoryStream(Encoding.UTF8.GetBytes(args.Result)))
+              {
+                var playerList = (QlstatsPlayerList) playerListJsonParser.ReadObject(strm);
+                this.qlstatsPlayerlists[row] = playerList;
+                if (playerList.serverinfo != null)
+                  this.skillInfo[row.EndPoint.ToString()] = playerList.serverinfo;
+              }
               callback?.Invoke();
             }
           }
@@ -407,7 +414,11 @@ namespace ServerBrowser
         var cleanName = this.GetCleanPlayerName(player.Name, true);
         return list.players.Count(p => this.GetCleanPlayerName(p.name) == cleanName) > 0;
       }
-        
+
+      // minqlx bots
+      if (player.Name.StartsWith("(Bot)"))
+        return false;
+
       // hack to remove ghost players which are not really on the server
       var status = server.GetRule("g_gameStatus");
       return status != "IN_PROGRESS" || player.Score > 0 || player.Time < TimeSpan.FromHours(1);
@@ -420,6 +431,15 @@ namespace ServerBrowser
       var info = this.skillInfo.GetValueOrDefault(row.EndPoint.ToString(), null);
       if (info != null)
         return info.pc + info.sc;
+
+      // minqlx bots are not correctly counted as bots in the server info
+      if (row.Players != null)
+      {
+        var c = row.Players.Count(p => p.Name.StartsWith("(Bot)"));
+        if (c > 0)
+          return row.Players.Count - c;
+      }
+
       return base.GetRealPlayerCount(row);
     }
     #endregion
@@ -440,6 +460,15 @@ namespace ServerBrowser
       var info = this.skillInfo.GetValueOrDefault(row.EndPoint.ToString(), null);
       if (info != null)
         return info.bc;
+
+      // minqlx bots are not correctly counted as bots in the server info
+      if (row.Players != null)
+      {
+        var c = row.Players.Count(p => p.Name.StartsWith("(Bot)"));
+        if (c > 0)
+          return c;
+      }
+
       return base.GetRealPlayerCount(row);
     }
     #endregion

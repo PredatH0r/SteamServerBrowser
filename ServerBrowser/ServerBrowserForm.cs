@@ -31,7 +31,7 @@ namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.52";
+    private const string Version = "2.61";
     private const string DevExpressVersion = "v20.1";
     private const string SteamWebApiText = "<Steam Web API>";
     private const string CustomDetailColumnPrefix = "ServerInfo.";
@@ -1106,7 +1106,7 @@ namespace ServerBrowser
     #region GetServerAddress()
     private string GetServerAddress(ServerRow row)
     {
-      return this.showAddressMode == 2 && row.ServerInfo?.Extra != null
+      return this.showAddressMode == 2 && (row.ServerInfo?.Extra?.Port ?? 0) != 0
         ? row.EndPoint.Address + ":" + row.ServerInfo.Extra.Port
         : row.EndPoint.ToString();
     }

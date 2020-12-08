@@ -82,19 +82,28 @@ namespace QueryMaster
 
     public ServerInfo GetInfo(Action<int> failedAttemptCallback = null)
     {
-      return Util.RunWithRetries(GetInfoCore, this.Retries, failedAttemptCallback);
+      return Util.RunWithRetries(() => GetInfoCore(), this.Retries, failedAttemptCallback);
     }
 
     /// <summary>
     ///   Retrieves information about the server
     /// </summary>
     /// <returns>Instance of ServerInfo class</returns>
-    protected virtual ServerInfo GetInfoCore()
+    protected virtual ServerInfo GetInfoCore(byte[] s2cChallenge = null)
     {
+      // in order to prevent reflection/amplification DDoS attacks, Valve decided in Dec 2020 to change the A2S_INFO protocol:
+      // https://steamcommunity.com/discussions/forum/14/2974028351344359625/
+      // The first request is sent without a challenge, the server may reply with the data directly (as before) or with an S2C_CHALLENGE including a 4 byte challenge.
+      // In this case the client resends the A2S_INFO query with the challenge appended
       var Query = QueryMsg.InfoQuery;
       if (IsObsolete)
         Query = QueryMsg.ObsoleteInfoQuery;
-
+      if (s2cChallenge != null) 
+      {
+        Query = new byte[QueryMsg.InfoQuery.Length + 4];
+        Array.Copy(QueryMsg.InfoQuery, Query, QueryMsg.InfoQuery.Length);
+        Array.Copy(s2cChallenge, 1, Query, QueryMsg.InfoQuery.Length, 4);
+      }
 
       var sw = new Stopwatch();
       var recvData = socket.GetResponse(Query, Type, sw);
@@ -103,8 +112,12 @@ namespace QueryMaster
       {
         switch (recvData[0])
         {
-          case 0x49: return Current(recvData);
+          case 0x49: return DataReceived(recvData);
           case 0x6D: return Obsolete(recvData);
+          case 0x41: 
+            if (s2cChallenge == null) // prevent endless loop/recursion
+              return ChallengeReceived(recvData);
+            throw new InvalidHeaderException("A2S_INFO failed after challenge");
           default: throw new InvalidHeaderException("packet header is not valid");
         }
       }
@@ -115,7 +128,14 @@ namespace QueryMaster
       }
     }
 
-    private ServerInfo Current(byte[] data)
+    private ServerInfo ChallengeReceived(byte[] data)
+    {
+      if (data.Length < 1 + 4)
+        throw new InvalidHeaderException("S2C_CHALLENGE packet header is not valid");
+      return GetInfoCore(data);
+    }
+
+    private ServerInfo DataReceived(byte[] data)
     {
       var parser = new Parser(data);
       if (parser.ReadByte() != (byte) ResponseMsgHeader.A2S_INFO)

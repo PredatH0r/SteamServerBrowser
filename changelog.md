@@ -1,3 +1,13 @@
+2.61
+---
+- fixed support for A2S_INFO responses with a challenge
+
+2.60
+---
+- supporting A2S_INFO responses with a challenge 
+  Valve changing the server browser protocol: https://steamcommunity.com/discussions/forum/14/2974028351344359625/ 
+- fixed: for games based on Source engine no server information was shown
+
 2.47
 ---
 - TOXIKK: showing user friendly rule names instead of engine internal property numbers

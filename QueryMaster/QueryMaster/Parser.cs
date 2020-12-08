@@ -32,7 +32,7 @@ namespace QueryMaster
         internal ushort ReadShort()
         {
             CurrentPosition++;
-            if (CurrentPosition + 3 > LastPosition)
+            if (CurrentPosition + 1 > LastPosition)
                 throw new ParseException("Unable to parse bytes to short.");
             ushort num;
             if (!BitConverter.IsLittleEndian)
