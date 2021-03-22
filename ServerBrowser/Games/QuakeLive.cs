@@ -462,9 +462,10 @@ namespace ServerBrowser
         return info.bc;
 
       // minqlx bots are not correctly counted as bots in the server info
-      if (row.Players != null)
+      var players = row.Players; // local copy to avoid race condition
+      if (players != null)
       {
-        var c = row.Players.Count(p => p.Name.StartsWith("(Bot)"));
+        var c = players.Count(p => p.Name.StartsWith("(Bot)"));
         if (c > 0)
           return c;
       }
