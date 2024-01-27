@@ -153,6 +153,8 @@ namespace ServerBrowser
     public void ReloadServerList(IServerSource serverSource, int timeout, int maxResults, Region region, IpFilter filter)
     {
       this.currentRequest.IsCancelled = true;
+      if (serverSource == null)
+        return;
 
       var extension = this.gameExtensions.Get(filter.App);
       var request = new UpdateRequest(filter.App, maxResults, timeout, extension, false); // use local var for thread safety

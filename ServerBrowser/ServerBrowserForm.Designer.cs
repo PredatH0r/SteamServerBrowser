@@ -33,9 +33,21 @@ namespace ServerBrowser
     {
       this.components = new System.ComponentModel.Container();
       System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ServerBrowserForm));
-      DevExpress.XtraEditors.Controls.EditorButtonImageOptions editorButtonImageOptions4 = new DevExpress.XtraEditors.Controls.EditorButtonImageOptions();
-      DevExpress.XtraEditors.Controls.EditorButtonImageOptions editorButtonImageOptions5 = new DevExpress.XtraEditors.Controls.EditorButtonImageOptions();
-      DevExpress.XtraEditors.Controls.EditorButtonImageOptions editorButtonImageOptions6 = new DevExpress.XtraEditors.Controls.EditorButtonImageOptions();
+      DevExpress.XtraEditors.Controls.EditorButtonImageOptions editorButtonImageOptions1 = new DevExpress.XtraEditors.Controls.EditorButtonImageOptions();
+      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject1 = new DevExpress.Utils.SerializableAppearanceObject();
+      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject2 = new DevExpress.Utils.SerializableAppearanceObject();
+      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject3 = new DevExpress.Utils.SerializableAppearanceObject();
+      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject4 = new DevExpress.Utils.SerializableAppearanceObject();
+      DevExpress.XtraEditors.Controls.EditorButtonImageOptions editorButtonImageOptions2 = new DevExpress.XtraEditors.Controls.EditorButtonImageOptions();
+      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject5 = new DevExpress.Utils.SerializableAppearanceObject();
+      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject6 = new DevExpress.Utils.SerializableAppearanceObject();
+      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject7 = new DevExpress.Utils.SerializableAppearanceObject();
+      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject8 = new DevExpress.Utils.SerializableAppearanceObject();
+      DevExpress.XtraEditors.Controls.EditorButtonImageOptions editorButtonImageOptions3 = new DevExpress.XtraEditors.Controls.EditorButtonImageOptions();
+      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject9 = new DevExpress.Utils.SerializableAppearanceObject();
+      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject10 = new DevExpress.Utils.SerializableAppearanceObject();
+      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject11 = new DevExpress.Utils.SerializableAppearanceObject();
+      DevExpress.Utils.SerializableAppearanceObject serializableAppearanceObject12 = new DevExpress.Utils.SerializableAppearanceObject();
       this.riCheckEdit = new DevExpress.XtraEditors.Repository.RepositoryItemCheckEdit();
       this.gcDetails = new DevExpress.XtraGrid.GridControl();
       this.gvDetails = new DevExpress.XtraGrid.Views.Grid.GridView();
@@ -184,10 +196,6 @@ namespace ServerBrowser
       this.rbUpdateListAndStatus = new DevExpress.XtraEditors.CheckEdit();
       this.rbUpdateDisabled = new DevExpress.XtraEditors.CheckEdit();
       this.panelContainer1 = new DevExpress.XtraBars.Docking.DockPanel();
-      this.panelPlayers = new DevExpress.XtraBars.Docking.DockPanel();
-      this.dockPanel1_Container = new DevExpress.XtraBars.Docking.ControlContainer();
-      this.panelServerDetails = new DevExpress.XtraBars.Docking.DockPanel();
-      this.dockPanel2_Container = new DevExpress.XtraBars.Docking.ControlContainer();
       this.panelRules = new DevExpress.XtraBars.Docking.DockPanel();
       this.controlContainer2 = new DevExpress.XtraBars.Docking.ControlContainer();
       this.gcRules = new DevExpress.XtraGrid.GridControl();
@@ -195,6 +203,10 @@ namespace ServerBrowser
       this.gvRules = new DevExpress.XtraGrid.Views.Grid.GridView();
       this.colRuleName = new DevExpress.XtraGrid.Columns.GridColumn();
       this.colRuleValue = new DevExpress.XtraGrid.Columns.GridColumn();
+      this.panelPlayers = new DevExpress.XtraBars.Docking.DockPanel();
+      this.dockPanel1_Container = new DevExpress.XtraBars.Docking.ControlContainer();
+      this.panelServerDetails = new DevExpress.XtraBars.Docking.DockPanel();
+      this.dockPanel2_Container = new DevExpress.XtraBars.Docking.ControlContainer();
       this.panelServerList = new DevExpress.XtraBars.Docking.DockPanel();
       this.controlContainer1 = new DevExpress.XtraBars.Docking.ControlContainer();
       this.grpQuickFilter = new DevExpress.XtraEditors.GroupControl();
@@ -290,15 +302,15 @@ namespace ServerBrowser
       ((System.ComponentModel.ISupportInitialize)(this.rbUpdateListAndStatus.Properties)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.rbUpdateDisabled.Properties)).BeginInit();
       this.panelContainer1.SuspendLayout();
-      this.panelPlayers.SuspendLayout();
-      this.dockPanel1_Container.SuspendLayout();
-      this.panelServerDetails.SuspendLayout();
-      this.dockPanel2_Container.SuspendLayout();
       this.panelRules.SuspendLayout();
       this.controlContainer2.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.gcRules)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.dsRules)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.gvRules)).BeginInit();
+      this.panelPlayers.SuspendLayout();
+      this.dockPanel1_Container.SuspendLayout();
+      this.panelServerDetails.SuspendLayout();
+      this.dockPanel2_Container.SuspendLayout();
       this.panelServerList.SuspendLayout();
       this.controlContainer1.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.grpQuickFilter)).BeginInit();
@@ -798,9 +810,9 @@ namespace ServerBrowser
       // 
       this.riFavServer.AutoHeight = false;
       this.riFavServer.CheckStyle = DevExpress.XtraEditors.Controls.CheckStyles.UserDefined;
-      this.riFavServer.ImageIndexChecked = 3;
-      this.riFavServer.ImageIndexGrayed = 10;
-      this.riFavServer.Images = this.imageCollection;
+      this.riFavServer.ImageOptions.ImageIndexChecked = 3;
+      this.riFavServer.ImageOptions.ImageIndexGrayed = 10;
+      this.riFavServer.ImageOptions.Images = this.imageCollection;
       this.riFavServer.Name = "riFavServer";
       this.riFavServer.EditValueChanged += new System.EventHandler(this.riFavServer_EditValueChanged);
       // 
@@ -1514,12 +1526,11 @@ namespace ServerBrowser
       this.riFindPlayer.AutoHeight = false;
       this.riFindPlayer.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
             new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo),
-            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Plus, "", -1, true, true, false, editorButtonImageOptions4, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), "Add to list"),
-            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Minus, "", -1, true, true, false, editorButtonImageOptions5, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), "Remove from list"),
-            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Search, "", -1, true, true, false, editorButtonImageOptions6, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), "Find")});
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Plus, "", -1, true, true, false, editorButtonImageOptions1, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), serializableAppearanceObject1, serializableAppearanceObject2, serializableAppearanceObject3, serializableAppearanceObject4, "Add to list", null, null, DevExpress.Utils.ToolTipAnchor.Default),
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Minus, "", -1, true, true, false, editorButtonImageOptions2, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), serializableAppearanceObject5, serializableAppearanceObject6, serializableAppearanceObject7, serializableAppearanceObject8, "Remove from list", null, null, DevExpress.Utils.ToolTipAnchor.Default),
+            new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Search, "", -1, true, true, false, editorButtonImageOptions3, new DevExpress.Utils.KeyShortcut(System.Windows.Forms.Keys.None), serializableAppearanceObject9, serializableAppearanceObject10, serializableAppearanceObject11, serializableAppearanceObject12, "Find", null, null, DevExpress.Utils.ToolTipAnchor.Default)});
       this.riFindPlayer.Name = "riFindPlayer";
       this.riFindPlayer.NullValuePrompt = "min 3 chars, * as placeholder";
-      this.riFindPlayer.NullValuePromptShowForEmptyValue = true;
       this.riFindPlayer.ButtonPressed += new DevExpress.XtraEditors.Controls.ButtonPressedEventHandler(this.riFindPlayer_ButtonPressed);
       this.riFindPlayer.KeyDown += new System.Windows.Forms.KeyEventHandler(this.riFindPlayer_KeyDown);
       // 
@@ -1714,7 +1725,7 @@ namespace ServerBrowser
       this.labelControl18.Appearance.Options.UseFont = true;
       this.labelControl18.Location = new System.Drawing.Point(17, 37);
       this.labelControl18.Name = "labelControl18";
-      this.labelControl18.Size = new System.Drawing.Size(750, 15);
+      this.labelControl18.Size = new System.Drawing.Size(751, 15);
       this.labelControl18.TabIndex = 18;
       this.labelControl18.Text = "You can copy servers addresses (ip:value) from the other tabs or any text editor." +
     " Separate them as lines, with space, comma, semicolon or pipe.";
@@ -1796,7 +1807,6 @@ namespace ServerBrowser
       this.txtVersion.Properties.Appearance.Options.UseFont = true;
       this.txtVersion.Properties.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
             new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Delete)});
-      this.txtVersion.Properties.NullValuePromptShowForEmptyValue = true;
       this.txtVersion.Size = new System.Drawing.Size(53, 22);
       this.txtVersion.TabIndex = 20;
       this.txtVersion.ToolTip = "Tags are filtered by the Master Server to shorten the list of game servers.";
@@ -1851,7 +1861,9 @@ namespace ServerBrowser
             "500",
             "1000",
             "2000",
-            "6930"});
+            "6930",
+            "10000",
+            "100000"});
       this.comboQueryLimit.Properties.TextEditStyle = DevExpress.XtraEditors.Controls.TextEditStyles.DisableTextEditor;
       this.comboQueryLimit.Size = new System.Drawing.Size(53, 22);
       this.comboQueryLimit.TabIndex = 15;
@@ -1905,7 +1917,6 @@ namespace ServerBrowser
             new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo)});
       this.comboGames.Properties.DropDownRows = 30;
       this.comboGames.Properties.NullValuePrompt = "Select game or enter numeric Steam AppID";
-      this.comboGames.Properties.NullValuePromptShowForEmptyValue = true;
       this.comboGames.Size = new System.Drawing.Size(268, 22);
       this.comboGames.TabIndex = 3;
       this.comboGames.SelectedIndexChanged += new System.EventHandler(this.comboGames_SelectedIndexChanged);
@@ -1916,7 +1927,7 @@ namespace ServerBrowser
       this.labelControl2.Appearance.Options.UseFont = true;
       this.labelControl2.Location = new System.Drawing.Point(640, 12);
       this.labelControl2.Name = "labelControl2";
-      this.labelControl2.Size = new System.Drawing.Size(70, 15);
+      this.labelControl2.Size = new System.Drawing.Size(69, 15);
       this.labelControl2.TabIndex = 8;
       this.labelControl2.Text = "Include Tags:";
       // 
@@ -2009,6 +2020,7 @@ namespace ServerBrowser
       this.labelControl7.Size = new System.Drawing.Size(73, 15);
       this.labelControl7.TabIndex = 0;
       this.labelControl7.Text = "Master server:";
+      this.labelControl7.ToolTip = "ip:port of a master server \r\nor a 32 hex digit Steam Web API key";
       // 
       // txtTagExcludeServer
       // 
@@ -2020,7 +2032,6 @@ namespace ServerBrowser
       this.txtTagExcludeServer.Properties.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
             new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Delete)});
       this.txtTagExcludeServer.Properties.NullValuePrompt = "space/comma=AND";
-      this.txtTagExcludeServer.Properties.NullValuePromptShowForEmptyValue = true;
       this.txtTagExcludeServer.Size = new System.Drawing.Size(133, 22);
       this.txtTagExcludeServer.TabIndex = 11;
       this.txtTagExcludeServer.ToolTip = "Tags are filtered by the Master Server to shorten the list of game servers.";
@@ -2047,7 +2058,6 @@ namespace ServerBrowser
       this.txtTagIncludeServer.Properties.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
             new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Delete)});
       this.txtTagIncludeServer.Properties.NullValuePrompt = "space/comma=AND";
-      this.txtTagIncludeServer.Properties.NullValuePromptShowForEmptyValue = true;
       this.txtTagIncludeServer.Size = new System.Drawing.Size(133, 22);
       this.txtTagIncludeServer.TabIndex = 9;
       this.txtTagIncludeServer.ToolTip = "Tags are filtered by the Master Server to shorten the list of game servers.";
@@ -2091,21 +2101,21 @@ namespace ServerBrowser
       // 
       // tabGame
       // 
-      this.tabGame.ImageIndex = 0;
+      this.tabGame.ImageOptions.ImageIndex = 0;
       this.tabGame.Name = "tabGame";
       this.tabGame.Size = new System.Drawing.Size(1644, 0);
       this.tabGame.Text = "Master Server Query";
       // 
       // tabFavorites
       // 
-      this.tabFavorites.ImageIndex = 3;
+      this.tabFavorites.ImageOptions.ImageIndex = 3;
       this.tabFavorites.Name = "tabFavorites";
       this.tabFavorites.Size = new System.Drawing.Size(1644, 0);
       this.tabFavorites.Text = "Favorites";
       // 
       // tabAdd
       // 
-      this.tabAdd.ImageIndex = 14;
+      this.tabAdd.ImageOptions.ImageIndex = 14;
       this.tabAdd.Name = "tabAdd";
       this.tabAdd.ShowCloseButton = DevExpress.Utils.DefaultBoolean.False;
       this.tabAdd.Size = new System.Drawing.Size(1644, 0);
@@ -2203,7 +2213,7 @@ namespace ServerBrowser
       this.cbShowFilterPanelInfo.Properties.Appearance.Options.UseFont = true;
       this.cbShowFilterPanelInfo.Properties.AutoWidth = true;
       this.cbShowFilterPanelInfo.Properties.Caption = "Show filter panel information text";
-      this.cbShowFilterPanelInfo.Size = new System.Drawing.Size(198, 19);
+      this.cbShowFilterPanelInfo.Size = new System.Drawing.Size(199, 19);
       this.cbShowFilterPanelInfo.TabIndex = 16;
       this.cbShowFilterPanelInfo.CheckedChanged += new System.EventHandler(this.cbShowFilterPanelInfo_CheckedChanged);
       // 
@@ -2430,48 +2440,6 @@ namespace ServerBrowser
       this.panelContainer1.Tabbed = true;
       this.panelContainer1.Text = "panelContainer1";
       // 
-      // panelPlayers
-      // 
-      this.panelPlayers.Controls.Add(this.dockPanel1_Container);
-      this.panelPlayers.Dock = DevExpress.XtraBars.Docking.DockingStyle.Fill;
-      this.panelPlayers.ID = new System.Guid("5ff9161d-077a-43fb-9f49-f8a0728b7b57");
-      this.panelPlayers.Location = new System.Drawing.Point(5, 25);
-      this.panelPlayers.Name = "panelPlayers";
-      this.panelPlayers.Options.AllowFloating = false;
-      this.panelPlayers.Options.ShowCloseButton = false;
-      this.panelPlayers.OriginalSize = new System.Drawing.Size(354, 386);
-      this.panelPlayers.Size = new System.Drawing.Size(353, 386);
-      this.panelPlayers.Text = "Players";
-      // 
-      // dockPanel1_Container
-      // 
-      this.dockPanel1_Container.Controls.Add(this.gcPlayers);
-      this.dockPanel1_Container.Location = new System.Drawing.Point(0, 0);
-      this.dockPanel1_Container.Name = "dockPanel1_Container";
-      this.dockPanel1_Container.Size = new System.Drawing.Size(353, 386);
-      this.dockPanel1_Container.TabIndex = 0;
-      // 
-      // panelServerDetails
-      // 
-      this.panelServerDetails.Controls.Add(this.dockPanel2_Container);
-      this.panelServerDetails.Dock = DevExpress.XtraBars.Docking.DockingStyle.Fill;
-      this.panelServerDetails.ID = new System.Guid("adca8b15-d626-4469-97cf-a6cc21c21f6e");
-      this.panelServerDetails.Location = new System.Drawing.Point(5, 25);
-      this.panelServerDetails.Name = "panelServerDetails";
-      this.panelServerDetails.Options.AllowFloating = false;
-      this.panelServerDetails.Options.ShowCloseButton = false;
-      this.panelServerDetails.OriginalSize = new System.Drawing.Size(354, 386);
-      this.panelServerDetails.Size = new System.Drawing.Size(353, 386);
-      this.panelServerDetails.Text = "Server Details";
-      // 
-      // dockPanel2_Container
-      // 
-      this.dockPanel2_Container.Controls.Add(this.gcDetails);
-      this.dockPanel2_Container.Location = new System.Drawing.Point(0, 0);
-      this.dockPanel2_Container.Name = "dockPanel2_Container";
-      this.dockPanel2_Container.Size = new System.Drawing.Size(353, 386);
-      this.dockPanel2_Container.TabIndex = 0;
-      // 
       // panelRules
       // 
       this.panelRules.Controls.Add(this.controlContainer2);
@@ -2539,6 +2507,48 @@ namespace ServerBrowser
       this.colRuleValue.Visible = true;
       this.colRuleValue.VisibleIndex = 1;
       this.colRuleValue.Width = 150;
+      // 
+      // panelPlayers
+      // 
+      this.panelPlayers.Controls.Add(this.dockPanel1_Container);
+      this.panelPlayers.Dock = DevExpress.XtraBars.Docking.DockingStyle.Fill;
+      this.panelPlayers.ID = new System.Guid("5ff9161d-077a-43fb-9f49-f8a0728b7b57");
+      this.panelPlayers.Location = new System.Drawing.Point(5, 25);
+      this.panelPlayers.Name = "panelPlayers";
+      this.panelPlayers.Options.AllowFloating = false;
+      this.panelPlayers.Options.ShowCloseButton = false;
+      this.panelPlayers.OriginalSize = new System.Drawing.Size(354, 386);
+      this.panelPlayers.Size = new System.Drawing.Size(353, 386);
+      this.panelPlayers.Text = "Players";
+      // 
+      // dockPanel1_Container
+      // 
+      this.dockPanel1_Container.Controls.Add(this.gcPlayers);
+      this.dockPanel1_Container.Location = new System.Drawing.Point(0, 0);
+      this.dockPanel1_Container.Name = "dockPanel1_Container";
+      this.dockPanel1_Container.Size = new System.Drawing.Size(353, 386);
+      this.dockPanel1_Container.TabIndex = 0;
+      // 
+      // panelServerDetails
+      // 
+      this.panelServerDetails.Controls.Add(this.dockPanel2_Container);
+      this.panelServerDetails.Dock = DevExpress.XtraBars.Docking.DockingStyle.Fill;
+      this.panelServerDetails.ID = new System.Guid("adca8b15-d626-4469-97cf-a6cc21c21f6e");
+      this.panelServerDetails.Location = new System.Drawing.Point(5, 25);
+      this.panelServerDetails.Name = "panelServerDetails";
+      this.panelServerDetails.Options.AllowFloating = false;
+      this.panelServerDetails.Options.ShowCloseButton = false;
+      this.panelServerDetails.OriginalSize = new System.Drawing.Size(354, 386);
+      this.panelServerDetails.Size = new System.Drawing.Size(353, 386);
+      this.panelServerDetails.Text = "Server Details";
+      // 
+      // dockPanel2_Container
+      // 
+      this.dockPanel2_Container.Controls.Add(this.gcDetails);
+      this.dockPanel2_Container.Location = new System.Drawing.Point(0, 0);
+      this.dockPanel2_Container.Name = "dockPanel2_Container";
+      this.dockPanel2_Container.Size = new System.Drawing.Size(353, 386);
+      this.dockPanel2_Container.TabIndex = 0;
       // 
       // panelServerList
       // 
@@ -2649,7 +2659,6 @@ namespace ServerBrowser
       this.btnTagExcludeClient.Properties.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
             new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Delete)});
       this.btnTagExcludeClient.Properties.NullValuePrompt = "Tags separated by space/comma=AND; semicolon=OR";
-      this.btnTagExcludeClient.Properties.NullValuePromptShowForEmptyValue = true;
       this.btnTagExcludeClient.Size = new System.Drawing.Size(328, 22);
       this.btnTagExcludeClient.TabIndex = 9;
       this.btnTagExcludeClient.ToolTip = "These tags are filtered locally on your PC";
@@ -2661,7 +2670,7 @@ namespace ServerBrowser
       this.labelControl5.Appearance.Options.UseFont = true;
       this.labelControl5.Location = new System.Drawing.Point(432, 10);
       this.labelControl5.Name = "labelControl5";
-      this.labelControl5.Size = new System.Drawing.Size(70, 15);
+      this.labelControl5.Size = new System.Drawing.Size(69, 15);
       this.labelControl5.TabIndex = 6;
       this.labelControl5.Text = "Include Tags:";
       // 
@@ -2675,7 +2684,6 @@ namespace ServerBrowser
       this.btnTagIncludeClient.Properties.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] {
             new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Delete)});
       this.btnTagIncludeClient.Properties.NullValuePrompt = "Tags separated by space/comma=AND; semicolon=OR";
-      this.btnTagIncludeClient.Properties.NullValuePromptShowForEmptyValue = true;
       this.btnTagIncludeClient.Size = new System.Drawing.Size(328, 22);
       this.btnTagIncludeClient.TabIndex = 7;
       this.btnTagIncludeClient.ToolTip = "These tags are filtered locally on your PC";
@@ -2910,7 +2918,7 @@ namespace ServerBrowser
       this.Controls.Add(this.barDockControlBottom);
       this.Controls.Add(this.barDockControlTop);
       this.Font = new System.Drawing.Font("Segoe UI", 9F);
-      this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+      this.IconOptions.Icon = ((System.Drawing.Icon)(resources.GetObject("ServerBrowserForm.IconOptions.Icon")));
       this.Name = "ServerBrowserForm";
       this.Text = "Steam Server Browser";
       ((System.ComponentModel.ISupportInitialize)(this.riCheckEdit)).EndInit();
@@ -2982,15 +2990,15 @@ namespace ServerBrowser
       ((System.ComponentModel.ISupportInitialize)(this.rbUpdateListAndStatus.Properties)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.rbUpdateDisabled.Properties)).EndInit();
       this.panelContainer1.ResumeLayout(false);
-      this.panelPlayers.ResumeLayout(false);
-      this.dockPanel1_Container.ResumeLayout(false);
-      this.panelServerDetails.ResumeLayout(false);
-      this.dockPanel2_Container.ResumeLayout(false);
       this.panelRules.ResumeLayout(false);
       this.controlContainer2.ResumeLayout(false);
       ((System.ComponentModel.ISupportInitialize)(this.gcRules)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.dsRules)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.gvRules)).EndInit();
+      this.panelPlayers.ResumeLayout(false);
+      this.dockPanel1_Container.ResumeLayout(false);
+      this.panelServerDetails.ResumeLayout(false);
+      this.dockPanel2_Container.ResumeLayout(false);
       this.panelServerList.ResumeLayout(false);
       this.controlContainer1.ResumeLayout(false);
       ((System.ComponentModel.ISupportInitialize)(this.grpQuickFilter)).EndInit();

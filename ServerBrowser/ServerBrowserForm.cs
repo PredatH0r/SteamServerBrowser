@@ -8,8 +8,10 @@ using System.IO;
 using System.Linq;
 using System.Media;
 using System.Net;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
 using DevExpress.Data;
@@ -31,9 +33,9 @@ namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.62";
-    private const string DevExpressVersion = "v20.1";
-    private const string SteamWebApiText = "<Steam Web API>";
+    private const string Version = "2.65";
+    private const string DevExpressVersion = "v23.2";
+    private const string OldSteamWebApiText = "<Steam Web API>";
     private const string CustomDetailColumnPrefix = "ServerInfo.";
     private const string CustomRuleColumnPrefix = "custRule.";
     private static readonly Game[] DefaultGames = {Game.QuakeLive, Game.Reflex, Game.Toxikk, Game.CounterStrike_Global_Offensive, Game.Team_Fortress_2};
@@ -280,7 +282,7 @@ namespace ServerBrowser
       bool ignoreMasterServer = (ini.GetSection("Options")?.GetInt("ConfigVersion") ?? 0) < 2;
       foreach (var section in ini.Sections)
       {
-        if (System.Text.RegularExpressions.Regex.IsMatch(section.Name, "^Tab[0-9]+$"))
+        if (Regex.IsMatch(section.Name, "^Tab[0-9]+$"))
         {
           var vm = new TabViewModel();
           vm.LoadFromIni(ini, section, this.extenders, ignoreMasterServer);
@@ -358,9 +360,10 @@ namespace ServerBrowser
       }
 
       var info = vm.MasterServer;
-      if (string.IsNullOrEmpty(info))
-        info = SteamWebApiText;
-      this.comboMasterServer.Text = info;
+      if (info != OldSteamWebApiText && !string.IsNullOrEmpty(info))
+        this.comboMasterServer.Text = info;
+      else
+        this.comboMasterServer.SelectedIndex = 0;
       this.SetSteamAppId(vm.InitialGameID);
       this.txtTagIncludeServer.Text = vm.TagsIncludeServer;
       this.txtTagExcludeServer.Text = vm.TagsExcludeServer;
@@ -420,6 +423,7 @@ namespace ServerBrowser
       this.comboMasterServer.Properties.Items.Clear();
       foreach (var master in masterServers)
         this.comboMasterServer.Properties.Items.Add(master);
+      this.comboMasterServer.SelectedIndex = 0;
 
       // select tab page
       var idx = tabIndex < this.tabControl.TabPages.Count - 1 ? tabIndex : 0;
@@ -443,8 +447,8 @@ namespace ServerBrowser
       UserLookAndFeel.Default.SkinName = options.GetString("Skin") ?? "Office 2010 Black";
       iniMasterServers = options.GetString("MasterServers") ?? "";
       if (iniMasterServers == "")
-        iniMasterServers = SteamWebApiText + ",hl2master.steampowered.com:27011";
-      masterServers = iniMasterServers.Split(',');
+        iniMasterServers = "hl2master.steampowered.com:27011";
+      masterServers = iniMasterServers.Split(',').Where(ms => ms != OldSteamWebApiText).ToArray();
       this.iniVersion = options.GetInt("ConfigVersion", 1);
       this.miShowOptions.Down = options.GetBool("ShowOptions", true);
       this.miShowServerQuery.Down = options.GetBool("ShowServerQuery", true);
@@ -540,6 +544,9 @@ namespace ServerBrowser
     {
       sb.AppendLine("[Options]");
       sb.AppendLine("ConfigVersion=2");
+      iniMasterServers = string.Join(",", comboMasterServer.Properties.Items.Cast<string>());
+      if (!iniMasterServers.Contains(comboMasterServer.Text))
+        iniMasterServers = comboMasterServer.Text + "," + iniMasterServers;
       sb.AppendLine($"MasterServers={iniMasterServers}");
       sb.AppendLine($"ShowOptions={this.miShowOptions.Down}");
       sb.AppendLine($"ShowServerQuery={this.miShowServerQuery.Down}");
@@ -696,7 +703,31 @@ namespace ServerBrowser
     #region CreateServerSource()
     protected virtual IServerSource CreateServerSource(string addressAndPort)
     {
-      return new MasterServerClient(Ip4Utils.ParseEndpoint(addressAndPort));
+      var endpoint = Ip4Utils.ParseEndpoint(addressAndPort);
+      string steamWebApiKey = "";
+      if (endpoint.Port == 0)
+      {
+        if (Regex.IsMatch(addressAndPort, @"^[\dA-Fa-f]{32}$"))
+          steamWebApiKey = addressAndPort;
+        else
+        {
+          var result = XtraMessageBox.Show(this, "To use the \"<Steam Web API>\" as a Master Server, you need a Steam Web API Key (32 hex digits).\n" +
+                                                 "Valve issues these keys free of charge to web site owners and developers, but not necessarily to users.\n" +
+                                                 "Keys must not be shared, therefore SteamServerBrowser no longer has a built-in key.\n\n" +
+                                                 "If you own a key, enter it in the \"Master Browser\" input field.\n" +
+                                                 "Otherwise please use a different Master Server option like 'hl2master.steampowered.com:27011'\n\n" +
+                                                 "Please check Valve's Terms of Service before requesting your personal key.\n" +
+                                                 "Requesting a key requires you to have the Steam app with Steam Guard Mobile Authenticator installed on your phone.\n\n" +
+                                                 "Do you want to open the Steam developer page to request an API key?",
+            "Steam Web API Key required",
+            MessageBoxButtons.YesNo,
+            MessageBoxIcon.Asterisk);
+          if (result == DialogResult.Yes)
+            Process.Start("https://steamcommunity.com/dev/apikey");
+          return null;
+        }
+      }
+      return new MasterServerClient(endpoint, steamWebApiKey);
     }
     #endregion
 
@@ -1701,15 +1732,9 @@ namespace ServerBrowser
         string[] parts = this.txtGameServer.Text.Split(':');
         if (parts[0].Length == 0) return;
         // get IPv4 address
-        var addr = Dns.GetHostAddresses(parts[0]);
-        int i;
-        for (i = 0; i < addr.Length; i++)
-        {
-          if (addr[i].AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
-            break;
-        }
-        if (i >= addr.Length) return;
-        var endpoint = new IPEndPoint(addr[i], parts.Length > 1 ? int.Parse(parts[1]) : 27015);
+        var ipv4 = Dns.GetHostAddresses(parts[0]).FirstOrDefault(p => p.AddressFamily == AddressFamily.InterNetwork);
+        if (ipv4 == null) return;
+        var endpoint = new IPEndPoint(ipv4, parts.Length > 1 ? int.Parse(parts[1]) : 27015);
         if (endpoint.Address.ToString() == "0.0.0.0") return;
         ServerRow serverRow = null;
         foreach (var row in this.viewModel.Servers)

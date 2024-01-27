@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 
 namespace ServerBrowser
 {
@@ -33,9 +35,9 @@ namespace ServerBrowser
 
       try
       {
-        var ips = Dns.GetHostAddresses(parts[0]);
-        if (ips.Length > 0)
-          return new IPEndPoint(ips[0], port);
+        var ip = Dns.GetHostAddresses(parts[0]).FirstOrDefault(p => p.AddressFamily == AddressFamily.InterNetwork);
+        if (ip != null)
+          return new IPEndPoint(ip, port);
       }
       catch
       {

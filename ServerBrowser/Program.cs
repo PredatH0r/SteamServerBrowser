@@ -8,6 +8,7 @@ using DevExpress.Data.Async.Helpers;
 using DevExpress.LookAndFeel;
 using DevExpress.Skins;
 using DevExpress.Utils;
+using DevExpress.XtraEditors;
 
 namespace ServerBrowser
 {
@@ -27,22 +28,23 @@ namespace ServerBrowser
 
       var baseFontSize = iniFile.GetSection("Options")?.GetDecimal("FontSize", 9) ?? 9m;
       // change font before creating the main form to get correct auto-scaling
-      Init(new Font("Segoe UI", (float)baseFontSize), "Office 2010 Black");
+      Init("Segoe UI", (float)baseFontSize, "Office 2010 Black");
 
       var mainForm = new ServerBrowserForm(iniFile);
       Application.Run(mainForm);
     }
 
-    public static void Init(Font uiFont, string skinName)
+    public static void Init(string fontName, float fontSize, string skinName)
     {
       InitExceptionHandling();
+      WindowsFormsSettings.SetPerMonitorDpiAware();
       Application.EnableVisualStyles();
       Application.SetCompatibleTextRenderingDefault(false);
 
       ThreadPool.SetMinThreads(50 + GeoIpClient.ThreadCount + 5, 100);
       ThreadPool.SetMaxThreads(50 + GeoIpClient.ThreadCount + 5, 100);
 
-      AppearanceObject.DefaultFont = uiFont;
+      AppearanceObject.DefaultFont = new Font(fontName, fontSize); // must not create a Font instance before initializing GDI+
       UserLookAndFeel.Default.SkinName = skinName;
       SkinManager.EnableFormSkins();
     }

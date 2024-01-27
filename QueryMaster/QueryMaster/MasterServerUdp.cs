@@ -64,7 +64,8 @@ namespace QueryMaster
             ThreadPool.QueueUserWorkItem(y => callback(new ReadOnlyCollection<Tuple<IPEndPoint, ServerInfo>>(serverList), null, !atEnd));
             totalCount += endpoints.Count;
 
-            atEnd |= totalCount >= GetAddressesLimit;
+            if (GetAddressesLimit != 0)
+              atEnd |= totalCount >= GetAddressesLimit;
           } //while (!nextSeed.Equals(SeedEndpoint) && totalCount < GetAddressesLimit);
         }
         catch (Exception ex)

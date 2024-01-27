@@ -28,3 +28,5 @@ SteamServerBrowser.sdf
 SteamServerBrowser*.zip
 .vs/config/applicationhost.config
 /.vs/
+/bin/
+/QueryMaster/bin/

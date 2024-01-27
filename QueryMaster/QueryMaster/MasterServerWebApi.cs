@@ -50,7 +50,12 @@ namespace QueryMaster
   /// </summary>
   public class MasterServerWebApi : MasterServer
   {
-    const string SteamWebApiKey = "B7D245299F6F990504A86FF91EC9D6BD"; // create an account and get a steam web api key at http://steamcommunity.com/dev/apikey
+    private readonly string steamWebApiKey = ""; // create an account and get a steam web api key at http://steamcommunity.com/dev/apikey
+
+    public MasterServerWebApi(string steamWebApiKey)
+    {
+      this.steamWebApiKey = steamWebApiKey;
+    }
 
     /// <summary>
     /// Gets a server list from the Steam master server.
@@ -68,7 +73,7 @@ namespace QueryMaster
           using (var cli = new XWebClient())
           {
             var filters = MasterUtil.ProcessFilter(filter);
-            var url = $"https://api.steampowered.com/IGameServersService/GetServerList/v1/?key={SteamWebApiKey}&format=xml&filter={filters}&limit={GetAddressesLimit}";
+            var url = $"https://api.steampowered.com/IGameServersService/GetServerList/v1/?key={steamWebApiKey}&format=xml&filter={filters}&limit={GetAddressesLimit}";
             var xml = cli.DownloadString(url);
             var ser = new XmlSerializer(typeof (Response));
 
@@ -88,21 +93,26 @@ namespace QueryMaster
             var resp = (Response) ser.Deserialize(new StringReader(xml));
 
             var endpoints = new List<Tuple<IPEndPoint,ServerInfo>>();
-            foreach (var msg in resp.Servers)
+            if (resp.Servers != null)
             {
-              try
+              foreach (var msg in resp.Servers)
               {
-                int i = msg.addr.IndexOf(':');
-                if (i > 0)
+                try
                 {
-                  var info = ConvertToServerInfo(msg);
-                  endpoints.Add(new Tuple<IPEndPoint, ServerInfo>(info.EndPoint, info));
+                  int i = msg.addr.IndexOf(':');
+                  if (i > 0)
+                  {
+                    var info = ConvertToServerInfo(msg);
+                    endpoints.Add(new Tuple<IPEndPoint, ServerInfo>(info.EndPoint, info));
+                  }
+                }
+                catch
+                {
+                  // ignore
                 }
               }
-              catch
-              {
-              }
             }
+
             callback(new ReadOnlyCollection<Tuple<IPEndPoint,ServerInfo>>(endpoints), null, false);
           }
         }

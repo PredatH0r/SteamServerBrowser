@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Net;
+using System.Net.Sockets;
 
 namespace QueryMaster
 {
@@ -14,11 +15,11 @@ namespace QueryMaster
         /// <summary>
         /// Master server for Gold Source games
         /// </summary>
-        public static IPEndPoint GoldSrcServer = new IPEndPoint(Dns.GetHostAddresses("hl1master.steampowered.com")[0], 27011);
+        public static IPEndPoint GoldSrcServer = new IPEndPoint(Dns.GetHostAddresses("hl1master.steampowered.com").First(h => h.AddressFamily == AddressFamily.InterNetwork), 27011);
         /// <summary>
         /// Master server for  Source games
         /// </summary>
-        public static IPEndPoint SourceServer = new IPEndPoint(Dns.GetHostAddresses("hl2master.steampowered.com")[0], 27011);
+        public static IPEndPoint SourceServer = new IPEndPoint(Dns.GetHostAddresses("hl2master.steampowered.com").First(h => h.AddressFamily == AddressFamily.InterNetwork), 27011);
         /// <summary>
         /// Gets the appropriate  masterserver query instance
         /// </summary>
