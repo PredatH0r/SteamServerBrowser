@@ -11,11 +11,12 @@ using System.Threading;
 
 namespace ServerBrowser
 {
+  /// <summary>
+  /// Geo-IP client using the free https://ip-api.com/docs/api:batch service
+  /// </summary>
   class GeoIpClient
   {
-    internal const int ThreadCount = 7;
-    private const string DefaultServiceUrlFormat = "http://api.ipapi.com/{0}?access_key=9c5fc4375488ed26aa2f26b613324f4a&language=en&output=json";
-    private DateTime usageExceeded = DateTime.MinValue;
+    private const string DefaultServiceUrlFormat = "http://ip-api.com/batch?fields=223&lang=en";
 
     /// <summary>
     /// the cache holds either a GeoInfo object, or a multicast callback delegate waiting for a GeoInfo object
@@ -30,8 +31,7 @@ namespace ServerBrowser
     {
       this.cacheFile = cacheFile;
       this.ServiceUrlFormat = DefaultServiceUrlFormat;
-      for (int i=0; i<ThreadCount; i++)
-        ThreadPool.QueueUserWorkItem(context => this.ProcessLoop());
+      ThreadPool.QueueUserWorkItem(context => this.ProcessLoop());
     }
 
     #region ProcessLoop()
@@ -39,39 +39,61 @@ namespace ServerBrowser
     {
       using (var client = new XWebClient(5000))
       {
+        int sleepMillis = 1000;
         while (true)
         {
-          var ip = this.queue.Take();
-          if (ip == null)
+          Thread.Sleep(sleepMillis);
+          var count = Math.Max(1, Math.Min(100, this.queue.Count));
+          var ips = new IPAddress[count];
+          for (int i = 0; i < count; i++)
+            ips[i] = this.queue.Take();
+          if (ips[ips.Length - 1] == null)
             break;
 
-          bool err = true;
-          var ipInt = Ip4Utils.ToInt(ip);
+          var req = new StringBuilder(count * 18);
+          req.Append("[");
+          foreach (var ip in ips)
+            req.Append('"').Append(ip).Append("\",");
+          req[req.Length - 1] = ']';
+
+          Dictionary<uint,GeoInfo> geoInfos = null;
           try
           {
-            var url = string.Format(this.ServiceUrlFormat, ip);
-            var result = client.DownloadString(url);
-            if (result != null)
-            {
-              object o;
-              Action<GeoInfo> callbacks;
-              lock (cache)
-                callbacks = cache.TryGetValue(ipInt, out o) ? o as Action<GeoInfo> : null;
-              var geoInfo = this.HandleResult(ipInt, result);
-              if (callbacks != null && geoInfo != null)
-                ThreadPool.QueueUserWorkItem(ctx => callbacks(geoInfo));
-              err = false;
-            }
+            var result = client.UploadString(ServiceUrlFormat, req.ToString());
+            var rateLimit = client.ResponseHeaders["X-Rl"];
+            sleepMillis = rateLimit == "0" ? (int.TryParse(client.ResponseHeaders["X-Ttl"], out var sec) ? sec * 1000: 4000) : 0;
+            geoInfos = this.HandleResult(ips, result);
           }
           catch
           {
             // ignore
           }
 
-          if (err)
-          { 
-            lock (this.cache)
-              this.cache.Remove(ipInt);
+          foreach (var ip in ips)
+          {
+            var ipInt = Ip4Utils.ToInt(ip);
+            Action<GeoInfo> callbacks = null;
+            GeoInfo geoInfo = null;
+            lock (cache)
+            {
+              bool isSet = cache.TryGetValue(ipInt, out var o);
+              if (geoInfos == null || !geoInfos.TryGetValue(ipInt, out geoInfo))
+              {
+                //this.cache.Remove(ipInt);
+              }
+              else
+              {
+                callbacks =  o as Action<GeoInfo>;
+                if (geoInfo != null || !isSet)
+                  cache[ipInt] = geoInfo;
+              }
+            }
+
+            if (callbacks != null && geoInfo != null)
+            {
+              //ThreadPool.QueueUserWorkItem(ctx => callbacks(geoInfo));
+              callbacks(geoInfo);
+            }
           }
         }
       }
@@ -79,26 +101,22 @@ namespace ServerBrowser
     #endregion
 
     #region HandleResult()
-    private GeoInfo HandleResult(uint ip, string result)
+    private Dictionary<uint, GeoInfo> HandleResult(IList<IPAddress> ips, string result)
     {
-      var ser = new DataContractJsonSerializer(typeof(NekudoGeopIpFullResponse));
-      var info = (NekudoGeopIpFullResponse)ser.ReadObject(new MemoryStream(Encoding.UTF8.GetBytes(result)));
+      var ser = new DataContractJsonSerializer(typeof(IpApiResponse[]));
+      var infoArray = (IpApiResponse[])ser.ReadObject(new MemoryStream(Encoding.UTF8.GetBytes(result)));
 
-      if (!info.success)
+      var ok = ips.Count == infoArray.Length;
+      var data = new Dictionary<uint, GeoInfo>();
+      for (int i = 0; i < ips.Count; i++)
       {
-        if (info.error?.code == 104)
-          this.usageExceeded = DateTime.UtcNow.Date;
-        lock (cache)
-          this.cache.Remove(ip);
-        return null;
+        var ipInt = Ip4Utils.ToInt(ips[i]);
+        var info = infoArray[i];
+        var geoInfo = ok ? new GeoInfo(info.countryCode, info.country, info.region, info.regionName, info.city, info.lat, info.lon) : null;
+        data[ipInt] = geoInfo;
       }
 
-      var geoInfo = new GeoInfo(info.country_code, info.country_name, info.region_code, info.region_name, info.city, info.latitude, info.longitude);
-      lock (cache)
-      {
-        cache[ip] = geoInfo;
-      }
-      return geoInfo;
+      return data;
     }
     #endregion
 
@@ -122,9 +140,6 @@ namespace ServerBrowser
 
         if (geoInfo == null)
         {
-          if (this.usageExceeded == DateTime.UtcNow.Date)
-            return;
-
           if (cached == null)
           {
             cache.Add(ipInt, callback);
@@ -272,51 +287,16 @@ namespace ServerBrowser
   }
   #endregion
 
-#if false
-    private class NekudoGeopIpShortResponse
-    {
-      public class Country
-      {
-        public string name;
-        public string code;
-      }
-
-      public class Location
-      {
-        public decimal latitude;
-        public decimal longitude;
-        public string time_zone;
-      }
-
-      public string city;
-      public Country country;
-      public Location location;
-      public string ip;
-    }
-#endif
-
-  #region class NekudoGeopIpFullResponse
-  public class NekudoGeopIpFullResponse
+  #region class IpApiResponse
+  public class IpApiResponse
   {
-    public class NekudoGeoIpError
-    {
-      public int code;
-      public string type;
-      public string info;
-    }
-
-    public bool success;
-    public NekudoGeoIpError error;
-
-    public string ip;
-    public string country_code;
-    public string country_name;
-    public string region_code;
-    public string region_name;
+    public string country;
+    public string countryCode;
+    public string region;
+    public string regionName;
     public string city;
-    public decimal latitude;
-    public decimal longitude;
+    public decimal lat;
+    public decimal lon;
   }
   #endregion
-
 }

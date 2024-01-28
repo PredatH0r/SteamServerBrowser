@@ -33,7 +33,7 @@ namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.65";
+    private const string Version = "2.66";
     private const string DevExpressVersion = "v23.2";
     private const string OldSteamWebApiText = "<Steam Web API>";
     private const string CustomDetailColumnPrefix = "ServerInfo.";
@@ -703,13 +703,14 @@ namespace ServerBrowser
     #region CreateServerSource()
     protected virtual IServerSource CreateServerSource(string addressAndPort)
     {
-      var endpoint = Ip4Utils.ParseEndpoint(addressAndPort);
       string steamWebApiKey = "";
-      if (endpoint.Port == 0)
+      IPEndPoint endpoint = null;
+      if (Regex.IsMatch(addressAndPort, @"^[\dA-Fa-f]{32}$"))
+        steamWebApiKey = addressAndPort;
+      else
       {
-        if (Regex.IsMatch(addressAndPort, @"^[\dA-Fa-f]{32}$"))
-          steamWebApiKey = addressAndPort;
-        else
+        endpoint = Ip4Utils.ParseEndpoint(addressAndPort);
+        if (endpoint.Port == 0)
         {
           var result = XtraMessageBox.Show(this, "To use the \"<Steam Web API>\" as a Master Server, you need a Steam Web API Key (32 hex digits).\n" +
                                                  "Valve issues these keys free of charge to web site owners and developers, but not necessarily to users.\n" +
@@ -727,6 +728,7 @@ namespace ServerBrowser
           return null;
         }
       }
+
       return new MasterServerClient(endpoint, steamWebApiKey);
     }
     #endregion

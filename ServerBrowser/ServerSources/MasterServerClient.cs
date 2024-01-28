@@ -16,7 +16,7 @@ namespace ServerBrowser
 
     public void GetAddresses(Region region, IpFilter filter, int maxResults, MasterIpCallback callback)
     {
-      var master = masterServerEndPoint.Port == 0 ? (MasterServer)new MasterServerWebApi(steamWebApiKey) : new MasterServerUdp(masterServerEndPoint);
+      var master = masterServerEndPoint?.Port == null ? (MasterServer)new MasterServerWebApi(steamWebApiKey) : new MasterServerUdp(masterServerEndPoint);
       master.GetAddressesLimit = maxResults;
       master.GetAddresses(region, callback, filter);
     }

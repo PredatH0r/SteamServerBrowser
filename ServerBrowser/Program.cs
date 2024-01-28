@@ -41,8 +41,8 @@ namespace ServerBrowser
       Application.EnableVisualStyles();
       Application.SetCompatibleTextRenderingDefault(false);
 
-      ThreadPool.SetMinThreads(50 + GeoIpClient.ThreadCount + 5, 100);
-      ThreadPool.SetMaxThreads(50 + GeoIpClient.ThreadCount + 5, 100);
+      ThreadPool.SetMinThreads(50 + 1 + 5, 100);
+      ThreadPool.SetMaxThreads(50 + 1 + 5, 100);
 
       AppearanceObject.DefaultFont = new Font(fontName, fontSize); // must not create a Font instance before initializing GDI+
       UserLookAndFeel.Default.SkinName = skinName;

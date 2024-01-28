@@ -50,6 +50,7 @@ namespace ServerBrowser
     #endregion
 
     public WebHeaderCollection Headers { get; set; } = new WebHeaderCollection();
+    public WebHeaderCollection ResponseHeaders { get; private set; }
 
     public int ResumeOffset { get; set; }
 
@@ -159,6 +160,8 @@ namespace ServerBrowser
       var req = this.CreateWebRequest(url);
       using (var res = req.GetResponse())
       {
+        ResponseHeaders = res.Headers;
+
         var mem = new MemoryStream((int)req.ContentLength);
         using (var r = res.GetResponseStream())
         {
@@ -220,6 +223,7 @@ namespace ServerBrowser
       using (var res = req.GetResponse())
       using (var r = new StreamReader(res.GetResponseStream(), this.Encoding))
       {
+        ResponseHeaders = res.Headers;
         return r.ReadToEnd();
       }
     }
