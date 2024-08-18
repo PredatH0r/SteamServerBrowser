@@ -2609,7 +2609,7 @@ namespace ServerBrowser
       this.txtFilterInfoClient.Size = new System.Drawing.Size(270, 39);
       this.txtFilterInfoClient.TabIndex = 19;
       this.txtFilterInfoClient.Text = "These are client-side filters, applied by your Browser.\r\nThey will further filter" +
-    " down the received server list\r\nand are not restricted by any throtteling.\r\n";
+    " down the received server list\r\nand are not restricted by any throttling.\r\n";
       // 
       // comboMinPlayers
       // 

@@ -1,3 +1,8 @@
+2.67
+---
+- fixed typo in "throtteling"
+- using same compiled (and digitally signed) .exe for GitHub and Steam Workshop
+
 2.61
 ---
 - fixed support for A2S_INFO responses with a challenge

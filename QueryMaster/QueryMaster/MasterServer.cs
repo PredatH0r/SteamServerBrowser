@@ -26,7 +26,7 @@ namespace QueryMaster
     /// Limit GetAddresses to stop requesting more servers once this number is reached or exceeded.
     /// The steam master server throttles communication with clients to 30 UDP packets per minute.
     /// As a result, trying to get more servers than can fit in those packets will only cause timeouts.
-    /// This throtteling happens per client machine. Once reached, Steam won't answer any further
+    /// This throttling happens per client machine. Once reached, Steam won't answer any further
     /// queries from that machine for the next minute.
     /// In a single UDP packet of 1392 bytes the master server will return 231 IP addresses, which
     /// results in an absolute maximum of 6930 servers to be retrieved (if no other requests happened in the same minute).
