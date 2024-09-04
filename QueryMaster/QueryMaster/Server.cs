@@ -284,14 +284,12 @@ namespace QueryMaster
       }
       else
       {
-        if (PlayerChallengeId == null)
-        {
-          recvData = GetPlayerChallengeId(sw);
-          if (IsPlayerChallengeId)
-            PlayerChallengeId = recvData;
-        }
+        recvData = GetPlayerChallengeId(sw);
         if (IsPlayerChallengeId)
+        {
+          PlayerChallengeId = recvData;
           recvData = socket.GetResponse(Util.MergeByteArrays(QueryMsg.PlayerQuery, PlayerChallengeId), Type);
+        }
       }
       try
       {
@@ -340,14 +338,12 @@ namespace QueryMaster
       }
       else
       {
-        if (RuleChallengeId == null)
-        {
-          recvData = GetRuleChallengeId();
-          if (IsRuleChallengeId)
-            RuleChallengeId = recvData;
-        }
+        recvData = GetRuleChallengeId();
         if (IsRuleChallengeId)
+        {
+          RuleChallengeId = recvData;
           recvData = socket.GetResponse(Util.MergeByteArrays(QueryMsg.RuleQuery, RuleChallengeId), Type);
+        }
       }
       try
       {

@@ -380,7 +380,7 @@ namespace ServerBrowser
       // send the command string
       var msg = "open ";
       bool steamSockets = server.Rules == null || !string.IsNullOrEmpty(server.GetRule("SteamServerId"));
-      if ((useSteamIdToConnect && steamSockets || server.Rules == null || server.Players == null) && server.ServerInfo.Extra.SteamID != 0)
+      if ((useSteamIdToConnect && steamSockets /* || server.Rules == null || server.Players == null */) && server.ServerInfo.Extra.SteamID != 0)
         msg += "steam." + server.ServerInfo.Extra.SteamID;
       else
         msg += server.EndPoint.Address + ":" + server.ServerInfo.Extra.Port;

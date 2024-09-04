@@ -1,3 +1,7 @@
+2.68
+---
+- fixed issues with missing Rules and Players information due to bad challenge/response handling
+
 2.67
 ---
 - fixed typo in "throtteling"
