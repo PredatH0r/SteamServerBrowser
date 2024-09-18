@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
@@ -28,17 +30,24 @@ using DevExpress.XtraGrid.Views.Grid.ViewInfo;
 using DevExpress.XtraTab;
 using DevExpress.XtraTab.ViewInfo;
 using QueryMaster;
+using ServerBrowser.GeoIp;
 
 namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.68";
+    private const string Version = "2.69";
     private const string DevExpressVersion = "v23.2";
     private const string OldSteamWebApiText = "<Steam Web API>";
     private const string CustomDetailColumnPrefix = "ServerInfo.";
     private const string CustomRuleColumnPrefix = "custRule.";
     private static readonly Game[] DefaultGames = {Game.QuakeLive, Game.Reflex, Game.Toxikk, Game.CounterStrike_Global_Offensive, Game.Team_Fortress_2};
+    private static readonly OrderedDictionary geoIpImpls = new OrderedDictionary
+    {
+      { "geolite2", typeof(IpDashApiDotComGeoIpClient)},
+      { "ip-api.com", typeof(IpDashApiDotComGeoIpClient)}
+    };
+
     internal static Color LinkControlColor;
 
     private readonly GameExtensionPool extenders = new GameExtensionPool();
@@ -48,8 +57,6 @@ namespace ServerBrowser
     private readonly PasswordForm passwordForm = new PasswordForm();
     private int showAddressMode;
     private readonly ServerQueryLogic queryLogic;
-    private readonly string geoIpCachePath;
-    private readonly GeoIpClient geoIpClient;
     private readonly Steamworks steam;
     private readonly MemoryStream defaultLayout = new MemoryStream();
     private int geoIpModified;
@@ -63,6 +70,8 @@ namespace ServerBrowser
     private const int PredefinedTabCount = 2;
     private int iniVersion;
     private string iniMasterServers;
+    private string geoIpImplKey;
+    private IGeoIpClient geoIpClient = new MaxMindGeoIP2Client();
 
     #region ctor()
     public ServerBrowserForm(IniFile ini)
@@ -73,9 +82,7 @@ namespace ServerBrowser
       var baseDir = Path.GetDirectoryName(this.GetType().Assembly.Location) ?? ".";
       this.iniPath = ini.FileName;
       this.xmlLayoutPath = Path.Combine(baseDir, "WindowLayout.xml");
-      this.geoIpCachePath = Path.Combine(baseDir, "locations.txt");
       this.MoveConfigFilesFromOldLocation();
-      this.geoIpClient = new GeoIpClient(this.geoIpCachePath);
 
       this.steam = new Steamworks();
       this.steam.Init();
@@ -117,19 +124,6 @@ namespace ServerBrowser
           var oldIniPath = Path.Combine(Application.LocalUserAppDataPath, "ServerBrowser.ini");
           if (File.Exists(oldIniPath))
             File.Move(oldIniPath, this.iniPath);
-        }
-        catch
-        {
-        }
-      }
-
-      if (!File.Exists(this.geoIpCachePath))
-      { 
-        try
-        {
-          var geoCache = Path.Combine(Application.LocalUserAppDataPath, "locations.txt");
-          if (File.Exists(geoCache))
-            File.Move(geoCache, this.geoIpCachePath);
         }
         catch
         {
@@ -442,6 +436,7 @@ namespace ServerBrowser
     #endregion
 
     #region ApplyAppSettingsFromIni()
+
     private int ApplyAppSettingsFromIni(IniFile ini, IniFile.Section options, out string[] masterServers)
     {
       UserLookAndFeel.Default.SkinName = options.GetString("Skin") ?? "Office 2010 Black";
@@ -471,6 +466,10 @@ namespace ServerBrowser
       this.Size = new Size(options.GetInt("WindowWidth", 1600), options.GetInt("WindowHeight", 840));
       this.cbHideGhosts.Checked = options.GetBool("HideGhostPlayers");
 
+
+      this.geoIpImplKey = options.GetString("GeoIpService");
+      SetGeoIpImplForKey();
+
       if (File.Exists(this.xmlLayoutPath))
       {
         try
@@ -495,6 +494,35 @@ namespace ServerBrowser
         }
       }
       return options.GetInt("TabIndex");
+    }
+
+    private void SetGeoIpImplForKey()
+    {
+      var impl = this.geoIpImplKey == null ? null : (Type)geoIpImpls[this.geoIpImplKey];
+      if (impl == null)
+      {
+        foreach (DictionaryEntry entry in geoIpImpls)
+        {
+          this.geoIpImplKey = (string)entry.Key;
+          impl = (Type)entry.Value;
+          break;
+        }
+      }
+
+      this.geoIpClient?.SaveCache();
+      this.geoIpClient?.Dispose();
+      
+      this.geoIpClient = (IGeoIpClient)Activator.CreateInstance(impl);
+      this.geoIpClient.LoadCache();
+
+      foreach (BarButtonItemLink link in mnuGeoIpImpl.ItemLinks)
+      {
+        if ((string)link.Item.Tag == geoIpImplKey)
+        {
+          link.Item.Down = true;
+          break;
+        }
+      }
     }
 
     #endregion
@@ -569,6 +597,7 @@ namespace ServerBrowser
       sb.AppendLine($"WindowWidth={this.Width}");
       sb.AppendLine($"WindowHeight={this.Height}");
       sb.AppendLine($"HideGhostPlayers={this.cbHideGhosts.Checked}");
+      sb.AppendLine($"GeoIpService={geoIpImplKey}");
 
       sb.AppendLine();
       sb.AppendLine("[FavoriteServers]");
@@ -2592,5 +2621,13 @@ namespace ServerBrowser
       this.AddNewTab("New Favorites", TabViewModel.SourceType.Favorites);
     }
     #endregion
+
+    private void miGeoIpImpl_DownChanged(object sender, ItemClickEventArgs e)
+    {
+      if (!((BarButtonItem)e.Item).Down)
+        return;
+      this.geoIpImplKey = (string)e.Item.Tag;
+      this.SetGeoIpImplForKey();
+    }
   }
 }

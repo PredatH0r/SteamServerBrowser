@@ -20,6 +20,7 @@ namespace ServerBrowser
         components.Dispose();
       }
       this.steam.Dispose();
+      this.geoIpClient?.Dispose();
       base.Dispose(disposing);
     }
 
@@ -102,6 +103,9 @@ namespace ServerBrowser
       this.miShowFilter = new DevExpress.XtraBars.BarButtonItem();
       this.miRestoreStandardLayout = new DevExpress.XtraBars.BarButtonItem();
       this.mnuGameOptions = new DevExpress.XtraBars.BarLinkContainerItem();
+      this.mnuGeoIpImpl = new DevExpress.XtraBars.BarSubItem();
+      this.miGeoLite2 = new DevExpress.XtraBars.BarButtonItem();
+      this.miIpApiCom = new DevExpress.XtraBars.BarButtonItem();
       this.mnuTabs = new DevExpress.XtraBars.BarSubItem();
       this.miRenameTab = new DevExpress.XtraBars.BarButtonItem();
       this.miCloneTab = new DevExpress.XtraBars.BarButtonItem();
@@ -1125,7 +1129,7 @@ namespace ServerBrowser
       // 
       this.labelControl13.Location = new System.Drawing.Point(4, 6);
       this.labelControl13.Name = "labelControl13";
-      this.labelControl13.Size = new System.Drawing.Size(24, 13);
+      this.labelControl13.Size = new System.Drawing.Size(22, 13);
       this.labelControl13.TabIndex = 0;
       this.labelControl13.Text = "Port:";
       // 
@@ -1133,7 +1137,7 @@ namespace ServerBrowser
       // 
       this.labelControl15.Location = new System.Drawing.Point(406, 6);
       this.labelControl15.Name = "labelControl15";
-      this.labelControl15.Size = new System.Drawing.Size(51, 13);
+      this.labelControl15.Size = new System.Drawing.Size(50, 13);
       this.labelControl15.TabIndex = 4;
       this.labelControl15.Text = "Command:";
       // 
@@ -1202,8 +1206,11 @@ namespace ServerBrowser
             this.miAboutSteamWorkshop,
             this.miAboutVersionHistory,
             this.miRestoreStandardLayout,
-            this.miSteamUrl});
-      this.barManager1.MaxItemId = 36;
+            this.miSteamUrl,
+            this.mnuGeoIpImpl,
+            this.miGeoLite2,
+            this.miIpApiCom});
+      this.barManager1.MaxItemId = 39;
       this.barManager1.RepositoryItems.AddRange(new DevExpress.XtraEditors.Repository.RepositoryItem[] {
             this.riFindPlayer});
       // 
@@ -1244,6 +1251,7 @@ namespace ServerBrowser
             new DevExpress.XtraBars.LinkPersistInfo(DevExpress.XtraBars.BarLinkUserDefines.PaintStyle, this.miShowOptions, DevExpress.XtraBars.BarItemPaintStyle.CaptionGlyph),
             new DevExpress.XtraBars.LinkPersistInfo(DevExpress.XtraBars.BarLinkUserDefines.PaintStyle, this.miShowServerQuery, DevExpress.XtraBars.BarItemPaintStyle.CaptionGlyph),
             new DevExpress.XtraBars.LinkPersistInfo(this.miShowFilter),
+            new DevExpress.XtraBars.LinkPersistInfo(this.mnuGeoIpImpl),
             new DevExpress.XtraBars.LinkPersistInfo(this.miRestoreStandardLayout),
             new DevExpress.XtraBars.LinkPersistInfo(this.mnuGameOptions, true)});
       this.mnuView.Name = "mnuView";
@@ -1296,6 +1304,35 @@ namespace ServerBrowser
       this.mnuGameOptions.CategoryGuid = new System.Guid("dce44941-9e20-4803-823c-6829c76924c5");
       this.mnuGameOptions.Id = 28;
       this.mnuGameOptions.Name = "mnuGameOptions";
+      // 
+      // mnuGeoIpImpl
+      // 
+      this.mnuGeoIpImpl.Caption = "GeoIP Service";
+      this.mnuGeoIpImpl.Id = 36;
+      this.mnuGeoIpImpl.LinksPersistInfo.AddRange(new DevExpress.XtraBars.LinkPersistInfo[] {
+            new DevExpress.XtraBars.LinkPersistInfo(this.miGeoLite2),
+            new DevExpress.XtraBars.LinkPersistInfo(this.miIpApiCom)});
+      this.mnuGeoIpImpl.Name = "mnuGeoIpImpl";
+      // 
+      // miGeoLite2
+      // 
+      this.miGeoLite2.ButtonStyle = DevExpress.XtraBars.BarButtonStyle.Check;
+      this.miGeoLite2.Caption = "MaxMind GeoLite2 offline database";
+      this.miGeoLite2.GroupIndex = 1;
+      this.miGeoLite2.Id = 37;
+      this.miGeoLite2.Name = "miGeoLite2";
+      this.miGeoLite2.Tag = "geolite2";
+      this.miGeoLite2.DownChanged += new DevExpress.XtraBars.ItemClickEventHandler(this.miGeoIpImpl_DownChanged);
+      // 
+      // miIpApiCom
+      // 
+      this.miIpApiCom.ButtonStyle = DevExpress.XtraBars.BarButtonStyle.Check;
+      this.miIpApiCom.Caption = "ip-api.com online API";
+      this.miIpApiCom.GroupIndex = 1;
+      this.miIpApiCom.Id = 38;
+      this.miIpApiCom.Name = "miIpApiCom";
+      this.miIpApiCom.Tag = "ip-api.com";
+      this.miIpApiCom.DownChanged += new DevExpress.XtraBars.ItemClickEventHandler(this.miGeoIpImpl_DownChanged);
       // 
       // mnuTabs
       // 
@@ -1661,7 +1698,7 @@ namespace ServerBrowser
       // 
       this.labelControl14.Location = new System.Drawing.Point(161, 6);
       this.labelControl14.Name = "labelControl14";
-      this.labelControl14.Size = new System.Drawing.Size(50, 13);
+      this.labelControl14.Size = new System.Drawing.Size(49, 13);
       this.labelControl14.TabIndex = 2;
       this.labelControl14.Text = "Password:";
       // 
@@ -3214,5 +3251,8 @@ namespace ServerBrowser
     protected ButtonEdit txtVersion;
     protected LabelControl labelControl20;
     private DevExpress.XtraBars.BarButtonItem miSteamUrl;
+    private DevExpress.XtraBars.BarSubItem mnuGeoIpImpl;
+    private DevExpress.XtraBars.BarButtonItem miGeoLite2;
+    private DevExpress.XtraBars.BarButtonItem miIpApiCom;
   }
 }

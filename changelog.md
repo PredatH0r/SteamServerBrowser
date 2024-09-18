@@ -1,3 +1,9 @@
+2.69
+---
+- added "Options / GeoIP Service" menu to select between different implementations.  
+  It now defaults to the Maxmind GeoLite2 local offline database.  
+  The previous implementation based on ip-api.com's free API can be used alternatively.  
+
 2.68
 ---
 - fixed issues with missing Rules and Players information due to bad challenge/response handling
