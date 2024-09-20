@@ -239,7 +239,7 @@ namespace ServerBrowser
         }
       }
 
-      this.allServers = rows;
+      this.allServers = rows.GroupBy(x => x.EndPoint).Select(x => x.First()).ToList();
       this.ServerListReceived?.Invoke(this, EventArgs.Empty);
 
       request.TaskCount = rows.Count;
