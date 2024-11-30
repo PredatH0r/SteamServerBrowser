@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using QueryMaster;
@@ -239,7 +240,10 @@ namespace ServerBrowser
         }
       }
 
-      this.allServers = rows;
+      // use a HashSet to prevent duplicate server rows
+      var seenEndpoints = new HashSet<EndPoint>();
+      this.allServers = rows.Where(row => seenEndpoints.Add(row.EndPoint)).ToList();
+      
       this.ServerListReceived?.Invoke(this, EventArgs.Empty);
 
       request.TaskCount = rows.Count;
