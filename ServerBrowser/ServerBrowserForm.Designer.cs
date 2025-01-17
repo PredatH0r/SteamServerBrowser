@@ -101,11 +101,11 @@ namespace ServerBrowser
       this.miShowOptions = new DevExpress.XtraBars.BarButtonItem();
       this.miShowServerQuery = new DevExpress.XtraBars.BarButtonItem();
       this.miShowFilter = new DevExpress.XtraBars.BarButtonItem();
-      this.miRestoreStandardLayout = new DevExpress.XtraBars.BarButtonItem();
-      this.mnuGameOptions = new DevExpress.XtraBars.BarLinkContainerItem();
       this.mnuGeoIpImpl = new DevExpress.XtraBars.BarSubItem();
       this.miGeoLite2 = new DevExpress.XtraBars.BarButtonItem();
       this.miIpApiCom = new DevExpress.XtraBars.BarButtonItem();
+      this.miRestoreStandardLayout = new DevExpress.XtraBars.BarButtonItem();
+      this.mnuGameOptions = new DevExpress.XtraBars.BarLinkContainerItem();
       this.mnuTabs = new DevExpress.XtraBars.BarSubItem();
       this.miRenameTab = new DevExpress.XtraBars.BarButtonItem();
       this.miCloneTab = new DevExpress.XtraBars.BarButtonItem();
@@ -1291,27 +1291,10 @@ namespace ServerBrowser
       this.miShowFilter.Name = "miShowFilter";
       this.miShowFilter.DownChanged += new DevExpress.XtraBars.ItemClickEventHandler(this.miShowFilter_DownChanged);
       // 
-      // miRestoreStandardLayout
-      // 
-      this.miRestoreStandardLayout.Caption = "Restore Standard Layout";
-      this.miRestoreStandardLayout.Id = 34;
-      this.miRestoreStandardLayout.Name = "miRestoreStandardLayout";
-      this.miRestoreStandardLayout.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miRestoreStandardLayout_ItemClick);
-      // 
-      // mnuGameOptions
-      // 
-      this.mnuGameOptions.Caption = "Game options";
-      this.mnuGameOptions.CategoryGuid = new System.Guid("dce44941-9e20-4803-823c-6829c76924c5");
-      this.mnuGameOptions.Id = 28;
-      this.mnuGameOptions.Name = "mnuGameOptions";
-      // 
       // mnuGeoIpImpl
       // 
       this.mnuGeoIpImpl.Caption = "GeoIP Service";
       this.mnuGeoIpImpl.Id = 36;
-      this.mnuGeoIpImpl.LinksPersistInfo.AddRange(new DevExpress.XtraBars.LinkPersistInfo[] {
-            new DevExpress.XtraBars.LinkPersistInfo(this.miGeoLite2),
-            new DevExpress.XtraBars.LinkPersistInfo(this.miIpApiCom)});
       this.mnuGeoIpImpl.Name = "mnuGeoIpImpl";
       // 
       // miGeoLite2
@@ -1333,6 +1316,20 @@ namespace ServerBrowser
       this.miIpApiCom.Name = "miIpApiCom";
       this.miIpApiCom.Tag = "ip-api.com";
       this.miIpApiCom.DownChanged += new DevExpress.XtraBars.ItemClickEventHandler(this.miGeoIpImpl_DownChanged);
+      // 
+      // miRestoreStandardLayout
+      // 
+      this.miRestoreStandardLayout.Caption = "Restore Standard Layout";
+      this.miRestoreStandardLayout.Id = 34;
+      this.miRestoreStandardLayout.Name = "miRestoreStandardLayout";
+      this.miRestoreStandardLayout.ItemClick += new DevExpress.XtraBars.ItemClickEventHandler(this.miRestoreStandardLayout_ItemClick);
+      // 
+      // mnuGameOptions
+      // 
+      this.mnuGameOptions.Caption = "Game options";
+      this.mnuGameOptions.CategoryGuid = new System.Guid("dce44941-9e20-4803-823c-6829c76924c5");
+      this.mnuGameOptions.Id = 28;
+      this.mnuGameOptions.Name = "mnuGameOptions";
       // 
       // mnuTabs
       // 

@@ -36,16 +36,18 @@ namespace ServerBrowser
 {
   public partial class ServerBrowserForm : XtraForm
   {
-    private const string Version = "2.70";
+    private const string Version = "2.71";
     private const string DevExpressVersion = "v23.2";
     private const string OldSteamWebApiText = "<Steam Web API>";
     private const string CustomDetailColumnPrefix = "ServerInfo.";
     private const string CustomRuleColumnPrefix = "custRule.";
     private static readonly Game[] DefaultGames = {Game.QuakeLive, Game.Reflex, Game.Toxikk, Game.CounterStrike_Global_Offensive, Game.Team_Fortress_2};
-    private static readonly OrderedDictionary geoIpImpls = new OrderedDictionary
+    private static readonly OrderedDictionary geoIpImpls = new()
     {
-      { "geolite2", typeof(IpDashApiDotComGeoIpClient)},
-      { "ip-api.com", typeof(IpDashApiDotComGeoIpClient)}
+      { "ip-api.com", Tuple.Create("ip-api.com online API", typeof(IpDashApiDotComGeoIpClient))},
+      { "ipinfo.io", Tuple.Create("ipinfo.io online API", typeof(IpInfoDotIoGeoIpClient))},
+      { "geolite2", Tuple.Create("MaxMind GeoLite2 offline database", typeof(MaxMindGeoIP2Client))},
+      { "none", Tuple.Create("None", typeof(NoGeoIpClient))}
     };
 
     internal static Color LinkControlColor;
@@ -71,7 +73,7 @@ namespace ServerBrowser
     private int iniVersion;
     private string iniMasterServers;
     private string geoIpImplKey;
-    private IGeoIpClient geoIpClient = new MaxMindGeoIP2Client();
+    private IGeoIpClient geoIpClient = new NoGeoIpClient();
 
     #region ctor()
     public ServerBrowserForm(IniFile ini)
@@ -111,6 +113,17 @@ namespace ServerBrowser
       vm.Source = TabViewModel.SourceType.Favorites;
       vm.Caption = this.tabFavorites.Text;
       this.tabFavorites.Tag = vm;
+
+      foreach (DictionaryEntry entry in geoIpImpls)
+      {
+        var value = (Tuple<string, Type>)entry.Value;
+        var item = new BarButtonItem(this.barManager1, value.Item1);
+        item.Tag = entry.Key;
+        item.ButtonStyle = BarButtonStyle.Check;
+        item.GroupIndex = 1;
+        item.DownChanged += miGeoIpImpl_DownChanged;
+        mnuGeoIpImpl.AddItem(item);
+      }
     }
     #endregion
 
@@ -466,9 +479,7 @@ namespace ServerBrowser
       this.Size = new Size(options.GetInt("WindowWidth", 1600), options.GetInt("WindowHeight", 840));
       this.cbHideGhosts.Checked = options.GetBool("HideGhostPlayers");
 
-
-      this.geoIpImplKey = options.GetString("GeoIpService");
-      SetGeoIpImplForKey();
+      SetGeoIpImplForKey(options.GetString("GeoIpService"));
 
       if (File.Exists(this.xmlLayoutPath))
       {
@@ -495,25 +506,38 @@ namespace ServerBrowser
       }
       return options.GetInt("TabIndex");
     }
+    #endregion
 
-    private void SetGeoIpImplForKey()
+    #region SetGeoIpImplForKey()
+    private void SetGeoIpImplForKey(string newId)
     {
-      var impl = this.geoIpImplKey == null ? null : (Type)geoIpImpls[this.geoIpImplKey];
-      if (impl == null)
+      var oldKey = this.geoIpImplKey;
+
+      try
       {
-        foreach (DictionaryEntry entry in geoIpImpls)
+        // try new service, previous service and default service until one succeeds (the last one always will)
+        foreach (var id in new[] { newId, oldKey, "none" })
         {
-          this.geoIpImplKey = (string)entry.Key;
-          impl = (Type)entry.Value;
-          break;
+          var impl = newId == null ? null : (Tuple<string, Type>)geoIpImpls[id];
+          this.geoIpClient?.SaveCache();
+          this.geoIpClient?.Dispose();
+          this.geoIpClient = null;
+
+          if (impl != null)
+          {
+            this.geoIpClient = (IGeoIpClient)Activator.CreateInstance(impl.Item2);
+            if (this.geoIpClient.LoadCache())
+            {
+              this.geoIpImplKey = id;
+              break;
+            }
+          }
         }
       }
-
-      this.geoIpClient?.SaveCache();
-      this.geoIpClient?.Dispose();
-      
-      this.geoIpClient = (IGeoIpClient)Activator.CreateInstance(impl);
-      this.geoIpClient.LoadCache();
+      catch
+      {
+        // ignore
+      }
 
       foreach (BarButtonItemLink link in mnuGeoIpImpl.ItemLinks)
       {
@@ -2624,10 +2648,8 @@ namespace ServerBrowser
 
     private void miGeoIpImpl_DownChanged(object sender, ItemClickEventArgs e)
     {
-      if (!((BarButtonItem)e.Item).Down)
-        return;
-      this.geoIpImplKey = (string)e.Item.Tag;
-      this.SetGeoIpImplForKey();
+      if (((BarButtonItem)e.Item).Down)
+        this.SetGeoIpImplForKey((string)e.Item.Tag);
     }
   }
 }
