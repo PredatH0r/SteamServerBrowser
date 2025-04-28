@@ -4,6 +4,7 @@ using System.Drawing;
 using System.IO;
 using System.Threading;
 using System.Windows.Forms;
+using System.Net;
 using DevExpress.Data.Async.Helpers;
 using DevExpress.LookAndFeel;
 using DevExpress.Skins;
@@ -48,6 +49,29 @@ namespace ServerBrowser
       UserLookAndFeel.Default.SkinName = skinName;
       SkinManager.EnableFormSkins();
     }
+    
+    #region Server Blacklist
+    
+    private static List<string> InitServerblacklist()
+	{
+	  List<string> list = new List<string>();
+	  using (StreamReader streamReader = new StreamReader(Path.Combine(Path.GetDirectoryName(typeof(Program).Assembly.Location), "server_blacklist.txt")))
+	  {
+		while (!streamReader.EndOfStream)
+		{
+		  String line = streamReader.ReadLine();
+		  IPAddress address;
+		  if (IPAddress.TryParse(line, out address))
+		  {
+		    list.Add(line);
+		  }
+		}
+	  }
+	  return list;
+	}
+	
+	public static List<string> serverBlacklist = Program.InitServerblacklist();
+	#endregion
 
     #region Exception handling
 
