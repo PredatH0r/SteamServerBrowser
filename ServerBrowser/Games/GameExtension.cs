@@ -80,7 +80,7 @@ namespace ServerBrowser
     /// </summary>
     public virtual bool AcceptGameServer(IPEndPoint server)
     {
-      return true;
+      return !Program.serverBlacklist.Contains(server.Address.ToString());
     }
     #endregion
 
