@@ -512,13 +512,15 @@ namespace ServerBrowser
     private void SetGeoIpImplForKey(string newId)
     {
       var oldKey = this.geoIpImplKey;
+      if (string.IsNullOrEmpty(newId))
+        newId = "none";
 
       try
       {
         // try new service, previous service and default service until one succeeds (the last one always will)
         foreach (var id in new[] { newId, oldKey, "none" })
         {
-          var impl = newId == null ? null : (Tuple<string, Type>)geoIpImpls[id];
+          var impl = (Tuple<string, Type>)geoIpImpls[id];
           this.geoIpClient?.SaveCache();
           this.geoIpClient?.Dispose();
           this.geoIpClient = null;
@@ -1329,10 +1331,12 @@ namespace ServerBrowser
     #region LookupGeoIps()
     private void LookupGeoIps()
     {
+      if (this.geoIpClient == null) return;
       if (this.viewModel?.Servers == null) return;
+
       foreach (var server in this.viewModel.Servers)
       {
-        if (server.GeoInfo != null)
+        if (server == null || server.GeoInfo != null)
           continue;
 
         var safeServer = server;

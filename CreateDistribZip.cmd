@@ -24,11 +24,14 @@ goto :eof
 
 
 cd "%cwd%\bin\Release"
+call :CodeSigning
+
 copy ServerBrowser.exe "%target%"
 copy QueryMaster.dll "%target%"
 copy Ionic.BZip2.dll "%target%"
 copy steam_api.dll "%target%"
 copy steam_api64.dll "%target%"
+copy MaxMind*.dll "%target%"
 
 rem del "DevExpress*Rich*"
 rem del "DevExpress*Office*"
@@ -36,9 +39,6 @@ del "DevExpress*Spark*"
 del "DevExpress*Tree*"
 copy "DevExpress*.dll" "%target%"
 del "%target%\*BonusSkins*"
-cd "%target%"
-call :CodeSigning
-
 cd "%cwd%"
 copy *.md "%target%"
 

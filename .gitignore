@@ -30,3 +30,4 @@ SteamServerBrowser*.zip
 /.vs/
 /bin/
 /QueryMaster/bin/
+/ServerBrowser/.vs/ServerBrowser.csproj.dtbcache.json
